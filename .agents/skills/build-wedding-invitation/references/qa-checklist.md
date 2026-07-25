@@ -1,35 +1,50 @@
 # Invitation QA checklist
 
-## Data integrity
+## Data and persistence
 
-- Compare rendered names, date, time, venue, address, hosts, and account ownership with `app/data/invitation.js`.
-- Report all bracketed placeholders.
-- Confirm disabled or empty optional features do not render empty sections.
-- Confirm no secret, private key, or unintended real personal data is committed.
+- Domain schema tests pass.
+- Clean PostgreSQL migrations succeed and are idempotent at container restart.
+- The generic seed is idempotent and does not overwrite an existing invitation.
+- Draft edits stay private until publish.
+- No real private data or secrets are tracked by git.
 
-## Core interactions
+## Public interactions
 
-- D-day state covers upcoming, today, and past events.
-- Venue and telephone links use valid schemes.
-- Account copy strips presentation-only whitespace and reports success or fallback.
-- Share uses Web Share when available and clipboard fallback otherwise.
-- Gallery opens, changes items, closes with the close control, backdrop, and Escape.
-- Music never autoplays and is absent when disabled.
-- RSVP is absent unless enabled with a URL.
+- Invitation fetch, headings, and ordered sections render.
+- Countdown is timezone-aware and layout-stable.
+- Contact, interview, RSVP, and guestbook dialogs open and close accessibly.
+- Timeline and account tabs respond by keyboard and pointer.
+- Account copy and sharing report success or fallback.
+- Gallery expansion is inline and stable.
+- Music never autoplays.
+- Guest uploads stay disabled until the configured timestamp.
 
-## Accessibility
+## Admin interactions
+
+- Unauthenticated requests receive `401`.
+- Login sets a Secure, HttpOnly, SameSite=Strict production cookie.
+- Content and design saves validate.
+- Media uploads reach MinIO and previews remain authenticated.
+- RSVP, guestbook, and guest-upload moderation round-trip.
+- Publishing atomically updates the public revision.
+
+## Accessibility and responsive behavior
 
 - Landmarks and heading levels are logical.
-- Buttons have accessible names and visible focus.
-- Dialog focus is contained or restored predictably.
-- Status messages use a polite live region.
-- Gallery images have useful alt text and intrinsic dimensions.
-- Reduced-motion preferences disable non-essential transitions.
+- Controls have accessible names, visible focus, and usable tap targets.
+- Dialog focus and Escape behavior are correct.
+- Status messages use polite live regions.
+- Images have useful alt text.
+- Reduced motion disables non-essential transitions.
+- Public UI has no horizontal overflow at 320, 375, 430, 768, and desktop.
+- Admin editor remains usable at 900px and shows live preview at wide desktop.
 
-## Responsive and deployment
+## Runtime and deployment
 
-- No horizontal overflow at 320px, 375px, 768px, and desktop widths.
-- Tap targets remain usable and important text does not clip.
-- All local assets resolve with case-sensitive paths.
-- `npm test`, `npm run validate`, and the Docker build pass.
-- `/healthz` responds successfully in the container.
+- `npm run check` passes.
+- Local Docker Compose and all three production images build.
+- API readiness checks PostgreSQL and MinIO.
+- Public and admin Nginx `/healthz` return `200`.
+- Public NPM target is `wedding-invitation:80`.
+- Admin NPM target is `wedding-admin:80` and DNS resolves only through Tailscale.
+- Cloudflare Tunnel has no admin route.

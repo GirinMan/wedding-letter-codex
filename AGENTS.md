@@ -2,40 +2,61 @@
 
 ## Purpose
 
-Build and maintain a mobile wedding invitation whose content, behavior, and visual system can evolve independently.
+Build and maintain a database-managed Korean mobile wedding invitation with a
+separate private admin workspace.
 
 ## Source of truth
 
-- `app/data/invitation.js`: wedding content and feature flags
-- `app/design-systems/foundation.css`: replaceable visual tokens
-- `app/styles/core.css`: structural layout and component behavior
-- `app/scripts/`: rendering and interaction logic
-- `_workspace/`: optional planning and QA artifacts; never required at runtime
+- `apps/api/src/domain/invitation.ts`: validated content and design contracts
+- PostgreSQL `invitations`: draft and published runtime content
+- PostgreSQL operational tables: RSVP, guestbook, media metadata, uploads, admin sessions
+- MinIO: uploaded images, music, and guest photographs
+- `apps/public-web`: public invitation behavior and structural presentation
+- `apps/admin-web`: authenticated editor and moderation workspace
+- `docs/concepts/wedding-platform-concept.png`: accepted visual concept
 
-Do not hard-code wedding details, account numbers, API keys, image URLs, or music URLs outside `app/data/invitation.js`.
+Do not hard-code real wedding details, account numbers, private contact data,
+credentials, or production media URLs in this public repository. The committed
+seed contains generic placeholders only.
 
 ## Required workflow
 
-- Use `$build-wedding-invitation` for any request that creates, changes, or validates the invitation.
-- Preserve the contract between content, core behavior, and the active design system.
-- Treat aesthetic work as an optional layer. Do not generate or copy visual or audio assets unless the user asks.
-- Keep the app dependency-free unless a requested feature clearly needs a dependency and the user approves it.
+- Use `$build-wedding-invitation` for any request that creates, changes, or
+  validates the invitation.
+- Preserve the boundary between validated content, replaceable design tokens,
+  operational behavior, and media storage.
+- Schema changes require a forward-only SQL migration in `apps/api/migrations`.
+- Public write APIs require validation and rate limiting.
+- Admin mutations require the authenticated server-side session.
 - Use semantic HTML, keyboard-accessible controls, and reduced-motion-safe behavior.
 
 ## Verification
 
-Run these before handing off a change:
+Run before handoff:
 
 ```bash
-npm test
-npm run validate
-docker build -t wedding-letter-codex:test app
+npm run check
+docker compose config --quiet
+docker compose up -d --build
+docker compose --profile tools run --rm seed
+curl -fsS http://localhost:8080/healthz
+curl -fsS http://localhost:3000/api/health/ready
 ```
 
-For UI-affecting changes, also exercise the primary flow at desktop and mobile widths in a browser.
+For UI changes, verify the public invitation and admin workspace in the Browser
+at desktop and mobile-representative widths. Exercise the affected form,
+dialog, carousel, upload, moderation, or publishing flow.
+
+## Production
+
+- `wedding-invitation:80` is the public NPM target.
+- `wedding-admin:80` is the Tailscale-only admin NPM target.
+- `wedding-api:3000` is internal and shared by both web containers.
+- Production PostgreSQL and MinIO are Serengeti-managed services on `data-tier`.
+- Never add `wedding-admin.giraffe.ai.kr` to Cloudflare Tunnel application routes.
 
 ## Git
 
 - Work on a feature branch, not directly on `main`.
 - Commit cohesive changes in small, reviewable units.
-- Never commit secrets or real private wedding data to this public repository.
+- Never commit secrets or real private wedding data.

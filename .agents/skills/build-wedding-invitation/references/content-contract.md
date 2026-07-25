@@ -1,46 +1,44 @@
 # Invitation content contract
 
-## Principles
+## Runtime authority
 
-- `app/data/invitation.js` is the only runtime source of wedding-specific facts.
-- Unknown private data stays as a visible placeholder or an empty optional collection.
-- Configuration must remain valid JavaScript data without DOM nodes, callbacks, or environment-specific secrets.
-- The renderer hides optional empty sections instead of inventing content.
+PostgreSQL is the runtime source of truth. The API validates every content and
+design write with the schemas in `apps/api/src/domain/invitation.ts`.
 
-## Required shape
+`sampleInvitationContent` is only a generic bootstrap document. Real wedding
+data is entered through the admin interface or a private deployment seed.
 
-```js
-{
-  meta: { title, description, canonicalUrl },
-  couple: {
-    partner1: { name, label, phone },
-    partner2: { name, label, phone }
-  },
-  event: {
-    date, time, timezone, venueName, hall, address,
-    mapUrl, latitude, longitude
-  },
-  copy: { headline, greeting, closing },
-  hosts: [{ side, relationship, name, phone }],
-  accounts: [{ side, owner, bank, number, holder }],
-  gallery: [{ src, alt, width, height }],
-  rsvp: { enabled, url, deadline },
-  music: { enabled, src, title },
-  features: { countdown, contacts, accounts, gallery, rsvp, share, music }
-}
-```
+## Editable content
 
-## Validation rules
+- couple labels and names
+- hero, greeting, interview, timeline, closing copy
+- contacts and family roles
+- event timestamp, IANA timezone, venue, coordinates, and transport
+- ordered section flags
+- gallery/media references
+- RSVP and guestbook configuration
+- account groups and payment deep links
+- guest-photo availability and music references
 
-- Use ISO `YYYY-MM-DD` for `event.date` and `HH:mm` for `event.time`.
-- Use an IANA timezone such as `Asia/Seoul`.
-- Give every gallery item meaningful Korean `alt` text and intrinsic dimensions.
-- Store account numbers as display strings; derive clipboard values at runtime.
-- Use `https:` URLs in production. Empty optional URLs are valid when their feature is disabled.
-- `music.enabled` requires a non-empty `music.src`.
-- `rsvp.enabled` requires a non-empty `rsvp.url`.
-- Do not commit API keys. External SDK integration belongs in a separate adapter and environment configuration.
+## Operational records
 
-## Placeholder policy
+RSVP, guestbook, media metadata, guest uploads, sessions, and audit events use
+normalized tables. Do not put these records into the invitation JSON document.
 
-Use bracketed values such as `[신랑 이름]`, `[예식장 이름]`, or `[계좌번호]`. The validator reports them but does not fail the starter configuration. Before production deployment, placeholders must be reviewed explicitly.
+## Validation
+
+- Store timestamps as offset-aware ISO strings and include an IANA timezone.
+- Every media reference has a nullable UUID plus useful alt text.
+- An enabled music item requires a published audio asset before use.
+- Account and contact strings must be non-empty when their groups are shown.
+- Reject unknown fields, oversize text, active HTML/SVG uploads, and invalid
+  external URLs.
+- Public responses omit password verifiers, sessions, audit events, moderation
+  internals, and unpublished content.
+
+## Privacy
+
+- Commit only generic names, phone numbers, addresses, and account numbers.
+- Never log or return password verifiers, session tokens, DB URLs, or MinIO keys.
+- Production credentials live in the private IaC runtime `.env`.
+- Publishing is an explicit transaction from validated draft to public revision.
