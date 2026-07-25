@@ -3,18 +3,20 @@ name: Validate, build, and deploy
 on:
   pull_request:
     paths:
-      - "app/**"
-      - "scripts/**"
-      - "tests/**"
+      - "apps/**"
+      - "deploy/**"
+      - "docker-compose.yml"
+      - "docker-compose.iac.yml"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/build.yml"
   push:
     branches: [main]
     paths:
-      - "app/**"
-      - "scripts/**"
-      - "tests/**"
+      - "apps/**"
+      - "deploy/**"
+      - "docker-compose.yml"
+      - "docker-compose.iac.yml"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/build.yml"
@@ -34,19 +36,70 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install project metadata
+      - name: Install dependencies
         run: npm ci
 
-      - name: Test and validate
+      - name: Test, typecheck, and build
         run: npm run check
 
-      - name: Verify container build
-        run: docker build -t wedding-letter-codex:verify app
+      - name: Validate local compose
+        run: |
+          cp .env.example .env
+          sed -i 's/<replace-with-local-password>/ci-postgres-password/' .env
+          sed -i 's/<replace-with-local-access-key>/ciwedding/' .env
+          sed -i 's/<replace-with-local-secret-key>/ci-minio-secret-password/' .env
+          sed -i 's/<admin@example.com>/admin@example.com/' .env
+          sed -i 's/<replace-with-at-least-12-characters>/ci-admin-password/' .env
+          sed -i 's/<invitation-admin>/CI-admin/' .env
+          docker compose config --quiet
+
+      - name: Verify API image
+        run: docker build -f deploy/docker/api.Dockerfile -t wedding-api:verify .
+
+      - name: Verify public image
+        run: |
+          docker build \
+            -f deploy/docker/web.Dockerfile \
+            --build-arg WEB_APP=public-web \
+            --build-arg WEB_WORKSPACE=@wedding/public-web \
+            --build-arg VITE_INVITATION_SLUG=our-wedding \
+            -t wedding-public:verify .
+
+      - name: Verify admin image
+        run: |
+          docker build \
+            -f deploy/docker/web.Dockerfile \
+            --build-arg WEB_APP=admin-web \
+            --build-arg WEB_WORKSPACE=@wedding/admin-web \
+            --build-arg VITE_PUBLIC_PREVIEW_URL=https://wedding.example.com \
+            -t wedding-admin:verify .
 
   build-push:
     if: github.event_name != 'pull_request'
     needs: validate
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - component: api
+            dockerfile: deploy/docker/api.Dockerfile
+            image: wedding-letter-codex-api
+            build_args: ""
+          - component: public
+            dockerfile: deploy/docker/web.Dockerfile
+            image: wedding-letter-codex-public
+            build_args: |
+              WEB_APP=public-web
+              WEB_WORKSPACE=@wedding/public-web
+              VITE_INVITATION_SLUG=our-wedding
+          - component: admin
+            dockerfile: deploy/docker/web.Dockerfile
+            image: wedding-letter-codex-admin
+            build_args: |
+              WEB_APP=admin-web
+              WEB_WORKSPACE=@wedding/admin-web
+              VITE_PUBLIC_PREVIEW_URL=https://wedding.${{ vars.CF_DOMAIN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,13 +113,20 @@ jobs:
           username: ${{ secrets.HARBOR_ROBOT_USER }}
           password: ${{ secrets.HARBOR_ROBOT_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push ${{ matrix.component }}
         uses: docker/build-push-action@v6
         with:
-          context: ./app
+          context: .
+          file: ${{ matrix.dockerfile }}
           push: true
-          tags: harbor.${{ vars.CF_DOMAIN }}/girinman/wedding-letter-codex:${{ github.sha }}
+          build-args: ${{ matrix.build_args }}
+          tags: harbor.${{ vars.CF_DOMAIN }}/girinman/${{ matrix.image }}:${{ github.sha }}
 
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger IaC deployment
         env:
           GH_TOKEN: ${{ secrets.IAC_DISPATCH_TOKEN }}

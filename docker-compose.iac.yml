@@ -1,8 +1,46 @@
 services:
+  wedding-api:
+    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/wedding-letter-codex-api:${WEDDING_INVITATION_IMAGE_TAG:?WEDDING_INVITATION_IMAGE_TAG must be set}
+    container_name: wedding-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgresql://wedding:${WEDDING_DB_PASSWORD:?WEDDING_DB_PASSWORD must be set}@postgres:5432/wedding
+      COOKIE_SECURE: "true"
+      ADMIN_ORIGIN: https://wedding-admin.${CF_DOMAIN:?CF_DOMAIN must be set}
+      PUBLIC_ORIGIN: https://wedding.${CF_DOMAIN}
+      SESSION_DAYS: ${WEDDING_SESSION_DAYS:-14}
+      S3_ENDPOINT: http://minio:${MINIO_API_PORT:-9000}
+      S3_REGION: ${WEDDING_S3_REGION:-us-east-1}
+      S3_ACCESS_KEY: ${WEDDING_MINIO_ACCESS_KEY:?WEDDING_MINIO_ACCESS_KEY must be set}
+      S3_SECRET_KEY: ${WEDDING_MINIO_SECRET_KEY:?WEDDING_MINIO_SECRET_KEY must be set}
+      S3_BUCKET: ${WEDDING_S3_BUCKET:-wedding-media}
+      S3_FORCE_PATH_STYLE: "true"
+      MAX_UPLOAD_BYTES: ${WEDDING_MAX_UPLOAD_BYTES:-15728640}
+    networks:
+      - proxy-tier
+      - data-tier
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health/live >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   wedding-invitation:
-    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/wedding-letter-codex:${WEDDING_INVITATION_IMAGE_TAG:?WEDDING_INVITATION_IMAGE_TAG must be set}
+    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/wedding-letter-codex-public:${WEDDING_INVITATION_IMAGE_TAG:?WEDDING_INVITATION_IMAGE_TAG must be set}
     container_name: wedding-invitation
     restart: unless-stopped
+    depends_on:
+      wedding-api:
+        condition: service_healthy
     networks:
       - proxy-tier
     healthcheck:
@@ -11,7 +49,35 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  wedding-admin:
+    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/wedding-letter-codex-admin:${WEDDING_INVITATION_IMAGE_TAG:?WEDDING_INVITATION_IMAGE_TAG must be set}
+    container_name: wedding-admin
+    restart: unless-stopped
+    depends_on:
+      wedding-api:
+        condition: service_healthy
+    networks:
+      - proxy-tier
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/healthz >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   proxy-tier:
+    external: true
+  data-tier:
     external: true
