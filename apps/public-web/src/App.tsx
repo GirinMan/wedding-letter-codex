@@ -9,6 +9,7 @@ import {
 
 import {
   createGuestbookEntry,
+  deleteGuestbookEntry,
   loadGuestbook,
   loadInvitation,
   submitRsvp,
@@ -23,7 +24,7 @@ import type {
   MediaReference,
 } from "./types";
 
-type DialogName = "contact" | "interview" | "rsvp" | "guestbook" | "guestbook-write" | "upload" | null;
+type DialogName = "contact" | "interview" | "rsvp" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
 
 const defaultSlug = import.meta.env.VITE_INVITATION_SLUG ?? "our-wedding";
 
@@ -52,6 +53,22 @@ function formatEventDate(startsAt: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(startsAt));
+}
+
+function openStreetMapEmbedUrl(latitude: number, longitude: number) {
+  const delta = 0.006;
+  const bbox = [
+    longitude - delta,
+    latitude - delta,
+    longitude + delta,
+    latitude + delta,
+  ].join(",");
+  const params = new URLSearchParams({
+    bbox,
+    layer: "mapnik",
+    marker: `${latitude},${longitude}`,
+  });
+  return `https://www.openstreetmap.org/export/embed.html?${params.toString()}`;
 }
 
 function SectionHeading({
@@ -125,6 +142,7 @@ export function App() {
   const [slug, setSlug] = useState(defaultSlug);
   const [dialog, setDialog] = useState<DialogName>(null);
   const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
+  const [guestbookDeleteTarget, setGuestbookDeleteTarget] = useState<GuestbookEntry | null>(null);
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [accountIndex, setAccountIndex] = useState(0);
   const [galleryExpanded, setGalleryExpanded] = useState(false);
@@ -233,7 +251,8 @@ export function App() {
 
   const handleRsvp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await submitRsvp(slug, {
         attending: form.get("attending") === "true",
@@ -248,7 +267,7 @@ export function App() {
       });
       setDialog(null);
       setNotice("참석 의사를 전달했습니다. 고맙습니다.");
-      event.currentTarget.reset();
+      formElement.reset();
     } catch {
       setNotice("전송하지 못했습니다. 입력 내용을 확인해 주세요.");
     }
@@ -256,7 +275,8 @@ export function App() {
 
   const handleGuestbook = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       const entry = await createGuestbookEntry(slug, {
         name: String(form.get("name") ?? ""),
@@ -266,20 +286,42 @@ export function App() {
       setGuestbook((entries) => [entry, ...entries]);
       setDialog("guestbook");
       setNotice("축하 글을 남겼습니다.");
-      event.currentTarget.reset();
+      formElement.reset();
     } catch {
       setNotice("글을 남기지 못했습니다. 입력 내용을 확인해 주세요.");
     }
   };
 
+  const handleGuestbookDelete = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!guestbookDeleteTarget) return;
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    try {
+      await deleteGuestbookEntry(
+        slug,
+        guestbookDeleteTarget.id,
+        String(form.get("password") ?? ""),
+      );
+      setGuestbook((entries) => entries.filter((entry) => entry.id !== guestbookDeleteTarget.id));
+      setGuestbookDeleteTarget(null);
+      setDialog("guestbook");
+      setNotice("방명록 글을 삭제했습니다.");
+      formElement.reset();
+    } catch {
+      setNotice("삭제 비밀번호가 일치하지 않습니다.");
+    }
+  };
+
   const handleGuestUpload = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await uploadGuestPhoto(slug, form);
       setDialog(null);
       setNotice("사진을 올렸습니다. 확인 후 신랑·신부에게 전달됩니다.");
-      event.currentTarget.reset();
+      formElement.reset();
     } catch {
       setNotice("사진을 올리지 못했습니다. 파일 형식과 크기를 확인해 주세요.");
     }
@@ -335,11 +377,9 @@ export function App() {
               description="결혼을 앞둔 두 사람의 작은 이야기를 담았습니다."
             />
             <div className="interview-grid">
-              {content.interview.slice(0, 2).map((entry, index) => (
+              {content.interview.slice(0, 2).map((entry) => (
                 <article className="interview-card" key={entry.id}>
-                  <div className="portrait-placeholder" aria-hidden="true">
-                    {index === 0 ? content.couple.partnerOne.label : content.couple.partnerTwo.label}
-                  </div>
+                  <Media media={entry.image} className="portrait-placeholder" />
                   <h3>{entry.question}</h3>
                   <p>{entry.answer}</p>
                 </article>
@@ -422,11 +462,21 @@ export function App() {
               <p>{content.event.address}</p>
               <a href={`tel:${content.event.telephone}`}>{content.event.telephone}</a>
             </div>
-            <div className="map-placeholder">
-              <span className="map-placeholder__pin" aria-hidden="true">●</span>
-              <strong>{content.event.venueName}</strong>
-              <span>{content.event.address}</span>
-            </div>
+            {content.event.latitude !== null && content.event.longitude !== null ? (
+              <iframe
+                className="map-embed"
+                title={`${content.event.venueName} 지도`}
+                src={openStreetMapEmbedUrl(content.event.latitude, content.event.longitude)}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="map-placeholder">
+                <span className="map-placeholder__pin" aria-hidden="true">●</span>
+                <strong>{content.event.venueName}</strong>
+                <span>{content.event.address}</span>
+              </div>
+            )}
             <div className="navigation-links">
               <a
                 href={`https://map.naver.com/p/search/${encodeURIComponent(content.event.address)}`}
@@ -495,7 +545,7 @@ export function App() {
 
         {enabledSections.has("middleImage") ? (
           <section className="middle-image" data-reveal>
-            <PlaceholderBand label="WEDDING CEREMONY" media={content.closing.image} />
+            <PlaceholderBand label="WEDDING CEREMONY" media={content.middleImage} />
             <div>
               <p>WEDDING CEREMONY</p>
               <strong>D − {countdown.days}</strong>
@@ -658,7 +708,21 @@ export function App() {
         <div className="guestbook-list">
           {guestbook.length ? guestbook.map((entry) => (
             <article key={entry.id}>
-              <div><strong>{entry.name}</strong><time>{new Date(entry.createdAt).toLocaleDateString("ko-KR")}</time></div>
+              <div>
+                <strong>{entry.name}</strong>
+                <span className="guestbook-list__meta">
+                  <time>{new Date(entry.createdAt).toLocaleDateString("ko-KR")}</time>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGuestbookDeleteTarget(entry);
+                      setDialog("guestbook-delete");
+                    }}
+                  >
+                    삭제
+                  </button>
+                </span>
+              </div>
               <p>{entry.message}</p>
             </article>
           )) : <p className="empty-state">아직 작성된 방명록이 없습니다.</p>}
@@ -675,6 +739,23 @@ export function App() {
           <label>삭제 비밀번호<input name="password" type="password" required minLength={4} maxLength={100} /></label>
           <p className="form-help">작성한 글을 직접 삭제할 때 사용합니다.</p>
           <button className="primary-button" type="submit">등록하기</button>
+        </form>
+      </Dialog>
+
+      <Dialog
+        open={dialog === "guestbook-delete"}
+        title="축하 글 삭제"
+        onClose={() => {
+          setGuestbookDeleteTarget(null);
+          setDialog("guestbook");
+        }}
+      >
+        <form className="form-stack" onSubmit={(event) => void handleGuestbookDelete(event)}>
+          <p className="form-help">
+            {guestbookDeleteTarget?.name}님이 작성할 때 입력한 삭제 비밀번호를 확인합니다.
+          </p>
+          <label>삭제 비밀번호<input name="password" type="password" required minLength={4} maxLength={100} /></label>
+          <button className="primary-button" type="submit">삭제하기</button>
         </form>
       </Dialog>
 
