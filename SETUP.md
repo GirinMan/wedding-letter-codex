@@ -12,7 +12,7 @@ Repository Settings → Secrets and variables → Actions에 다음을 설정한
 |---|---|
 | `HARBOR_ROBOT_USER` | 대상 Harbor 프로젝트에 push 가능한 robot account |
 | `HARBOR_ROBOT_TOKEN` | 위 account의 token |
-| `IAC_DISPATCH_TOKEN` | `GirinMan/serengeti-iac`에 repository dispatch를 보낼 수 있는 최소 권한 token |
+| `IAC_DISPATCH_TOKEN` | private `GirinMan/serengeti-iac`에 repository dispatch를 보낼 수 있는 fine-grained PAT |
 
 ### Variable
 
@@ -21,6 +21,10 @@ Repository Settings → Secrets and variables → Actions에 다음을 설정한
 | `CF_DOMAIN` | Harbor hostname을 구성할 공개 domain |
 
 Secret 값은 GitHub secret manager에서 직접 등록하고 문서나 issue에 남기지 않는다.
+
+`IAC_DISPATCH_TOKEN`은 `GirinMan/serengeti-iac` 저장소만 대상으로 하고
+`Contents: Read and write` 권한만 부여한다. 이 앱 저장소의 기본
+`GITHUB_TOKEN`은 다른 private 저장소에 dispatch할 수 없으므로 대신 사용할 수 없다.
 
 ## serengeti-iac 연결
 
