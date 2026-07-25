@@ -1,12 +1,24 @@
 {
   "name": "wedding-letter-codex",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "apps/api",
+    "apps/public-web",
+    "apps/admin-web"
+  ],
   "scripts": {
-    "test": "node --test",
-    "validate": "node scripts/validate-invitation.mjs",
-    "check": "npm test && npm run validate"
+    "build": "npm run build --workspaces --if-present",
+    "check": "npm run test && npm run typecheck && npm run build",
+    "dev": "docker compose up --build",
+    "dev:api": "npm run dev --workspace @wedding/api",
+    "dev:public": "npm run dev --workspace @wedding/public-web",
+    "dev:admin": "npm run dev --workspace @wedding/admin-web",
+    "db:migrate": "npm run db:migrate --workspace @wedding/api",
+    "db:seed": "npm run db:seed --workspace @wedding/api",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "engines": {
     "node": ">=22"
