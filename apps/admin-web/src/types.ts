@@ -40,7 +40,12 @@ export interface InvitationContent {
     longitude: number | null;
     transport: Array<{ title: string; body: string }>;
   };
-  interview: Array<{ id: string; question: string; answer: string }>;
+  interview: Array<{
+    id: string;
+    question: string;
+    answer: string;
+    image: MediaReference;
+  }>;
   timeline: Array<{
     id: string;
     date: string;
@@ -78,6 +83,7 @@ export interface InvitationContent {
     description: string;
   };
   music: { enabled: boolean; assetId: string | null; title: string };
+  middleImage: MediaReference;
   closing: { title: string; body: string; image: MediaReference };
   sections: Array<{ id: string; enabled: boolean }>;
 }
