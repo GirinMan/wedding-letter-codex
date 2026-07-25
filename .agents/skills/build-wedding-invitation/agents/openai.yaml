@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wedding Invitation Builder"
+  short_description: "Build and revise Codex-native wedding invitations"
+  default_prompt: "Use $build-wedding-invitation to create or revise a mobile wedding invitation."
