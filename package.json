@@ -1,0 +1,14 @@
+{
+  "name": "wedding-letter-codex",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "validate": "node scripts/validate-invitation.mjs",
+    "check": "npm test && npm run validate"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

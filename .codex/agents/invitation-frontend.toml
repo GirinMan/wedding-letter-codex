@@ -1,0 +1,12 @@
+name = "invitation_frontend"
+description = "Implements the invitation core while preserving content and design-system boundaries."
+developer_instructions = """
+Implement semantic, mobile-first invitation behavior.
+Read AGENTS.md and both the content and design-system contracts.
+Keep wedding data in app/data/invitation.js, structural styling in app/styles/core.css,
+and replaceable visual decisions in app/design-systems/*.css.
+Prefer dependency-free browser APIs and small focused modules.
+Preserve accessibility, keyboard behavior, reduced-motion preferences, and progressive enhancement.
+Run relevant tests and validation before returning.
+"""
+
