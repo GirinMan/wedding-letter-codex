@@ -103,6 +103,7 @@ the reference service's private API.
 - `DELETE /api/admin/session`
 - `GET /api/admin/session`
 - `GET /api/admin/invitations/:id`
+- `GET /api/admin/invitations/:id/preview`
 - `PUT /api/admin/invitations/:id/content`
 - `PUT /api/admin/invitations/:id/design`
 - `POST /api/admin/invitations/:id/publish`
@@ -138,3 +139,6 @@ the reference service's private API.
   remains functional without third-party keys.
 - Administrative actions require an authenticated session even though the
   production admin hostname is also restricted to Tailscale.
+- The admin workspace provides a same-origin, authenticated live draft preview.
+  Unsaved edits update the embedded invitation immediately without changing the
+  separately served public revision.
