@@ -1,82 +1,125 @@
 # Wedding Letter Codex
 
-Codex가 한국 모바일 청첩장을 만들고 수정하도록 구성한 공개 템플릿이다. 첫 단계는 특정 디자인을 완성하는 것이 아니라, **콘텐츠·핵심 동작·디자인 시스템을 독립적으로 교체할 수 있는 기반**을 제공하는 데 집중한다.
+PostgreSQL과 MinIO를 기반으로 콘텐츠·디자인·미디어를 런타임에 편집하는
+한국 모바일 청첩장 플랫폼이다. 공개 청첩장과 Tailscale 전용 관리자
+화면이 하나의 API를 공유한다.
 
-## 현재 포함된 핵심
+원본 서비스의 사적 데이터, 사진, 음악, 로고, 소스 코드는 포함하지
+않는다. 관찰한 제품 구조와 인터랙션을 독립 구현했으며 커밋된 seed는
+모두 일반 placeholder다.
 
-- 신랑·신부, 예식 일시, 장소, 인사말의 단일 데이터 소스
-- 타임존을 고려한 D-day 표시
-- 선택형 연락처, 계좌 복사, 갤러리 dialog, RSVP, Web Share, 음악 제어
-- 기능이 꺼지거나 데이터가 비어 있을 때 해당 섹션을 숨기는 feature flag
-- 키보드 포커스, live region, reduced motion, 모바일 반응형 기반
-- 교체 가능한 CSS design-system contract
-- Codex용 `AGENTS.md`, repo-local skill, project custom agents
-- Node 내장 테스트와 구성·자산·design-token validator
-- Nginx 정적 이미지와 Harbor → IaC 배포 workflow
+## 포함된 기능
 
-원본 미디어, 디자인, 음악은 포함하지 않는다.
+공개 청첩장:
+
+- 히어로, 인사말, 연락처, 인터뷰, 달력과 실시간 카운트다운
+- 연애 연혁 캐러셀, RSVP, 장소·교통·외부 길찾기
+- MinIO 갤러리, 방명록, 계좌 복사, 선택형 음악
+- 예식 시각에 맞춘 방문객 사진 업로드와 Web Share fallback
+- 스크롤 reveal, dialog, reduced motion, 키보드 접근성
+
+관리자:
+
+- 이름·문구·예식 일정·장소·연락처 편집
+- 인터뷰·연혁·디자인 토큰 편집과 실시간 공개 화면 미리보기
+- MinIO 이미지/음악 업로드
+- RSVP 조회, 방명록 moderation, 방문객 사진 승인
+- draft revision 저장과 원자적 publish
+- Secure/HttpOnly/SameSite 세션
+
+백엔드:
+
+- Fastify + TypeScript REST API
+- PostgreSQL migration과 JSONB content/design document
+- MinIO S3-compatible private object storage
+- scrypt password verifier와 hashed session token
+- public write validation과 rate limit
 
 ## 구조
 
 ```text
-.
-├── AGENTS.md
-├── .agents/skills/build-wedding-invitation/
-├── .codex/agents/
-├── app/
-│   ├── data/invitation.js
-│   ├── design-systems/foundation.css
-│   ├── styles/core.css
-│   ├── scripts/
-│   ├── media/
-│   └── index.html
-├── scripts/validate-invitation.mjs
-└── tests/
+apps/
+  api/          API, domain schema, migration, seed, tests
+  public-web/   React + Vite 모바일 청첩장
+  admin-web/    React + Vite 관리자
+deploy/
+  docker/       API와 web image build
+  nginx/        public/admin SPA와 API proxy
+docs/
+  architecture.md
+  reference-audit.md
+  concepts/wedding-platform-concept.png
+docker-compose.yml
+docker-compose.iac.yml
 ```
 
-### 세 가지 경계
-
-| 관심사 | 위치 | 변경 예 |
-|---|---|---|
-| 콘텐츠 | `app/data/invitation.js` | 이름, 날짜, 장소, 카피, 연락처, 계좌, 미디어 URL |
-| 핵심 동작 | `app/scripts/`, `app/styles/core.css` | D-day, 복사, 공유, dialog, responsive mechanics |
-| 디자인 시스템 | `app/design-systems/*.css` | 색상, 글꼴, spacing character, radius, shadow, motion feel |
-
-새 디자인 시스템을 적용할 때는 contract의 CSS custom properties를 구현한 파일을 추가하고 `app/index.html`의 첫 번째 stylesheet 경로만 바꾼다. 이미지와 음악 경로는 디자인 시스템이 아니라 `invitation.js`에서 관리한다.
+설계 근거는 [reference audit](docs/reference-audit.md), 런타임 구성은
+[architecture](docs/architecture.md), 전체 화면 시안은
+[concept board](docs/concepts/wedding-platform-concept.png)에 있다.
 
 ## 로컬 실행
 
-Node.js 22 이상이 필요하다.
+Node.js 22와 Docker가 필요하다.
 
 ```bash
+cp .env.example .env
+# .env의 placeholder를 로컬 전용 값으로 교체
 npm ci
 npm run check
-python3 -m http.server 8000 --directory app
+docker compose up -d --build
+docker compose --profile tools run --rm seed
 ```
 
-브라우저에서 `http://localhost:8000`을 연다. 초기 데이터에는 의도적인 `[placeholder]`가 있어 validator가 경고하지만 실패하지 않는다.
+- 공개: <http://localhost:8080/our-wedding>
+- 관리자: <http://localhost:8081>
+- API: <http://localhost:3000/api/health/ready>
+- MinIO console: <http://localhost:9001>
 
-Docker로 확인할 수도 있다.
+seed는 같은 slug가 이미 있으면 초대장을 덮어쓰지 않는다. 관리자
+identity는 `.env` 값으로 생성 또는 갱신한다.
+
+## 디자인 교체
+
+`InvitationDesign`은 PostgreSQL에서 관리하며 공개 앱이 semantic CSS
+custom property로 변환한다. 색·글꼴·간격·radius·motion token을 바꿔도
+콘텐츠 document와 인터랙션 코드는 유지된다. 미디어는 design token이
+아니라 MinIO asset reference다.
+
+## 검증
 
 ```bash
-docker build -t wedding-letter-codex:local app
-docker run --rm -p 8080:80 wedding-letter-codex:local
+npm run check
+docker compose config --quiet
 curl -fsS http://localhost:8080/healthz
+curl -fsS http://localhost:8081/healthz
+curl -fsS http://localhost:3000/api/health/ready
 ```
 
-## Codex에서 사용
-
-저장소를 Codex로 연 뒤 청첩장 생성·수정·QA를 요청하면 `$build-wedding-invitation` skill이 콘텐츠, 동작, 디자인 변경을 분류한다. 큰 작업만 custom subagent를 사용하고, 작은 데이터나 token 변경은 직접 처리하도록 구성했다.
-
-실제 개인정보나 계좌정보를 public git에 올리기 전에는 공개 범위를 반드시 확인한다. 비공개 데이터 주입 방식이 필요하면 별도 runtime configuration 계층을 추가하는 편이 안전하다.
+브라우저 QA에서는 공개 페이지 로딩·연락 dialog·전체 섹션 DOM·콘솔
+오류 없음, 관리자 로그인·실데이터 dashboard·좁은 desktop 반응형을
+확인한다.
 
 ## 배포
 
-GitHub Actions는 PR에서 테스트·validator·Docker build를 실행한다. `main` 반영 시에는 Harbor에 SHA tag 이미지를 push하고 `deploy-wedding-invitation` 이벤트를 IaC 저장소로 보낸다. IaC compose의 서비스와 컨테이너 이름은 `wedding-invitation`이며 NPM은 Docker `proxy-tier`에서 `wedding-invitation:80`으로 전달한다. 필요한 설정은 [SETUP.md](SETUP.md)에 정리되어 있다.
+GitHub Actions는 API/public/admin 이미지를 같은 Git SHA tag로 Harbor에
+push한 다음 private `GirinMan/serengeti-iac`에 한 번만 dispatch한다.
+
+- 공개 NPM target: `wedding-invitation:80`
+- 관리자 NPM target: `wedding-admin:80`
+- 내부 API: `wedding-api:3000`
+- production data: Serengeti `postgres:5432`, `minio:9000`
+
+관리자 hostname `wedding-admin.giraffe.ai.kr`은 Tailscale IP로만
+resolve하고 Cloudflare Tunnel published route에는 추가하지 않는다.
+구체적인 secret과 bootstrap은 [SETUP.md](SETUP.md)에 정리했다.
 
 ## 출처
 
-이 프로젝트의 문제 정의와 초기 workflow는 [revfactory/wedding-letter](https://github.com/revfactory/wedding-letter)에서 영감을 받았다. Claude 전용 지침과 기존 미디어를 복사하지 않고 Codex와 교체형 디자인 시스템에 맞게 다시 구성했다. 자세한 내용은 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 참고한다.
+초기 문제 정의와 workflow는
+[revfactory/wedding-letter](https://github.com/revfactory/wedding-letter)에서
+영감을 받았다. 구현은 Codex·DB 편집·독립 디자인 시스템·Serengeti
+운영 모델에 맞게 새로 작성했다. [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+참조.
 
 ## License
 

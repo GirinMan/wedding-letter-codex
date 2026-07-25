@@ -2,64 +2,45 @@
 
 ## Swap boundary
 
-`app/index.html` loads exactly one file from `app/design-systems/` before `app/styles/core.css`. Replacing that stylesheet must be enough to change the visual language without changing content or interaction modules.
-
-Core markup and styles may consume semantic custom properties, but must not depend on a theme filename.
+The `InvitationDesign` document in PostgreSQL controls the public visual
+language. `apps/public-web/src/App.tsx` maps those values to semantic CSS custom
+properties; structural CSS consumes the properties without knowing the theme
+name.
 
 ## Required tokens
 
-Every design system defines:
+- `colors.paper`
+- `colors.ink`
+- `colors.muted`
+- `colors.line`
+- `colors.accent`
+- `colors.surface`
+- `typography.display`
+- `typography.body`
+- `radius`
+- `spacing.section`
+- `spacing.content`
+- `motion.reveal`
+- `motion.durationMs`
 
-```css
---font-display
---font-body
---font-ui
---color-canvas
---color-surface
---color-text
---color-muted
---color-border
---color-accent
---color-accent-contrast
---color-focus
---space-section
---space-gutter
---content-width
---radius-control
---radius-media
---shadow-elevated
---duration-fast
---duration-base
---ease-standard
-```
+## Ownership
 
-It may also define the optional hooks `--hero-media-overlay`, `--section-divider`, and `--background-texture`.
+Public structure owns section order rendering, responsive mechanics, dialogs,
+forms, focus behavior, and progressive enhancement.
 
-## Structural ownership
+The design document owns color, typography, spacing character, radius, and
+motion timing.
 
-Core owns:
+Content owns media references and copy. CSS must not hard-code production media
+URLs.
 
-- semantic section order and landmarks
-- responsive container mechanics
-- visibility and feature-flag behavior
-- focus states and accessible interaction geometry
-- dialogs, copy/share feedback, and media controls
-
-The design system owns:
-
-- color palette and contrast-preserving combinations
-- typography families, scale character, weights, and tracking
-- spacing character within the permitted responsive bounds
-- radii, borders, shadows, decorative backgrounds, and motion feel
-
-Content owns image and audio file references. A design system may style their frames but must not hard-code asset URLs.
+The admin app owns token editing and live preview, not an independent theme.
 
 ## Replacement check
 
-After swapping a design system:
-
-1. No core JavaScript changes should be required.
-2. All required tokens must resolve.
-3. Focus indication and text contrast must remain visible.
-4. The page must work with every image and audio feature disabled.
-5. Mobile widths from 320px upward must not overflow horizontally.
+1. Saving design tokens requires no API or component rewrite.
+2. All token values validate and resolve to CSS properties.
+3. Text contrast and focus indication remain visible.
+4. The public invitation works without any uploaded image or audio.
+5. The mobile page has no horizontal overflow from 320px upward.
+6. `prefers-reduced-motion` makes all essential content immediately visible.

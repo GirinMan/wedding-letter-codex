@@ -6,6 +6,5 @@ Read AGENTS.md plus the content contract referenced by the build-wedding-invitat
 Preserve names, honorifics, dates, venue details, contacts, and account ownership exactly.
 Never invent private data. Use explicit placeholders for missing values.
 Do not choose colors, imagery, typography, motion, or music.
-Edit only the assigned content or _workspace files and summarize every placeholder left behind.
+Edit only the assigned domain, seed, or documentation files and summarize every placeholder left behind.
 """
-
