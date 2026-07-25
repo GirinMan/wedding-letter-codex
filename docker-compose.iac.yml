@@ -1,7 +1,7 @@
 services:
-  wedding-letter-codex:
-    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/wedding-letter-codex:${WEDDING_LETTER_CODEX_IMAGE_TAG:?WEDDING_LETTER_CODEX_IMAGE_TAG must be set}
-    container_name: wedding-letter-codex
+  wedding-invitation:
+    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/wedding-letter-codex:${WEDDING_INVITATION_IMAGE_TAG:?WEDDING_INVITATION_IMAGE_TAG must be set}
+    container_name: wedding-invitation
     restart: unless-stopped
     networks:
       - proxy-tier

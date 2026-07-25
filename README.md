@@ -72,7 +72,7 @@ curl -fsS http://localhost:8080/healthz
 
 ## 배포
 
-GitHub Actions는 PR에서 테스트·validator·Docker build를 실행한다. `main` 반영 시에는 Harbor에 SHA tag 이미지를 push하고 `deploy-wedding-letter-codex` 이벤트를 IaC 저장소로 보낸다. 필요한 설정은 [SETUP.md](SETUP.md)에 정리되어 있다.
+GitHub Actions는 PR에서 테스트·validator·Docker build를 실행한다. `main` 반영 시에는 Harbor에 SHA tag 이미지를 push하고 `deploy-wedding-invitation` 이벤트를 IaC 저장소로 보낸다. IaC compose의 서비스와 컨테이너 이름은 `wedding-invitation`이며 NPM은 Docker `proxy-tier`에서 `wedding-invitation:80`으로 전달한다. 필요한 설정은 [SETUP.md](SETUP.md)에 정리되어 있다.
 
 ## 출처
 
