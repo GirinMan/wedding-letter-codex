@@ -1,0 +1,142 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: wedding
+      POSTGRES_USER: wedding
+      POSTGRES_PASSWORD: ${LOCAL_POSTGRES_PASSWORD:?Set LOCAL_POSTGRES_PASSWORD in .env}
+    ports:
+      - "54322:5432"
+    volumes:
+      - wedding-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wedding -d wedding"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - data-tier
+
+  minio:
+    image: quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${LOCAL_MINIO_ROOT_USER:?Set LOCAL_MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${LOCAL_MINIO_ROOT_PASSWORD:?Set LOCAL_MINIO_ROOT_PASSWORD in .env}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - wedding-minio-data:/data
+    networks:
+      - data-tier
+
+  minio-init:
+    image: quay.io/minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_USER: ${LOCAL_MINIO_ROOT_USER:?Set LOCAL_MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${LOCAL_MINIO_ROOT_PASSWORD:?Set LOCAL_MINIO_ROOT_PASSWORD in .env}
+      S3_BUCKET: ${WEDDING_S3_BUCKET:-wedding-media}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"; do sleep 1; done
+        mc mb --ignore-existing "local/$${S3_BUCKET}"
+    restart: "no"
+    networks:
+      - data-tier
+
+  wedding-api:
+    build:
+      context: .
+      dockerfile: deploy/docker/api.Dockerfile
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgresql://wedding:${LOCAL_POSTGRES_PASSWORD:?Set LOCAL_POSTGRES_PASSWORD in .env}@postgres:5432/wedding
+      COOKIE_SECURE: "false"
+      ADMIN_ORIGIN: http://localhost:8081
+      PUBLIC_ORIGIN: http://localhost:8080
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${LOCAL_MINIO_ROOT_USER:?Set LOCAL_MINIO_ROOT_USER in .env}
+      S3_SECRET_KEY: ${LOCAL_MINIO_ROOT_PASSWORD:?Set LOCAL_MINIO_ROOT_PASSWORD in .env}
+      S3_BUCKET: ${WEDDING_S3_BUCKET:-wedding-media}
+      S3_FORCE_PATH_STYLE: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    networks:
+      - app-tier
+      - data-tier
+
+  wedding-invitation:
+    build:
+      context: .
+      dockerfile: deploy/docker/web.Dockerfile
+      args:
+        WEB_APP: public-web
+        WEB_WORKSPACE: "@wedding/public-web"
+        VITE_INVITATION_SLUG: ${SEED_INVITATION_SLUG:-our-wedding}
+    ports:
+      - "8080:80"
+    depends_on:
+      wedding-api:
+        condition: service_healthy
+    networks:
+      - app-tier
+
+  wedding-admin:
+    build:
+      context: .
+      dockerfile: deploy/docker/web.Dockerfile
+      args:
+        WEB_APP: admin-web
+        WEB_WORKSPACE: "@wedding/admin-web"
+        VITE_PUBLIC_PREVIEW_URL: http://localhost:8080
+    ports:
+      - "8081:80"
+    depends_on:
+      wedding-api:
+        condition: service_healthy
+    networks:
+      - app-tier
+
+  seed:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: deploy/docker/api.Dockerfile
+    entrypoint: ["node", "/workspace/apps/api/dist/cli/seed.js"]
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://wedding:${LOCAL_POSTGRES_PASSWORD:?Set LOCAL_POSTGRES_PASSWORD in .env}@postgres:5432/wedding
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: ${LOCAL_MINIO_ROOT_USER:?Set LOCAL_MINIO_ROOT_USER in .env}
+      S3_SECRET_KEY: ${LOCAL_MINIO_ROOT_PASSWORD:?Set LOCAL_MINIO_ROOT_PASSWORD in .env}
+      S3_BUCKET: ${WEDDING_S3_BUCKET:-wedding-media}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:?Set SEED_ADMIN_EMAIL in .env}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD in .env}
+      SEED_ADMIN_NAME: ${SEED_ADMIN_NAME:-Invitation admin}
+      SEED_INVITATION_SLUG: ${SEED_INVITATION_SLUG:-our-wedding}
+    depends_on:
+      wedding-api:
+        condition: service_healthy
+    networks:
+      - data-tier
+
+volumes:
+  wedding-postgres-data:
+  wedding-minio-data:
+
+networks:
+  app-tier:
+  data-tier:
