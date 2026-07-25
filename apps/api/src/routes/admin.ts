@@ -10,6 +10,7 @@ import {
 import { getConfig } from "../config.js";
 import { getDatabase } from "../db.js";
 import {
+  createInvitationPreview,
   invitationContentSchema,
   invitationDesignSchema,
 } from "../domain/invitation.js";
@@ -186,6 +187,27 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
       draftContent: invitationContentSchema.parse(invitation.draftContent),
       draftDesign: invitationDesignSchema.parse(invitation.draftDesign),
     };
+  });
+
+  app.get("/api/admin/invitations/:id/preview", async (request, reply) => {
+    const { id } = invitationParams.parse(request.params);
+    const sql = getDatabase();
+    const [invitation] = await sql<{
+      id: string;
+      slug: string;
+      revision: number;
+      draftContent: unknown;
+      draftDesign: unknown;
+    }[]>`
+      SELECT id, slug, revision, draft_content, draft_design
+      FROM invitations
+      WHERE id = ${id}
+      LIMIT 1
+    `;
+    if (!invitation) {
+      return reply.code(404).send({ error: "invitation_not_found" });
+    }
+    return createInvitationPreview(invitation);
   });
 
   app.put("/api/admin/invitations/:id/content", async (request, reply) => {

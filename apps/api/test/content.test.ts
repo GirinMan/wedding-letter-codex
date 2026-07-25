@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  createInvitationPreview,
   invitationContentSchema,
   invitationDesignSchema,
   sampleInvitationContent,
@@ -44,4 +45,20 @@ test("an invalid public account is rejected", () => {
   invalid.accounts[0]!.items[0]!.accountNumber = "";
 
   assert.throws(() => invitationContentSchema.parse(invalid));
+});
+
+test("an authenticated draft preview uses validated draft content and design", () => {
+  const preview = createInvitationPreview({
+    id: "dacbf468-f690-4265-9d43-341aa428024e",
+    slug: "our-wedding",
+    revision: 7,
+    draftContent: sampleInvitationContent,
+    draftDesign: sampleInvitationDesign,
+  });
+
+  assert.equal(preview.id, "dacbf468-f690-4265-9d43-341aa428024e");
+  assert.equal(preview.slug, "our-wedding");
+  assert.equal(preview.revision, 7);
+  assert.equal(preview.content.hero.title, sampleInvitationContent.hero.title);
+  assert.equal(preview.design.colors.paper, sampleInvitationDesign.colors.paper);
 });

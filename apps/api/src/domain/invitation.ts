@@ -182,6 +182,24 @@ export const invitationDesignSchema = z.object({
 export type InvitationContent = z.infer<typeof invitationContentSchema>;
 export type InvitationDesign = z.infer<typeof invitationDesignSchema>;
 
+export function createInvitationPreview(input: {
+  id: string;
+  slug: string;
+  revision: number;
+  draftContent: unknown;
+  draftDesign: unknown;
+}) {
+  return {
+    id: z.string().uuid().parse(input.id),
+    slug: z.string().regex(/^[a-z0-9-]+$/).parse(input.slug),
+    revision: z.number().int().nonnegative().parse(input.revision),
+    publishedAt: null,
+    preview: true as const,
+    content: invitationContentSchema.parse(input.draftContent),
+    design: invitationDesignSchema.parse(input.draftDesign),
+  };
+}
+
 export const sampleInvitationContent: InvitationContent = {
   locale: "ko-KR",
   couple: {
