@@ -7,7 +7,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 1100px; min-height: 100vh; }
+body { margin: 0; min-width: 900px; min-height: 100vh; }
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid #d8978e; outline-offset: 2px; }
@@ -235,6 +235,11 @@ td { padding: 12px 10px; border-bottom: 1px solid #ebe7e1; }
   .workspace__body { grid-template-columns: minmax(600px, 1fr) 350px; }
   .phone-frame { width: 350px; }
   .metric-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 1320px) {
+  .workspace__body { grid-template-columns: minmax(0, 1fr); }
+  .preview-column { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
