@@ -20,8 +20,8 @@ import {
   verifyPassword,
 } from "../security/credentials.js";
 import {
-  createDownloadUrl,
   deleteObject,
+  getObject,
   putObject,
 } from "../storage.js";
 
@@ -181,7 +181,11 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     if (!invitation) {
       return reply.code(404).send({ error: "invitation_not_found" });
     }
-    return invitation;
+    return {
+      ...invitation,
+      draftContent: invitationContentSchema.parse(invitation.draftContent),
+      draftDesign: invitationDesignSchema.parse(invitation.draftDesign),
+    };
   });
 
   app.put("/api/admin/invitations/:id/content", async (request, reply) => {
@@ -417,7 +421,13 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     if (!asset) {
       return reply.code(404).send({ error: "media_not_found" });
     }
-    return reply.redirect(await createDownloadUrl(asset.objectKey));
+    const object = await getObject(asset.objectKey);
+    reply.type(object.contentType);
+    reply.header("Cache-Control", "private, max-age=300");
+    if (object.contentLength !== undefined) {
+      reply.header("Content-Length", String(object.contentLength));
+    }
+    return reply.send(object.body);
   });
 
   app.get("/api/admin/invitations/:id/rsvps", async (request, reply) => {
@@ -528,7 +538,13 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     if (!upload) {
       return reply.code(404).send({ error: "guest_upload_not_found" });
     }
-    return reply.redirect(await createDownloadUrl(upload.objectKey));
+    const object = await getObject(upload.objectKey);
+    reply.type(object.contentType);
+    reply.header("Cache-Control", "private, max-age=300");
+    if (object.contentLength !== undefined) {
+      reply.header("Content-Length", String(object.contentLength));
+    }
+    return reply.send(object.body);
   });
 
   app.post("/api/admin/users/password", async (request, reply) => {

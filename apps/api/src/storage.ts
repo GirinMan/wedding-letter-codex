@@ -5,7 +5,6 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { Readable } from "node:stream";
 
 import { getConfig } from "./config.js";
@@ -65,14 +64,6 @@ export async function deleteObject(key: string): Promise<void> {
     Bucket: getConfig().S3_BUCKET,
     Key: key,
   }));
-}
-
-export async function createDownloadUrl(key: string, expiresIn = 300): Promise<string> {
-  return getSignedUrl(
-    getClient(),
-    new GetObjectCommand({ Bucket: getConfig().S3_BUCKET, Key: key }),
-    { expiresIn },
-  );
 }
 
 export async function checkStorage(): Promise<void> {
