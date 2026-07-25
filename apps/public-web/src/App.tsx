@@ -12,6 +12,7 @@ import {
   deleteGuestbookEntry,
   loadGuestbook,
   loadInvitation,
+  loadInvitationPreview,
   submitRsvp,
   uploadGuestPhoto,
 } from "./api";
@@ -125,11 +126,13 @@ function Calendar({ startsAt }: { startsAt: string }) {
 function PlaceholderBand({
   label,
   media,
+  preview,
 }: {
   label: string;
   media?: MediaReference;
+  preview: boolean;
 }) {
-  return media ? <Media media={media} className="placeholder-band" /> : (
+  return media ? <Media media={media} className="placeholder-band" preview={preview} /> : (
     <div className="placeholder-band media--placeholder" role="img" aria-label={label}>
       <span>{label}</span>
     </div>
@@ -137,6 +140,9 @@ function PlaceholderBand({
 }
 
 export function App() {
+  const previewInvitationId = new URLSearchParams(window.location.search).get("invitationId");
+  const isPreview = window.location.pathname.startsWith("/preview/")
+    && Boolean(previewInvitationId);
   const [content, setContent] = useState<InvitationContent | null>(null);
   const [design, setDesign] = useState<InvitationDesign | null>(null);
   const [slug, setSlug] = useState(defaultSlug);
@@ -150,23 +156,76 @@ export function App() {
   const [loadingError, setLoadingError] = useState("");
   const [musicPlaying, setMusicPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const previewPositionedRef = useRef(false);
 
   useEffect(() => {
+    if (!isPreview) return;
+    window.history.scrollRestoration = "manual";
+    return () => {
+      window.history.scrollRestoration = "auto";
+    };
+  }, [isPreview]);
+
+  useEffect(() => {
+    if (!isPreview || !content || previewPositionedRef.current) return;
+    const firstFrame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "auto" });
+        previewPositionedRef.current = true;
+      });
+    });
+    return () => window.cancelAnimationFrame(firstFrame);
+  }, [content, isPreview]);
+
+  useEffect(() => {
+    if (isPreview) return;
     const pathSlug = window.location.pathname.split("/").filter(Boolean)[0];
     if (pathSlug && pathSlug !== "index.html") {
       setSlug(pathSlug);
     }
-  }, []);
+  }, [isPreview]);
 
   useEffect(() => {
-    void loadInvitation(slug)
+    const invitationRequest = isPreview && previewInvitationId
+      ? loadInvitationPreview(previewInvitationId)
+      : loadInvitation(slug);
+    void invitationRequest
       .then((result) => {
         setContent(result.content);
         setDesign(result.design);
         document.title = `${result.content.couple.partnerOne.name} · ${result.content.couple.partnerTwo.name} 결혼합니다`;
       })
       .catch(() => setLoadingError("초대장을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."));
-  }, [slug]);
+  }, [isPreview, previewInvitationId, slug]);
+
+  useEffect(() => {
+    if (!isPreview || !previewInvitationId) return;
+    const receivePreview = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const message = event.data as {
+        type?: string;
+        invitationId?: string;
+        content?: InvitationContent;
+        design?: InvitationDesign;
+      };
+      if (
+        message.type !== "wedding-draft-preview"
+        || message.invitationId !== previewInvitationId
+        || !message.content
+        || !message.design
+      ) {
+        return;
+      }
+      setContent(message.content);
+      setDesign(message.design);
+    };
+    window.addEventListener("message", receivePreview);
+    window.parent.postMessage({
+      type: "wedding-draft-preview-ready",
+      invitationId: previewInvitationId,
+    }, window.location.origin);
+    return () => window.removeEventListener("message", receivePreview);
+  }, [isPreview, previewInvitationId]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -183,10 +242,10 @@ export function App() {
   }, [content]);
 
   useEffect(() => {
-    if (dialog === "guestbook") {
+    if (dialog === "guestbook" && !isPreview) {
       void loadGuestbook(slug).then(setGuestbook).catch(() => setNotice("방명록을 불러오지 못했습니다."));
     }
-  }, [dialog, slug]);
+  }, [dialog, isPreview, slug]);
 
   const countdown = useCountdown(content?.event.startsAt ?? new Date().toISOString());
   const enabledSections = useMemo(
@@ -224,6 +283,10 @@ export function App() {
     : content.gallery.items.slice(0, content.gallery.initialCount);
 
   const share = async () => {
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 공유하지 않습니다.");
+      return;
+    }
     const shareData = {
       title: document.title,
       text: content.hero.subtitle,
@@ -251,6 +314,10 @@ export function App() {
 
   const handleRsvp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 참석 의사를 제출하지 않습니다.");
+      return;
+    }
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     try {
@@ -275,6 +342,10 @@ export function App() {
 
   const handleGuestbook = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 방명록을 등록하지 않습니다.");
+      return;
+    }
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     try {
@@ -294,6 +365,10 @@ export function App() {
 
   const handleGuestbookDelete = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 방명록을 삭제하지 않습니다.");
+      return;
+    }
     if (!guestbookDeleteTarget) return;
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
@@ -315,6 +390,10 @@ export function App() {
 
   const handleGuestUpload = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 사진을 업로드하지 않습니다.");
+      return;
+    }
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     try {
@@ -355,7 +434,7 @@ export function App() {
           <section className="section invitation-section" data-reveal>
             <SectionHeading eyebrow="INVITATION" title={content.greeting.title} />
             <p className="multiline">{content.greeting.body}</p>
-            <Media media={content.greeting.image} className="greeting-photo" />
+            <Media media={content.greeting.image} className="greeting-photo" preview={isPreview} />
             <div className="couple-line">
               <span>{content.couple.partnerOne.label}</span>
               <strong>{content.couple.partnerOne.name}</strong>
@@ -379,7 +458,7 @@ export function App() {
             <div className="interview-grid">
               {content.interview.slice(0, 2).map((entry) => (
                 <article className="interview-card" key={entry.id}>
-                  <Media media={entry.image} className="portrait-placeholder" />
+                  <Media media={entry.image} className="portrait-placeholder" preview={isPreview} />
                   <h3>{entry.question}</h3>
                   <p>{entry.answer}</p>
                 </article>
@@ -414,7 +493,7 @@ export function App() {
           <section className="section section--timeline" data-reveal>
             <SectionHeading eyebrow="SINCE THE FIRST DAY" title="Our story" />
             <div className="timeline-card">
-              <Media media={timeline.image} className="timeline-card__image" />
+              <Media media={timeline.image} className="timeline-card__image" preview={isPreview} />
               <p className="timeline-card__date">{timeline.date}</p>
               <h3>{timeline.title}</h3>
               <p>{timeline.body}</p>
@@ -515,7 +594,7 @@ export function App() {
           <section className="section gallery-section" data-reveal>
             <SectionHeading eyebrow="GALLERY" title="웨딩 갤러리" />
             <div className="gallery-grid">
-              {visibleGallery.map((item) => <Media media={item} key={item.id} />)}
+              {visibleGallery.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
             </div>
             {content.gallery.items.length > content.gallery.initialCount ? (
               <button className="text-button" type="button" onClick={() => setGalleryExpanded((value) => !value)}>
@@ -545,7 +624,7 @@ export function App() {
 
         {enabledSections.has("middleImage") ? (
           <section className="middle-image" data-reveal>
-            <PlaceholderBand label="WEDDING CEREMONY" media={content.middleImage} />
+            <PlaceholderBand label="WEDDING CEREMONY" media={content.middleImage} preview={isPreview} />
             <div>
               <p>WEDDING CEREMONY</p>
               <strong>D − {countdown.days}</strong>
@@ -621,7 +700,7 @@ export function App() {
 
         {enabledSections.has("closing") ? (
           <section className="closing" data-reveal>
-            <Media media={content.closing.image} className="closing__image" />
+            <Media media={content.closing.image} className="closing__image" preview={isPreview} />
             <div className="closing__copy">
               <p className="eyebrow">{content.closing.title}</p>
               <p className="multiline">{content.closing.body}</p>
@@ -637,7 +716,9 @@ export function App() {
         <>
           <audio
             ref={audioRef}
-            src={`/api/media/${content.music.assetId}/content`}
+            src={isPreview
+              ? `/api/admin/media/${content.music.assetId}/content`
+              : `/api/media/${content.music.assetId}/content`}
             onEnded={() => setMusicPlaying(false)}
           />
           <button

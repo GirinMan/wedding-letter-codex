@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { api } from "./api";
 import type {
@@ -196,6 +196,8 @@ export function App() {
   const [uploads, setUploads] = useState<GuestUpload[]>([]);
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
+  const [previewSession] = useState(() => crypto.randomUUID());
+  const previewFrameRef = useRef<HTMLIFrameElement>(null);
 
   const loadWorkspace = useCallback(async () => {
     const { invitations } = await api.invitations();
@@ -222,6 +224,35 @@ export function App() {
     if (view === "guestbook" || view === "overview") void api.guestbook(invitation.id).then(({ entries }) => setGuestbook(entries));
     if (view === "uploads" || view === "overview") void api.guestUploads(invitation.id).then(({ uploads }) => setUploads(uploads));
   }, [invitation?.id, view]);
+
+  const syncDraftPreview = useCallback(() => {
+    if (!invitation) return;
+    previewFrameRef.current?.contentWindow?.postMessage({
+      type: "wedding-draft-preview",
+      invitationId: invitation.id,
+      content: invitation.draftContent,
+      design: invitation.draftDesign,
+    }, window.location.origin);
+  }, [invitation]);
+
+  useEffect(() => {
+    syncDraftPreview();
+  }, [syncDraftPreview]);
+
+  useEffect(() => {
+    const receivePreviewReady = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const message = event.data as { type?: string; invitationId?: string };
+      if (
+        message.type === "wedding-draft-preview-ready"
+        && message.invitationId === invitation?.id
+      ) {
+        syncDraftPreview();
+      }
+    };
+    window.addEventListener("message", receivePreviewReady);
+    return () => window.removeEventListener("message", receivePreviewReady);
+  }, [invitation?.id, syncDraftPreview]);
 
   if (checkingSession) return <main className="loading">관리자 환경을 확인하고 있습니다…</main>;
   if (!user) return <Login onLogin={(loggedInUser) => { setUser(loggedInUser); void loadWorkspace(); }} />;
@@ -276,7 +307,8 @@ export function App() {
     return <main className="loading">관리할 초대장이 없습니다. 먼저 seed를 실행해 주세요.</main>;
   }
 
-  const previewUrl = `${previewBase.replace(/\/$/, "")}/${invitation.slug}`;
+  const publicPreviewUrl = `${previewBase.replace(/\/$/, "")}/${invitation.slug}`;
+  const draftPreviewUrl = `/preview/?invitationId=${encodeURIComponent(invitation.id)}&session=${previewSession}`;
   const pendingUploads = uploads.filter((upload) => upload.state === "pending").length;
   const attending = rsvps.filter((rsvp) => rsvp.attending).length;
   const connectedAssetIds = collectConnectedAssetIds(invitation.draftContent);
@@ -312,7 +344,7 @@ export function App() {
             <h1>{navigation.find((item) => item.id === view)?.label}</h1>
           </div>
           <div className="topbar__actions">
-            <a className="button button--ghost" href={previewUrl} target="_blank" rel="noreferrer">새 창 미리보기 ↗</a>
+            <a className="button button--ghost" href={publicPreviewUrl} target="_blank" rel="noreferrer">공개본 새 창 ↗</a>
             <button className="button button--primary" type="button" onClick={() => setView("publish")}>발행하기</button>
           </div>
         </header>
@@ -694,8 +726,15 @@ export function App() {
           </div>
 
           <aside className="preview-column">
-            <div className="preview-header"><div><span className="status-dot" />실시간 미리보기</div><span>390 × 844</span></div>
-            <div className="phone-frame"><iframe title="청첩장 미리보기" src={previewUrl} /></div>
+            <div className="preview-header"><div><span className="status-dot" />초안 실시간 미리보기</div><span>390 × 844</span></div>
+            <div className="phone-frame">
+              <iframe
+                ref={previewFrameRef}
+                title="청첩장 초안 미리보기"
+                src={draftPreviewUrl}
+                onLoad={syncDraftPreview}
+              />
+            </div>
           </aside>
         </div>
       </main>

@@ -88,9 +88,11 @@ export interface InvitationDesign {
 }
 
 export interface InvitationResponse {
+  id?: string;
   slug: string;
   revision: number;
-  publishedAt: string;
+  publishedAt: string | null;
+  preview?: boolean;
   content: InvitationContent;
   design: InvitationDesign;
 }

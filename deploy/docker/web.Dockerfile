@@ -15,8 +15,14 @@ COPY apps/public-web/package.json apps/public-web/package.json
 COPY apps/admin-web/package.json apps/admin-web/package.json
 RUN npm ci
 
-COPY apps/${WEB_APP} apps/${WEB_APP}
+COPY apps/public-web apps/public-web
+COPY apps/admin-web apps/admin-web
 RUN npm run build --workspace ${WEB_WORKSPACE}
+RUN if [ "${WEB_APP}" = "admin-web" ]; then \
+      npm run build --workspace @wedding/public-web -- \
+        --base /preview/ \
+        --outDir ../admin-web/dist/preview; \
+    fi
 
 FROM nginx:1.27-alpine AS runtime
 
