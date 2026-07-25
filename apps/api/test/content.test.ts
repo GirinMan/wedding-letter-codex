@@ -14,7 +14,21 @@ test("sample invitation content satisfies the public contract", () => {
   assert.equal(parsed.locale, "ko-KR");
   assert.ok(parsed.sections.length >= 10);
   assert.ok(parsed.timeline.length >= 3);
+  assert.equal(parsed.middleImage.assetId, null);
+  assert.equal(parsed.interview[0]?.image.assetId, null);
   assert.equal(new Set(parsed.sections.map((section) => section.id)).size, parsed.sections.length);
+});
+
+test("legacy invitation documents receive defaults for new media slots", () => {
+  const legacy = structuredClone(sampleInvitationContent) as unknown as Record<string, unknown>;
+  delete legacy.middleImage;
+  const interview = legacy.interview as Array<Record<string, unknown>>;
+  interview.forEach((entry) => delete entry.image);
+
+  const parsed = invitationContentSchema.parse(legacy);
+
+  assert.equal(parsed.middleImage.placeholder, "middle");
+  assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
 });
 
 test("sample design satisfies the replaceable token contract", () => {

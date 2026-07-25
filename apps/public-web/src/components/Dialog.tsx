@@ -1,4 +1,4 @@
-import { useEffect, useRef, type PropsWithChildren } from "react";
+import { useEffect, useId, useRef, type PropsWithChildren } from "react";
 
 export function Dialog({
   open,
@@ -7,6 +7,7 @@ export function Dialog({
   children,
 }: PropsWithChildren<{ open: boolean; title: string; onClose: () => void }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -19,15 +20,17 @@ export function Dialog({
     <dialog
       className="dialog"
       ref={dialogRef}
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
       }}
-      onClose={onClose}
+      onClose={() => {
+        if (open) onClose();
+      }}
     >
       <div className="dialog__header">
-        <h2 id="dialog-title">{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         <button className="icon-button" type="button" onClick={onClose} aria-label="닫기">
           ×
         </button>

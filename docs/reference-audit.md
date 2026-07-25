@@ -35,9 +35,9 @@ actions provide quick navigation and sharing.
 | Calendar | Selected wedding day and live countdown | Timezone-aware countdown |
 | Timeline | Inline five-item carousel with previous/next controls | DB-managed, keyboard-operable carousel |
 | RSVP | Attendance, side, phone, party size, meal, bus, short note, privacy consent | Persisted submission and admin export |
-| Map | Embedded map, sketch-map dialog, external navigation apps | Optional provider adapter and universal external links |
-| Gallery | Two-column square grid; "show more" expands the list | DB/MinIO media with reorder and publish state |
-| Guestbook | Public list, name/message/password write flow, password delete flow | Moderated list and password-based author delete |
+| Map | Embedded map, sketch-map dialog, external navigation apps | OpenStreetMap embed plus universal external links; provider adapter remains optional |
+| Gallery | Two-column square grid; "show more" expands the list | DB/MinIO media slots with initial-limit control and publish state |
+| Guestbook | Public list, name/message/password write flow, password delete flow | Moderated list and verified password-based author delete |
 | Accounts | Partner tabs, swipeable account cards, copy and payment deep links | Encrypted-at-rest deployment option; masked admin list |
 | Guest uploads | Disabled until configured time, then upload flow | MinIO upload with moderation and event-time gate |
 | Music | Persistent toggle; reference attempts autoplay | User-initiated playback only |
@@ -105,16 +105,18 @@ the reference service's private API.
 - `GET /api/admin/invitations/:id`
 - `PUT /api/admin/invitations/:id/content`
 - `PUT /api/admin/invitations/:id/design`
-- `PUT /api/admin/invitations/:id/publishing`
+- `POST /api/admin/invitations/:id/publish`
 - `GET /api/admin/invitations/:id/media`
 - `POST /api/admin/invitations/:id/media`
 - `PATCH /api/admin/invitations/:id/media/:assetId`
 - `DELETE /api/admin/invitations/:id/media/:assetId`
+- `GET /api/admin/media/:assetId/content`
 - `GET /api/admin/invitations/:id/rsvps`
 - `GET /api/admin/invitations/:id/guestbook`
 - `PATCH /api/admin/invitations/:id/guestbook/:entryId`
 - `GET /api/admin/invitations/:id/guest-uploads`
 - `PATCH /api/admin/invitations/:id/guest-uploads/:uploadId`
+- `GET /api/admin/guest-uploads/:uploadId/content`
 
 ## Optional external integrations
 
@@ -136,4 +138,3 @@ the reference service's private API.
   remains functional without third-party keys.
 - Administrative actions require an authenticated session even though the
   production admin hostname is also restricted to Tailscale.
-

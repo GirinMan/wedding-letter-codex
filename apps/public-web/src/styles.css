@@ -516,6 +516,15 @@ textarea:focus-visible {
   background: var(--surface);
 }
 
+.map-embed {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.35;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
 .map-placeholder__pin {
   color: var(--accent);
 }
@@ -1036,6 +1045,23 @@ textarea:focus-visible {
 .guestbook-list time {
   color: var(--muted);
   font-size: .62rem;
+}
+
+.guestbook-list__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.guestbook-list__meta button {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .6rem;
+  cursor: pointer;
 }
 
 .guestbook-list p {

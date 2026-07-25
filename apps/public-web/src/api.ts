@@ -38,6 +38,17 @@ export function createGuestbookEntry(
   });
 }
 
+export function deleteGuestbookEntry(
+  slug: string,
+  entryId: string,
+  password: string,
+): Promise<void> {
+  return request(`/api/public/invitations/${slug}/guestbook/${entryId}`, {
+    method: "DELETE",
+    body: JSON.stringify({ password }),
+  });
+}
+
 export function submitRsvp(slug: string, body: Record<string, unknown>): Promise<void> {
   return request(`/api/public/invitations/${slug}/rsvps`, {
     method: "POST",

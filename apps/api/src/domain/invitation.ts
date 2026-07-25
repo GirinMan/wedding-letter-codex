@@ -74,6 +74,11 @@ export const invitationContentSchema = z.object({
     id: z.string().min(1).max(80),
     question: z.string().min(1).max(300),
     answer: z.string().min(1).max(2_000),
+    image: mediaReferenceSchema.default({
+      assetId: null,
+      alt: "",
+      placeholder: "interview",
+    }),
   })).max(12),
   timeline: z.array(z.object({
     id: z.string().min(1).max(80),
@@ -121,6 +126,11 @@ export const invitationContentSchema = z.object({
     enabled: z.boolean(),
     assetId: z.string().uuid().nullable().default(null),
     title: z.string().max(160),
+  }),
+  middleImage: mediaReferenceSchema.default({
+    assetId: null,
+    alt: "",
+    placeholder: "middle",
   }),
   closing: z.object({
     title: z.string().max(160),
@@ -208,8 +218,18 @@ export const sampleInvitationContent: InvitationContent = {
     ],
   },
   interview: [
-    { id: "first-impression", question: "서로의 첫인상은 어땠나요?", answer: "두 사람만의 답변을 입력해 주세요." },
-    { id: "promise", question: "어떤 부부가 되고 싶나요?", answer: "두 사람만의 약속을 입력해 주세요." },
+    {
+      id: "first-impression",
+      question: "서로의 첫인상은 어땠나요?",
+      answer: "두 사람만의 답변을 입력해 주세요.",
+      image: { assetId: null, alt: "신랑 인터뷰 사진", placeholder: "partner-one" },
+    },
+    {
+      id: "promise",
+      question: "어떤 부부가 되고 싶나요?",
+      answer: "두 사람만의 약속을 입력해 주세요.",
+      image: { assetId: null, alt: "신부 인터뷰 사진", placeholder: "partner-two" },
+    },
   ],
   timeline: [
     { id: "met", date: "2024. 04", title: "처음 만난 날", body: "우리의 이야기를 입력해 주세요.", image: { assetId: null, alt: "", placeholder: "story-1" } },
@@ -256,6 +276,11 @@ export const sampleInvitationContent: InvitationContent = {
     description: "예식 당일, 두 사람의 행복한 순간을 담아 올려 주세요.",
   },
   music: { enabled: false, assetId: null, title: "" },
+  middleImage: {
+    assetId: null,
+    alt: "함께 걷는 두 사람",
+    placeholder: "middle",
+  },
   closing: {
     title: "THANK YOU",
     body: "귀한 시간 내어 함께해 주셔서 진심으로 감사합니다.",
