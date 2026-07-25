@@ -1,44 +1,17 @@
-# ============================================================
-# IaC-side docker-compose (serengeti-iac 에 복사해서 사용)
-# ============================================================
-# 이 파일을 serengeti-iac/docker/layer3-apps/__APP_NAME__/docker-compose.yml
-# 로 복사하고 플레이스홀더를 교체한다.
-#
-# 사용 전 아래 플레이스홀더를 교체:
-#   __APP_NAME__       → 컨테이너/서비스 이름 (e.g. my-service)
-#   __IMAGE_TAG_VAR__  → .env 태그 변수명 (e.g. MY_SERVICE_IMAGE_TAG)
-#   __APP_PORT__       → 앱이 리슨하는 포트 (e.g. 8000, 80, 3000)
-#   __HEALTH_PATH__    → 헬스체크 경로 (e.g. /health, /)
-#
-# .env 에 추가할 변수:
-#   __IMAGE_TAG_VAR__=<git-sha>
-# ============================================================
-
 services:
-  __APP_NAME__:
-    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/__APP_NAME__:${__IMAGE_TAG_VAR__:?__IMAGE_TAG_VAR__ must be set}
-    container_name: __APP_NAME__
+  wedding-letter-codex:
+    image: ${CF_HARBOR_HOST:?CF_HARBOR_HOST must be set}/girinman/wedding-letter-codex:${WEDDING_LETTER_CODEX_IMAGE_TAG:?WEDDING_LETTER_CODEX_IMAGE_TAG must be set}
+    container_name: wedding-letter-codex
     restart: unless-stopped
     networks:
       - proxy-tier
-      # - data-tier  # DB/Redis 등 data-tier 접근이 필요하면 주석 해제
-    # environment:
-    #   DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/__APP_NAME__"
-    #   REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
-    # depends_on:
-    #   some-service:
-    #     condition: service_healthy
     healthcheck:
-      # NOTE: alpine 기반 이미지에서 localhost 는 IPv6(::1) 로 해석되어
-      #       connection refused 가 발생할 수 있음. 반드시 127.0.0.1 사용.
-      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:__APP_PORT____HEALTH_PATH__ > /dev/null || wget -qO- http://127.0.0.1:__APP_PORT____HEALTH_PATH__ > /dev/null"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/healthz >/dev/null"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 15s
+      start_period: 5s
 
 networks:
   proxy-tier:
     external: true
-  # data-tier:
-  #   external: true
