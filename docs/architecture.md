@@ -97,6 +97,9 @@ design-system boundary.
 - MinIO credentials and database URLs are runtime environment variables.
 - Uploaded objects are private; the API authorizes and streams public and admin
   previews. MinIO's internal hostname is never redirected to a browser.
+- The draft preview renderer is served from the admin origin. Its initial
+  document and media requests use authenticated admin endpoints, so an
+  unpublished draft is never exposed through the public invitation host.
 - SVG and active HTML uploads are rejected in the first release.
 - Public invitation responses omit private admin metadata and moderation state.
 
@@ -117,6 +120,14 @@ Admin edits increment a draft revision. Publishing copies the validated draft
 document and design tokens into the public revision in one transaction. Public
 requests use the published revision only, preventing partial edits from leaking
 to guests.
+
+The admin image also contains the public renderer at `/preview/`. It loads a
+server-validated draft from `GET /api/admin/invitations/:id/preview`, then
+receives unsaved content and design changes from the same-origin admin parent
+with an invitation-scoped `postMessage`. The embedded preview has a unique URL
+per admin session to prevent browser scroll restoration from reopening it at a
+stale position. Preview submissions and sharing side effects are disabled;
+the separately opened public URL continues to show only the published revision.
 
 Initial implementation may expose save-and-publish as one explicit action while
 retaining draft/published fields in the schema.

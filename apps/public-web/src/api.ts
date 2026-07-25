@@ -21,6 +21,12 @@ export function loadInvitation(slug: string): Promise<InvitationResponse> {
   return request(`/api/public/invitations/${slug}`);
 }
 
+export function loadInvitationPreview(invitationId: string): Promise<InvitationResponse> {
+  return request(`/api/admin/invitations/${invitationId}/preview`, {
+    credentials: "include",
+  });
+}
+
 export async function loadGuestbook(slug: string): Promise<GuestbookEntry[]> {
   const response = await request<{ entries: GuestbookEntry[] }>(
     `/api/public/invitations/${slug}/guestbook?limit=20`,
