@@ -79,6 +79,8 @@ The JSONB document is validated at every write and contains:
 - ordered section configuration and feature flags
 - greeting, interview, timeline, RSVP copy, notices, and closing copy
 - gallery and decorative media references
+- assignable greeting, middle, closing, interview, timeline, gallery, and music
+  media slots
 - account groups and optional payment deep links
 - music and guest-upload availability settings
 
@@ -93,7 +95,8 @@ design-system boundary.
 - Public write endpoints are schema-limited and rate-limited.
 - Guestbook author passwords are scrypt verifiers, never plaintext.
 - MinIO credentials and database URLs are runtime environment variables.
-- Uploaded objects are private; the API authorizes and streams public content.
+- Uploaded objects are private; the API authorizes and streams public and admin
+  previews. MinIO's internal hostname is never redirected to a browser.
 - SVG and active HTML uploads are rejected in the first release.
 - Public invitation responses omit private admin metadata and moderation state.
 
@@ -118,3 +121,7 @@ to guests.
 Initial implementation may expose save-and-publish as one explicit action while
 retaining draft/published fields in the schema.
 
+The admin workspace edits every content group independently, connects uploaded
+assets to typed media slots, and publishes only after the draft passes the same
+schema used by public reads. Assets that are still connected to a draft slot
+cannot be deleted from the UI.
