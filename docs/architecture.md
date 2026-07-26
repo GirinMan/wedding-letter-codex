@@ -5,31 +5,27 @@
 - Keep invitation content, visual tokens, media, and publishing state editable
   without rebuilding the application image.
 - Use one backend for the public invitation and the private admin interface.
-- Use PostgreSQL as the production source of truth and MinIO for all uploaded
-  media.
-- Preserve the existing public routing target `wedding-invitation:80`.
-- Expose the admin web container only through the Serengeti proxy network and a
-  Tailscale-resolved hostname.
+- Use a PostgreSQL-compatible relational database as the production source of
+  truth and S3-compatible storage for uploaded media.
+- Keep public and administrative traffic separate at the deployment boundary.
+- Require both application authentication and a private-network access boundary
+  for the admin workspace.
 
 ## Runtime topology
 
 ```mermaid
 flowchart LR
-  Visitor["Public visitor"] --> CF["Cloudflare Tunnel"]
-  CF --> NPM["Nginx Proxy Manager"]
-  TailUser["Tailscale admin"] --> TailDNS["Tailscale DNS"]
-  TailDNS --> NPM
-  NPM --> Public["wedding-invitation:80"]
-  NPM --> Admin["wedding-admin:80"]
-  Public --> API["wedding-api:3000"]
+  Visitor["Public visitor"] --> Public["Public invitation web"]
+  Administrator["Administrator"] --> Boundary["Private access boundary"]
+  Boundary --> Admin["Admin web"]
+  Public --> API["Shared API"]
   Admin --> API
-  API --> PG["PostgreSQL"]
-  API --> MinIO["MinIO / S3 API"]
+  API --> PG["PostgreSQL-compatible database"]
+  API --> Store["S3-compatible object storage"]
 ```
 
-The Cloudflare published application routes contain only
-`wedding.giraffe.ai.kr`. `wedding-admin.giraffe.ai.kr` resolves to the Serengeti
-Tailscale address and is not added to Cloudflare Tunnel.
+Provider-specific routing, hostnames, and deployment topology belong in private
+operations documentation rather than this public repository.
 
 ## Repository layout
 
@@ -45,8 +41,7 @@ docs/
   concepts/     Approved visual concept
   architecture.md
   reference-audit.md
-docker-compose.yml      Local PostgreSQL + MinIO + application stack
-docker-compose.iac.yml  Production service contract consumed by Serengeti IaC
+docker-compose.yml      Local PostgreSQL + S3-compatible storage + app stack
 ```
 
 ## Data model
@@ -58,7 +53,7 @@ records use normalized tables.
 | Table | Responsibility |
 |---|---|
 | `invitations` | Slug, status, timezone, content document, design tokens, revision |
-| `media_assets` | MinIO object key, metadata, purpose, ordering, publish state |
+| `media_assets` | Object key, metadata, purpose, ordering, publish state |
 | `rsvps` | Attendance response and optional logistics selections |
 | `guestbook_entries` | Public message, password hash, moderation state |
 | `guest_uploads` | Event photo object, uploader note, moderation state |
@@ -103,9 +98,9 @@ while all newly saved content uses the structured fields.
 - Password verifiers use Node's built-in `scrypt` with a unique salt.
 - Public write endpoints are schema-limited and rate-limited.
 - Guestbook author passwords are scrypt verifiers, never plaintext.
-- MinIO credentials and database URLs are runtime environment variables.
+- Object-storage credentials and database URLs are runtime environment variables.
 - Uploaded objects are private; the API authorizes and streams public and admin
-  previews. MinIO's internal hostname is never redirected to a browser.
+  previews. The storage endpoint is never redirected to a browser.
 - The draft preview renderer is served from the admin origin. Its initial
   document and media requests use authenticated admin endpoints, so an
   unpublished draft is never exposed through the public invitation host.
@@ -114,14 +109,14 @@ while all newly saved content uses the structured fields.
 
 ## Local development
 
-Docker Compose supplies PostgreSQL, MinIO, and a bucket initializer. The public
-and admin Vite development servers use the same API container. A local seed
-command creates a generic invitation and one admin user using values from
-`.env`.
+Docker Compose supplies PostgreSQL, S3-compatible storage, and a bucket
+initializer. The public and admin Vite development servers use the same API
+container. A local seed command creates a generic invitation and one admin user
+using values from `.env`.
 
-The production compose does not create PostgreSQL or MinIO. It connects the API
-to Serengeti-managed services and uses Docker secrets/environment injection
-defined in the private IaC repository.
+Production may connect the API to managed PostgreSQL and S3-compatible services
+with runtime secrets/environment injection. Provider and network configuration
+remain private operational concerns.
 
 ## Publishing model
 

@@ -1,105 +1,37 @@
 # Setup and deployment
 
 이 저장소는 public이다. 실제 이름, 연락처, 계좌정보, 사진, 음악,
-데이터베이스 비밀번호, MinIO key, 토큰을 commit하지 않는다.
+데이터베이스 비밀번호, 객체 스토리지 key, 토큰을 commit하지 않는다.
 
-## GitHub Actions
+## Local development
 
-Repository Settings → Secrets and variables → Actions에 설정한다.
+로컬 개발은 `.env.example`을 복사한 `.env`와 `docker compose`를 사용한다.
+Compose는 PostgreSQL과 S3 호환 객체 스토리지를 제공하며, seed는 일반
+placeholder 초대장과 관리자 계정만 만든다.
 
-Secrets:
+## CI/CD contract
 
-| 이름 | 용도 |
+배포 자동화는 API, public web, admin web의 세 이미지를 동일 Git SHA로
+빌드하고, 모두 성공했을 때만 운영 배포 절차를 시작해야 한다. CI에는
+다음 범주의 secret만 제공한다.
+
+| 범주 | 용도 |
 |---|---|
-| `HARBOR_ROBOT_USER` | Harbor `girinman` project push robot |
-| `HARBOR_ROBOT_TOKEN` | robot token |
-| `IAC_DISPATCH_TOKEN` | private `GirinMan/serengeti-iac` repository dispatch용 fine-grained PAT |
+| Container registry credentials | 앱 이미지 push |
+| Deployment dispatcher credential | 비공개 운영 자동화 트리거 |
+| Runtime database credential | PostgreSQL 호환 데이터베이스 연결 |
+| Runtime object-storage credential | S3 호환 버킷 접근 |
+| Admin bootstrap credential | 최초 관리자 계정 생성 또는 갱신 |
 
-Variable:
+각 credential은 최소 권한, 단일 목적, 회전 가능한 형태로 발급한다. 실제
+이름·보관 위치·권한 범위·레지스트리 주소·네트워크 토폴로지는 비공개 운영
+문서에서만 관리한다.
 
-| 이름 | 용도 |
-|---|---|
-| `CF_DOMAIN` | `harbor.<domain>`, `wedding.<domain>` image/build URL 구성 |
+## Production requirements
 
-`IAC_DISPATCH_TOKEN`은 `serengeti-iac` 한 저장소만 대상으로 하고
-`Contents: Read and write` 권한을 둔다. 앱 저장소의 기본
-`GITHUB_TOKEN`은 다른 private 저장소에 dispatch할 수 없다.
-
-Workflow는 다음 세 이미지를 동일 SHA로 push한다.
-
-```text
-girinman/wedding-letter-codex-api:<sha>
-girinman/wedding-letter-codex-public:<sha>
-girinman/wedding-letter-codex-admin:<sha>
-```
-
-세 build가 모두 성공한 뒤 `deploy-wedding-invitation` 이벤트를 한 번
-전송한다.
-
-## Serengeti secret
-
-Private runtime `.env`에 다음 값을 둔다.
-
-```dotenv
-TS_WEDDING_ADMIN_HOST=wedding-admin.<domain>
-WEDDING_INVITATION_IMAGE_TAG=<git-sha>
-WEDDING_DB_PASSWORD=<secret>
-WEDDING_MINIO_ACCESS_KEY=wedding-invitation
-WEDDING_MINIO_SECRET_KEY=<secret>
-WEDDING_S3_BUCKET=wedding-media
-WEDDING_ADMIN_EMAIL=<private-email>
-WEDDING_ADMIN_PASSWORD=<at-least-12-characters>
-WEDDING_ADMIN_NAME=<display-name>
-WEDDING_INVITATION_SLUG=our-wedding
-NPM_CLOUDFLARE_DNS_TOKEN=<dns-edit-token>
-```
-
-`make wedding-invitation`은 수동 `psql`이나 `mc` 작업 없이 아래를
-idempotent하게 수행한다.
-
-1. PostgreSQL `wedding` role/database 생성 또는 비밀번호 reconciliation
-2. MinIO bucket·app user·bucket-scoped policy 생성
-3. API image pull/start와 SQL migration
-4. admin identity와 generic invitation seed
-5. public/admin web start
-
-## Ingress
-
-Public:
-
-```text
-wedding.giraffe.ai.kr
-  → Cloudflare Tunnel
-  → NPM
-  → wedding-invitation:80
-```
-
-Cloudflare가 HTTPS를 종료하므로 public NPM host의 Force SSL은 끈다.
-
-Admin:
-
-```text
-wedding-admin.giraffe.ai.kr
-  → Tailscale DNS
-  → NPM
-  → wedding-admin:80
-```
-
-- DNS A/AAAA는 Serengeti의 Tailscale 주소를 가리킨다.
-- Cloudflare Tunnel published application route에는 넣지 않는다.
-- NPM은 Cloudflare DNS-01로 certificate를 발급하고 Force SSL을 켠다.
-- 앱 내부에서도 admin session 인증을 요구한다.
-
-## Production verification
-
-```bash
-make wedding-invitation
-uv run scripts/setup_npm_hosts.py \
-  --apply --ssl \
-  --only "Wedding Invitation" \
-  --only "Wedding Admin"
-CONNECTIVITY=true make verify-ingress
-```
-
-API/public/admin 컨테이너가 healthy이고 공개 hostname이 `200`, 관리자
-hostname이 Tailscale 연결 환경에서만 resolve/respond하는지 확인한다.
+- API는 PostgreSQL 호환 데이터베이스와 S3 호환 객체 스토리지에 연결한다.
+- admin web은 애플리케이션 세션 인증과 사설 접근 경계를 모두 요구한다.
+- 외부에 노출되는 public web·API의 TLS, DNS, 프록시, 배포 도구 설정은
+  환경별 비공개 운영 구성에서 관리한다.
+- 배포 후에는 세 앱 컨테이너의 readiness와 public invitation의 `200`,
+  authenticated admin 접근, API readiness를 확인한다.
