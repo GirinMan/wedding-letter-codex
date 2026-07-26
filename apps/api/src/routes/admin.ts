@@ -10,7 +10,9 @@ import {
 import { getConfig } from "../config.js";
 import { getDatabase } from "../db.js";
 import {
+  collectInvitationMediaAssetIds,
   createInvitationPreview,
+  createMediaPublicationPlan,
   invitationContentSchema,
   invitationDesignSchema,
 } from "../domain/invitation.js";
@@ -256,23 +258,41 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
   app.post("/api/admin/invitations/:id/publish", async (request, reply) => {
     const { id } = invitationParams.parse(request.params);
     const sql = getDatabase();
-    const [current] = await sql<{
-      draftContent: unknown;
-      draftDesign: unknown;
-      revision: number;
-    }[]>`
-      SELECT draft_content, draft_design, revision
-      FROM invitations
-      WHERE id = ${id}
-      LIMIT 1
-    `;
-    if (!current) {
-      return reply.code(404).send({ error: "invitation_not_found" });
-    }
+    const result = await sql.begin(async (transaction) => {
+      const [current] = await transaction<{
+        draftContent: unknown;
+        draftDesign: unknown;
+        revision: number;
+      }[]>`
+        SELECT draft_content, draft_design, revision
+        FROM invitations
+        WHERE id = ${id}
+        LIMIT 1
+        FOR UPDATE
+      `;
+      if (!current) {
+        return { kind: "not_found" } as const;
+      }
 
-    invitationContentSchema.parse(current.draftContent);
-    invitationDesignSchema.parse(current.draftDesign);
-    const [published] = await sql.begin(async (transaction) => {
+      const draftContent = invitationContentSchema.parse(current.draftContent);
+      invitationDesignSchema.parse(current.draftDesign);
+      const mediaAssets = await transaction<Array<{
+        id: string;
+        state: "draft" | "published" | "archived";
+      }>>`
+        SELECT id, state
+        FROM media_assets
+        WHERE invitation_id = ${id}
+        FOR UPDATE
+      `;
+      const mediaPlan = createMediaPublicationPlan(draftContent, mediaAssets);
+      if (mediaPlan.missingIds.length > 0) {
+        return {
+          kind: "invalid_media",
+          assetIds: mediaPlan.missingIds,
+        } as const;
+      }
+
       const invitationRows = await transaction`
         UPDATE invitations
         SET status = 'published',
@@ -284,27 +304,70 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
         WHERE id = ${id}
         RETURNING id, status, published_revision, published_at
       `;
-      await transaction`
-        UPDATE media_assets
-        SET state = 'published', updated_at = now()
-        WHERE invitation_id = ${id}
-          AND state = 'draft'
-      `;
-      return invitationRows;
+
+      if (mediaPlan.draftIds.length > 0) {
+        await transaction`
+          UPDATE media_assets
+          SET state = 'draft', updated_at = now()
+          WHERE invitation_id = ${id}
+            AND id = ANY(${transaction.array(mediaPlan.draftIds, 2950)})
+        `;
+      }
+      if (mediaPlan.publishedIds.length > 0) {
+        await transaction`
+          UPDATE media_assets
+          SET state = 'published', updated_at = now()
+          WHERE invitation_id = ${id}
+            AND id = ANY(${transaction.array(mediaPlan.publishedIds, 2950)})
+        `;
+      }
+      return {
+        kind: "published",
+        invitation: invitationRows[0],
+        revision: current.revision,
+      } as const;
     });
 
+    if (result.kind === "not_found") {
+      return reply.code(404).send({ error: "invitation_not_found" });
+    }
+    if (result.kind === "invalid_media") {
+      return reply.code(409).send({
+        error: "media_reference_invalid",
+        assetIds: result.assetIds,
+      });
+    }
     await recordAudit(request, id, "invitation.published", {
-      revision: current.revision,
+      revision: result.revision,
     });
-    return published;
+    return result.invitation;
   });
 
   app.get("/api/admin/invitations/:id/media", async (request, reply) => {
     const { id } = invitationParams.parse(request.params);
-    if (!(await invitationExists(id))) {
+    const sql = getDatabase();
+    const [invitation] = await sql<{
+      draftContent: unknown;
+      publishedContent: unknown | null;
+    }[]>`
+      SELECT draft_content, published_content
+      FROM invitations
+      WHERE id = ${id}
+      LIMIT 1
+    `;
+    if (!invitation) {
       return reply.code(404).send({ error: "invitation_not_found" });
     }
-    const sql = getDatabase();
+    const draftAssetIds = new Set(collectInvitationMediaAssetIds(
+      invitationContentSchema.parse(invitation.draftContent),
+    ));
+    const publishedAssetIds = new Set(
+      invitation.publishedContent
+        ? collectInvitationMediaAssetIds(
+            invitationContentSchema.parse(invitation.publishedContent),
+          )
+        : [],
+    );
     const assets = await sql`
       SELECT
         id,
@@ -322,10 +385,12 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
       ORDER BY purpose, position, created_at
     `;
     return {
-      assets: await Promise.all(assets.map(async (asset) => ({
+      assets: assets.map((asset) => ({
         ...asset,
         previewUrl: `/api/admin/media/${asset.id}/content`,
-      }))),
+        connectedToDraft: draftAssetIds.has(asset.id),
+        connectedToPublished: publishedAssetIds.has(asset.id),
+      })),
     };
   });
 
@@ -396,14 +461,12 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     const body = z.object({
       altText: z.string().trim().max(200).optional(),
       position: z.number().int().min(0).max(10_000).optional(),
-      state: z.enum(["draft", "published", "archived"]).optional(),
     }).refine((value) => Object.keys(value).length > 0).parse(request.body);
     const sql = getDatabase();
     const [asset] = await sql`
       UPDATE media_assets
       SET alt_text = COALESCE(${body.altText ?? null}, alt_text),
           position = COALESCE(${body.position ?? null}, position),
-          state = COALESCE(${body.state ?? null}, state),
           updated_at = now()
       WHERE id = ${assetId}
         AND invitation_id = ${id}
@@ -419,17 +482,57 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/admin/invitations/:id/media/:assetId", async (request, reply) => {
     const { id, assetId } = assetParams.parse(request.params);
     const sql = getDatabase();
-    const [asset] = await sql<{ objectKey: string }[]>`
-      SELECT object_key
-      FROM media_assets
-      WHERE id = ${assetId} AND invitation_id = ${id}
-      LIMIT 1
-    `;
-    if (!asset) {
+    const result = await sql.begin(async (transaction) => {
+      const [asset] = await transaction<{
+        objectKey: string;
+        draftContent: unknown;
+        publishedContent: unknown | null;
+      }[]>`
+        SELECT
+          media.object_key,
+          invitation.draft_content,
+          invitation.published_content
+        FROM media_assets AS media
+        JOIN invitations AS invitation ON invitation.id = media.invitation_id
+        WHERE media.id = ${assetId}
+          AND media.invitation_id = ${id}
+        LIMIT 1
+        FOR UPDATE OF media, invitation
+      `;
+      if (!asset) {
+        return { kind: "not_found" } as const;
+      }
+      const referencedByDraft = collectInvitationMediaAssetIds(
+        invitationContentSchema.parse(asset.draftContent),
+      ).includes(assetId);
+      const referencedByPublished = asset.publishedContent
+        ? collectInvitationMediaAssetIds(
+            invitationContentSchema.parse(asset.publishedContent),
+          ).includes(assetId)
+        : false;
+      if (referencedByDraft || referencedByPublished) {
+        return {
+          kind: "in_use",
+          referencedBy: [
+            ...(referencedByDraft ? ["draft"] : []),
+            ...(referencedByPublished ? ["published"] : []),
+          ],
+        } as const;
+      }
+
+      await deleteObject(asset.objectKey);
+      await transaction`DELETE FROM media_assets WHERE id = ${assetId}`;
+      return { kind: "deleted" } as const;
+    });
+    if (result.kind === "not_found") {
       return reply.code(404).send({ error: "media_not_found" });
     }
-    await deleteObject(asset.objectKey);
-    await sql`DELETE FROM media_assets WHERE id = ${assetId}`;
+    if (result.kind === "in_use") {
+      return reply.code(409).send({
+        error: "media_in_use",
+        referencedBy: result.referencedBy,
+      });
+    }
     await recordAudit(request, id, "media.deleted", { assetId });
     return reply.code(204).send();
   });

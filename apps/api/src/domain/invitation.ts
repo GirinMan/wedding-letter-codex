@@ -182,6 +182,52 @@ export const invitationDesignSchema = z.object({
 export type InvitationContent = z.infer<typeof invitationContentSchema>;
 export type InvitationDesign = z.infer<typeof invitationDesignSchema>;
 
+export function collectInvitationMediaAssetIds(
+  content: InvitationContent,
+): string[] {
+  const ids = new Set<string>();
+  const visit = (value: unknown) => {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (!value || typeof value !== "object") {
+      return;
+    }
+    Object.entries(value).forEach(([key, nested]) => {
+      if (key === "assetId" && typeof nested === "string") {
+        ids.add(nested);
+        return;
+      }
+      visit(nested);
+    });
+  };
+  visit(content);
+  return [...ids].sort();
+}
+
+export function createMediaPublicationPlan(
+  content: InvitationContent,
+  assets: Array<{
+    id: string;
+    state: "draft" | "published" | "archived";
+  }>,
+) {
+  const referencedIds = collectInvitationMediaAssetIds(content);
+  const availableIds = new Set(
+    assets
+      .filter((asset) => asset.state !== "archived")
+      .map((asset) => asset.id),
+  );
+  const referencedSet = new Set(referencedIds);
+  return {
+    referencedIds,
+    publishedIds: [...availableIds].filter((id) => referencedSet.has(id)).sort(),
+    draftIds: [...availableIds].filter((id) => !referencedSet.has(id)).sort(),
+    missingIds: referencedIds.filter((id) => !availableIds.has(id)),
+  };
+}
+
 export function createInvitationPreview(input: {
   id: string;
   slug: string;
