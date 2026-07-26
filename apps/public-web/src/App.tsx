@@ -175,20 +175,59 @@ function formatEventDate(startsAt: string) {
   }).format(new Date(startsAt));
 }
 
-function openStreetMapEmbedUrl(latitude: number, longitude: number) {
-  const delta = 0.006;
-  const bbox = [
-    longitude - delta,
-    latitude - delta,
-    longitude + delta,
-    latitude + delta,
-  ].join(",");
-  const params = new URLSearchParams({
-    bbox,
-    layer: "mapnik",
-    marker: `${latitude},${longitude}`,
-  });
-  return `https://www.openstreetmap.org/export/embed.html?${params.toString()}`;
+function NaverMap({ event }: { event: InvitationContent["event"] }) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
+  const { latitude, longitude, map } = event;
+
+  useEffect(() => {
+    if (!map.naverMapClientId || latitude === null || longitude === null || !mapRef.current) return;
+    let cancelled = false;
+    const initialize = () => {
+      const naver = (window as Window & { naver?: any }).naver;
+      if (!naver?.maps || !mapRef.current || cancelled) return;
+      const position = new naver.maps.LatLng(latitude, longitude);
+      const instance = new naver.maps.Map(mapRef.current, { center: position, zoom: map.zoom });
+      new naver.maps.Marker({ map: instance, position });
+    };
+    const existing = document.querySelector<HTMLScriptElement>("script[data-wedding-naver-map]");
+    if (existing) {
+      if ((window as Window & { naver?: any }).naver?.maps) initialize();
+      else existing.addEventListener("load", initialize, { once: true });
+      return () => {
+        cancelled = true;
+        existing.removeEventListener("load", initialize);
+      };
+    }
+    const script = document.createElement("script");
+    script.dataset.weddingNaverMap = "true";
+    script.async = true;
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${encodeURIComponent(map.naverMapClientId)}`;
+    script.addEventListener("load", initialize, { once: true });
+    script.addEventListener("error", () => setFailed(true), { once: true });
+    document.head.append(script);
+    return () => {
+      cancelled = true;
+      script.removeEventListener("load", initialize);
+    };
+  }, [latitude, longitude, map.naverMapClientId, map.zoom]);
+
+  const naverSearchUrl = `https://map.naver.com/p/search/${encodeURIComponent(event.address)}`;
+  if (!map.naverMapClientId || latitude === null || longitude === null || failed) {
+    return <a className="map-embed map-embed--fallback" href={naverSearchUrl} rel="noreferrer" target="_blank">네이버지도에서 위치 보기</a>;
+  }
+  return <div className="map-embed" ref={mapRef} role="img" aria-label={`${event.venueName} 네이버 지도`} />;
+}
+
+function mapNavigationLinks(event: InvitationContent["event"]) {
+  const destination = encodeURIComponent(event.venueName || event.address);
+  const { latitude, longitude, map } = event;
+  const coordinatesAvailable = latitude !== null && longitude !== null;
+  return [
+    { label: "네이버지도", href: map.navigation.naverUrl || `https://map.naver.com/p/search/${encodeURIComponent(event.address)}` },
+    { label: "티맵", href: map.navigation.tmapUrl || (coordinatesAvailable ? `tmap://route?goalx=${longitude}&goaly=${latitude}&goalname=${destination}` : "") },
+    { label: "카카오내비", href: map.navigation.kakaoNaviUrl || (coordinatesAvailable ? `kakaonavi://navigate?name=${destination}&x=${longitude}&y=${latitude}&coord_type=wgs84` : "") },
+  ].filter((link) => link.href);
 }
 
 function SectionHeading({
@@ -913,52 +952,22 @@ export function App() {
               <p>{content.event.address}</p>
               <a href={`tel:${content.event.telephone}`}>{content.event.telephone}</a>
             </div>
-            {content.event.latitude !== null && content.event.longitude !== null ? (
-              <iframe
-                className="map-embed"
-                title={`${content.event.venueName} 지도`}
-                src={openStreetMapEmbedUrl(content.event.latitude, content.event.longitude)}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="map-placeholder">
-                <span className="map-placeholder__pin" aria-hidden="true">●</span>
-                <strong>{content.event.venueName}</strong>
-                <span>{content.event.address}</span>
-              </div>
-            )}
+            <NaverMap event={content.event} />
             {content.event.sketchMap.assetId ? (
               <button
-                className="map-sketch-button text-button"
+                className="map-sketch-button"
                 type="button"
                 onClick={() => setDialog("sketch-map")}
               >
-                약도 이미지 보기 <span aria-hidden="true">↗</span>
+                약도 이미지 보기
               </button>
             ) : null}
-            <div className="navigation-links">
-              <a
-                href={`https://map.naver.com/p/search/${encodeURIComponent(content.event.address)}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                네이버 지도
-              </a>
-              <a
-                href={`https://map.kakao.com/link/search/${encodeURIComponent(content.event.address)}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                카카오맵
-              </a>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(content.event.address)}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                길찾기
-              </a>
+            <div className="navigation-block">
+              <h3>내비게이션</h3>
+              <p>원하시는 앱을 선택하시면 길안내가 시작됩니다.</p>
+              <div className="navigation-links">
+                {mapNavigationLinks(content.event).map((link) => <a href={link.href} key={link.label} rel="noreferrer" target="_blank">{link.label}</a>)}
+              </div>
             </div>
             <div className="transport-list">
               {content.event.transport.map((item) => (

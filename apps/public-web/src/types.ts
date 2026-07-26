@@ -53,6 +53,11 @@ export interface InvitationContent {
     latitude: number | null;
     longitude: number | null;
     sketchMap: MediaReference;
+    map: {
+      naverMapClientId: string;
+      zoom: number;
+      navigation: { naverUrl: string; tmapUrl: string; kakaoNaviUrl: string };
+    };
     transport: Array<{ title: string; body: string }>;
   };
   interview: Array<{
