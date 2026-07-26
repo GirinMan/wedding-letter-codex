@@ -109,11 +109,11 @@ textarea:focus-visible {
 .hero__date-stack {
   display: grid;
   margin-top: 56px;
-  gap: 7px;
+  gap: 8px;
   color: var(--muted);
   font-family: var(--display-font);
-  font-size: .73rem;
-  letter-spacing: .14em;
+  font-size: .62rem;
+  letter-spacing: .16em;
 }
 
 .hero__date-stack p,
@@ -122,7 +122,7 @@ textarea:focus-visible {
 }
 
 .hero__date-stack strong {
-  font-size: 1.6em;
+  font-size: 1.25em;
   font-weight: 400;
   letter-spacing: .03em;
 }
@@ -169,13 +169,6 @@ textarea:focus-visible {
   height: 92px;
   margin-top: auto;
   background: var(--line);
-}
-
-.scroll-label {
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: .55rem;
-  letter-spacing: .2em;
 }
 
 [id^="invitation-section-"] {
