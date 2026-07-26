@@ -722,7 +722,6 @@ export function App() {
             <p className="hero__venue">{content.event.venueName} {content.event.hall}</p>
             {content.hero.subtitle ? <p className="hero__subtitle">{content.hero.subtitle}</p> : null}
             <span className="hero__line" aria-hidden="true" />
-            <span className="scroll-label">SCROLL</span>
           </section>
         ) : null}
 
