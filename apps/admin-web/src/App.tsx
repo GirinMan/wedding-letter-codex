@@ -126,7 +126,7 @@ function Login({ onLogin }: { onLogin: (user: AdminUser) => void }) {
           {error ? <p className="form-error" role="alert">{error}</p> : null}
           <button className="button button--primary" disabled={busy}>{busy ? "확인 중…" : "로그인"}</button>
         </form>
-        <p className="security-note">이 화면은 프로덕션에서 Tailscale 네트워크 안에서만 접근할 수 있습니다.</p>
+        <p className="security-note">이 화면은 프로덕션에서 인증된 사설 접근 경계를 통해서만 이용할 수 있습니다.</p>
       </section>
     </main>
   );
@@ -350,7 +350,7 @@ export function App() {
           ))}
         </nav>
         <div className="sidebar__footer">
-          <span className="status-dot" /> Tailscale private
+          <span className="status-dot" /> Private access only
           <strong>{user.displayName}</strong>
           <button type="button" onClick={() => void api.logout().then(() => setUser(null))}>로그아웃</button>
         </div>
@@ -811,11 +811,11 @@ export function App() {
                   <p>수정본 Revision {invitation.revision}</p>
                   <p>현재 공개본 Revision {invitation.publishedRevision ?? "없음"}</p>
                   <div className="publish-checks">
-                    <span>✓ PostgreSQL 콘텐츠</span><span>✓ MinIO 미디어 참조</span><span>✓ 공개본 원자적 교체</span>
+                    <span>✓ 콘텐츠 데이터</span><span>✓ 객체 스토리지 미디어 참조</span><span>✓ 공개본 원자적 교체</span>
                   </div>
                   <button className="button button--publish" onClick={() => void api.publish(invitation.id).then(async () => { setInvitation(await api.invitation(invitation.id)); setNotice("새 버전을 발행했습니다."); })}>Revision {invitation.revision} 발행하기</button>
                 </div>
-                <div className="route-note"><strong>공개</strong><code>wedding.giraffe.ai.kr → wedding-invitation:80</code><strong>관리자</strong><code>wedding-admin.giraffe.ai.kr → Tailscale DNS → wedding-admin:80</code></div>
+                <div className="route-note"><strong>공개</strong><code>public invitation origin</code><strong>관리자</strong><code>private authenticated admin origin</code></div>
               </Panel>
             ) : null}
           </div>
