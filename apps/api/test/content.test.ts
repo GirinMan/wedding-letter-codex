@@ -35,6 +35,7 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.equal(parsed.event.sketchMap.assetId, null);
   assert.equal(parsed.event.sketchMap.placeholder, "venue-sketch-map");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
+  assert.deepEqual(parsed.sharing, { kakaoJavaScriptKey: "" });
 });
 
 test("legacy family contacts receive structured group metadata", () => {

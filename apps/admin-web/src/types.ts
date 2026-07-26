@@ -96,6 +96,7 @@ export interface InvitationContent {
     description: string;
   };
   music: { enabled: boolean; assetId: string | null; title: string };
+  sharing: { kakaoJavaScriptKey: string };
   middleImage: MediaReference;
   closing: { title: string; body: string; image: MediaReference };
   sections: Array<{ id: string; enabled: boolean }>;

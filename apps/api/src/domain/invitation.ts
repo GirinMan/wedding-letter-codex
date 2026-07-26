@@ -154,6 +154,9 @@ export const invitationContentSchema = z.object({
     assetId: z.string().uuid().nullable().default(null),
     title: z.string().max(160),
   }),
+  sharing: z.object({
+    kakaoJavaScriptKey: z.string().trim().max(160).default(""),
+  }).default({ kakaoJavaScriptKey: "" }),
   middleImage: mediaReferenceSchema.default({
     assetId: null,
     alt: "",
@@ -376,6 +379,7 @@ export const sampleInvitationContent: InvitationContent = {
     description: "예식 당일, 두 사람의 행복한 순간을 담아 올려 주세요.",
   },
   music: { enabled: false, assetId: null, title: "" },
+  sharing: { kakaoJavaScriptKey: "" },
   middleImage: {
     assetId: null,
     alt: "함께 걷는 두 사람",
