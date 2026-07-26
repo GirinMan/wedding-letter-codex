@@ -38,7 +38,12 @@ export interface InvitationContent {
     partnerOne: { name: string; label: string; familyRelation: string };
     partnerTwo: { name: string; label: string; familyRelation: string };
   };
-  hero: { eyebrow: string; title: string; subtitle: string };
+  hero: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    nameOrder: Array<"partnerOne" | "partnerTwo">;
+  };
   greeting: { title: string; body: string; image: MediaReference };
   contacts: InvitationContact[];
   event: {

@@ -392,7 +392,7 @@ export function App() {
                 </div>
                 <Panel title="빠른 편집" description="가장 자주 바꾸는 제목과 예식 정보를 바로 수정합니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "저장"}</button>}>
                   <div className="field-grid">
-                    <Field label="메인 제목" wide><input value={invitation.draftContent.hero.title} onChange={(event) => updateContent((draft) => { draft.hero.title = event.target.value; })} /></Field>
+                    <Field label="상단 표식" wide><input value={invitation.draftContent.hero.title} onChange={(event) => updateContent((draft) => { draft.hero.title = event.target.value; })} /></Field>
                     <Field label="예식 일시"><input type="datetime-local" value={invitation.draftContent.event.startsAt.slice(0, 16)} onChange={(event) => updateContent((draft) => { draft.event.startsAt = `${event.target.value}:00+09:00`; })} /></Field>
                     <Field label="예식장"><input value={invitation.draftContent.event.venueName} onChange={(event) => updateContent((draft) => { draft.event.venueName = event.target.value; })} /></Field>
                   </div>
@@ -417,9 +417,17 @@ export function App() {
                   <Field label="신부 호칭"><input value={invitation.draftContent.couple.partnerTwo.label} onChange={(event) => updateContent((draft) => { draft.couple.partnerTwo.label = event.target.value; })} /></Field>
                   <Field label="신랑 가족관계"><input value={invitation.draftContent.couple.partnerOne.familyRelation} onChange={(event) => updateContent((draft) => { draft.couple.partnerOne.familyRelation = event.target.value; })} /></Field>
                   <Field label="신부 가족관계"><input value={invitation.draftContent.couple.partnerTwo.familyRelation} onChange={(event) => updateContent((draft) => { draft.couple.partnerTwo.familyRelation = event.target.value; })} /></Field>
-                  <Field label="영문 상단 문구"><input value={invitation.draftContent.hero.eyebrow} onChange={(event) => updateContent((draft) => { draft.hero.eyebrow = event.target.value; })} /></Field>
-                  <Field label="메인 제목"><input value={invitation.draftContent.hero.title} onChange={(event) => updateContent((draft) => { draft.hero.title = event.target.value; })} /></Field>
-                  <Field label="소개 한 줄" wide><input value={invitation.draftContent.hero.subtitle} onChange={(event) => updateContent((draft) => { draft.hero.subtitle = event.target.value; })} /></Field>
+                  <Field label="상단 안내 문구 (선택)"><input value={invitation.draftContent.hero.eyebrow} onChange={(event) => updateContent((draft) => { draft.hero.eyebrow = event.target.value; })} /></Field>
+                  <Field label="상단 표식"><input value={invitation.draftContent.hero.title} onChange={(event) => updateContent((draft) => { draft.hero.title = event.target.value; })} /></Field>
+                  <Field label="이름 표시 순서">
+                    <select value={invitation.draftContent.hero.nameOrder.join(",")} onChange={(event) => updateContent((draft) => {
+                      draft.hero.nameOrder = event.target.value.split(",") as Array<"partnerOne" | "partnerTwo">;
+                    })}>
+                      <option value="partnerTwo,partnerOne">{invitation.draftContent.couple.partnerTwo.label} → {invitation.draftContent.couple.partnerOne.label}</option>
+                      <option value="partnerOne,partnerTwo">{invitation.draftContent.couple.partnerOne.label} → {invitation.draftContent.couple.partnerTwo.label}</option>
+                    </select>
+                  </Field>
+                  <Field label="보조 문구 (선택)" wide><input value={invitation.draftContent.hero.subtitle} onChange={(event) => updateContent((draft) => { draft.hero.subtitle = event.target.value; })} /></Field>
                   <Field label="인사말 제목" wide><input value={invitation.draftContent.greeting.title} onChange={(event) => updateContent((draft) => { draft.greeting.title = event.target.value; })} /></Field>
                   <Field label="인사말" wide><textarea rows={6} value={invitation.draftContent.greeting.body} onChange={(event) => updateContent((draft) => { draft.greeting.body = event.target.value; })} /></Field>
                 </div>

@@ -99,6 +99,10 @@ export const invitationContentSchema = z.object({
     eyebrow: z.string().max(100),
     title: z.string().min(1).max(160),
     subtitle: z.string().max(240),
+    nameOrder: z.array(z.enum(["partnerOne", "partnerTwo"]))
+      .length(2)
+      .refine((order) => new Set(order).size === 2, "Each partner must appear once in the hero.")
+      .default(["partnerTwo", "partnerOne"]),
   }),
   greeting: z.object({
     title: textSchema,
@@ -312,9 +316,10 @@ export const sampleInvitationContent: InvitationContent = {
     partnerTwo: { name: "신부 이름", label: "신부", familyRelation: "딸" },
   },
   hero: {
-    eyebrow: "WE INVITE YOU",
-    title: "WE'RE GETTING MARRIED",
-    subtitle: "서로의 하루가 되어, 함께 걸어가려 합니다.",
+    eyebrow: "",
+    title: "INVITÉ",
+    subtitle: "",
+    nameOrder: ["partnerTwo", "partnerOne"],
   },
   greeting: {
     title: "소중한 분들을 초대합니다",

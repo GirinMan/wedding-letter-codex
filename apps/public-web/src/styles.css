@@ -77,21 +77,20 @@ textarea:focus-visible {
 
 .hero {
   display: flex;
-  min-height: 760px;
-  padding: 72px 28px 42px;
+  min-height: 920px;
+  padding: 64px 28px 42px;
   align-items: center;
   flex-direction: column;
   text-align: center;
 }
 
-.hero h1 {
-  max-width: 320px;
-  margin: 42px 0 18px;
+.hero__mark {
+  margin: 0;
   font-family: var(--display-font);
-  font-size: clamp(3.25rem, 16vw, 4.75rem);
+  font-size: clamp(2.2rem, 11vw, 3.1rem);
   font-weight: 400;
-  line-height: .88;
-  letter-spacing: -.065em;
+  line-height: 1;
+  letter-spacing: .06em;
 }
 
 .hero__eyebrow,
@@ -103,9 +102,47 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
+.hero__eyebrow {
+  margin: 0 0 24px;
+}
+
+.hero__date-stack {
+  display: grid;
+  margin-top: 56px;
+  gap: 7px;
+  color: var(--muted);
+  font-family: var(--display-font);
+  font-size: .73rem;
+  letter-spacing: .14em;
+}
+
+.hero__date-stack p,
+.hero__date-stack time {
+  margin: 0;
+}
+
+.hero__date-stack strong {
+  font-size: 1.6em;
+  font-weight: 400;
+  letter-spacing: .03em;
+}
+
+.hero__date-stack sup {
+  margin-left: 1px;
+  font-size: .55em;
+  vertical-align: super;
+}
+
+.hero__divider {
+  width: 1px;
+  height: 108px;
+  margin: 32px 0 28px;
+  background: var(--line);
+}
+
 .hero__subtitle {
   max-width: 270px;
-  margin: 0;
+  margin: 14px 0 0;
   color: var(--muted);
   font-family: serif;
   font-size: .95rem;
@@ -114,19 +151,17 @@ textarea:focus-visible {
 
 .hero__names {
   display: flex;
-  margin-top: 54px;
-  gap: 12px;
-  font-size: .94rem;
-  letter-spacing: .08em;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 1.03rem;
+  letter-spacing: .22em;
 }
 
-.hero__date {
-  display: flex;
-  margin-top: 18px;
-  flex-direction: column;
-  gap: 8px;
+.hero__venue {
+  margin: 40px 0 0;
   color: var(--muted);
   font-size: .76rem;
+  letter-spacing: .04em;
 }
 
 .hero__line {

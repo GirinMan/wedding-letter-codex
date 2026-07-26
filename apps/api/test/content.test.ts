@@ -24,6 +24,8 @@ test("sample invitation content satisfies the public contract", () => {
 test("legacy invitation documents receive defaults for new media slots", () => {
   const legacy = structuredClone(sampleInvitationContent) as unknown as Record<string, unknown>;
   delete legacy.middleImage;
+  const hero = legacy.hero as Record<string, unknown>;
+  delete hero.nameOrder;
   const event = legacy.event as Record<string, unknown>;
   delete event.sketchMap;
   const interview = legacy.interview as Array<Record<string, unknown>>;
@@ -33,6 +35,7 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   const parsed = invitationContentSchema.parse(legacy);
 
   assert.equal(parsed.middleImage.placeholder, "middle");
+  assert.deepEqual(parsed.hero.nameOrder, ["partnerTwo", "partnerOne"]);
   assert.equal(parsed.event.sketchMap.assetId, null);
   assert.equal(parsed.event.sketchMap.placeholder, "venue-sketch-map");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
