@@ -23,6 +23,7 @@ import {
   sectionAnchorId,
   type QuickMenuSection,
 } from "./components/QuickMenu";
+import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
 import type {
   ContactRelationship,
   ContactSide,
@@ -421,6 +422,52 @@ export function App() {
       await navigator.clipboard.writeText(window.location.href);
       setNotice("초대장 주소를 복사했습니다.");
     }
+  };
+
+  const copyInvitationLink = async () => {
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 링크를 복사하지 않습니다.");
+      return;
+    }
+    const link = window.location.href;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      const fallback = document.createElement("textarea");
+      fallback.value = link;
+      fallback.setAttribute("readonly", "");
+      fallback.style.position = "fixed";
+      fallback.style.opacity = "0";
+      document.body.append(fallback);
+      fallback.select();
+      const copied = document.execCommand("copy");
+      fallback.remove();
+      if (!copied) {
+        setNotice("링크를 복사하지 못했습니다. 주소창에서 직접 복사해 주세요.");
+        return;
+      }
+    }
+    setNotice("초대장 주소를 복사했습니다.");
+  };
+
+  const saveEventToCalendar = () => {
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 일정을 저장하지 않습니다.");
+      return;
+    }
+    const coupleNames = `${content.couple.partnerOne.name} · ${content.couple.partnerTwo.name}`;
+    const location = [content.event.venueName, content.event.hall, content.event.address]
+      .filter(Boolean)
+      .join(", ");
+    const calendarFile = createCalendarFile({
+      startsAt: content.event.startsAt,
+      title: `${coupleNames} 결혼식`,
+      location,
+      description: [content.hero.subtitle, content.event.address].filter(Boolean).join("\n"),
+      uid: `${slug}-${Date.parse(content.event.startsAt)}@wedding-letter-codex`,
+    });
+    downloadCalendarFile(calendarFile, `${slug}-wedding.ics`);
+    setNotice("캘린더에 저장할 수 있는 일정 파일을 받았습니다.");
   };
 
   const openQuickAction = (nextDialog: "rsvp" | "upload") => {
@@ -873,6 +920,8 @@ export function App() {
         onClose={() => setDialog(null)}
         onRsvp={() => openQuickAction("rsvp")}
         onGuestUpload={() => openQuickAction("upload")}
+        onCalendar={saveEventToCalendar}
+        onCopyLink={() => void copyInvitationLink()}
         onShare={() => void share()}
       />
 

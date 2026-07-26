@@ -35,12 +35,13 @@ actions provide quick navigation and sharing.
 | Calendar | Selected wedding day and live countdown | Timezone-aware countdown |
 | Timeline | Inline five-item carousel with previous/next controls | DB-managed, keyboard-operable carousel |
 | RSVP | Attendance, side, phone, party size, meal, bus, short note, privacy consent | Persisted submission and admin export |
-| Map | Embedded map, sketch-map dialog, external navigation apps | OpenStreetMap embed, admin-managed MinIO sketch map, and universal external links |
-| Gallery | Two-column square grid; "show more" expands the list | DB/MinIO media slots with initial-limit control and publish state |
+| Map | Embedded map, sketch-map dialog, external navigation apps | OpenStreetMap embed, admin-managed S3-compatible sketch map, and universal external links |
+| Gallery | Two-column square grid; "show more" expands the list | DB/S3-compatible media slots with initial-limit control and publish state |
 | Guestbook | Public list, name/message/password write flow, password delete flow | Moderated list and verified password-based author delete |
 | Accounts | Partner tabs, swipeable account cards, copy and payment deep links | Encrypted-at-rest deployment option; masked admin list |
-| Guest uploads | Disabled until configured time, then upload flow | MinIO upload with moderation and event-time gate |
+| Guest uploads | Disabled until configured time, then upload flow | S3-compatible upload with moderation and event-time gate |
 | Music | Persistent toggle; reference attempts autoplay | User-initiated playback only |
+| Calendar reminder | Floating action saves the event for later | Event/venue DB fields generate a downloadable iCalendar file |
 | Sharing | Native/service share action and floating section drawer | Data-driven section drawer plus Web Share with clipboard fallback; optional Kakao adapter |
 
 Read-only interaction checks confirmed that these primary actions open modal
@@ -147,7 +148,7 @@ the reference service's private API.
 | Naver/Kakao/Tmap deep links | Navigation | No API credential |
 | Kakao JavaScript SDK | Native Kakao share | No |
 | Web Share API | System share sheet | Browser capability |
-| S3-compatible API | Media and guest uploads | Yes; MinIO locally |
+| S3-compatible API | Media and guest uploads | Yes; local S3-compatible storage |
 
 ## Intentional differences
 

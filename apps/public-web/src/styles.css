@@ -960,6 +960,10 @@ textarea:focus-visible {
   grid-column: 1 / -1;
 }
 
+.quick-menu__actions .quick-menu__share {
+  grid-column: 1 / -1;
+}
+
 .quick-menu__actions button {
   min-height: 48px;
   padding-right: 10px;

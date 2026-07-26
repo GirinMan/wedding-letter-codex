@@ -37,6 +37,8 @@ export function QuickMenu({
   onClose,
   onRsvp,
   onGuestUpload,
+  onCalendar,
+  onCopyLink,
   onShare,
 }: {
   open: boolean;
@@ -48,6 +50,8 @@ export function QuickMenu({
   onClose: () => void;
   onRsvp: () => void;
   onGuestUpload: () => void;
+  onCalendar: () => void;
+  onCopyLink: () => void;
   onShare: () => void;
 }) {
   const moveToSection = (sectionId: string) => {
@@ -78,25 +82,53 @@ export function QuickMenu({
 
       <Dialog open={open} title="빠른 메뉴" onClose={onClose}>
         <div className="quick-menu">
-          {rsvpEnabled || guestUploadsEnabled ? (
-            <div className="quick-menu__actions">
-              {rsvpEnabled ? (
-                <button className="primary-button" type="button" onClick={onRsvp}>
-                  참석 의사 전달하기
-                </button>
-              ) : null}
-              {guestUploadsEnabled ? (
-                <button
-                  className="secondary-button"
-                  type="button"
-                  disabled={!guestUploadsAvailable}
-                  onClick={onGuestUpload}
-                >
-                  축하 사진 공유하기
-                </button>
-              ) : null}
-            </div>
-          ) : null}
+          <div className="quick-menu__actions">
+            {rsvpEnabled ? (
+              <button className="primary-button" type="button" onClick={onRsvp}>
+                참석 의사 전달하기
+              </button>
+            ) : null}
+            {guestUploadsEnabled ? (
+              <button
+                className="secondary-button"
+                type="button"
+                disabled={!guestUploadsAvailable}
+                onClick={onGuestUpload}
+              >
+                축하 사진 공유하기
+              </button>
+            ) : null}
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => {
+                onClose();
+                onCalendar();
+              }}
+            >
+              일정 저장하기
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => {
+                onClose();
+                onCopyLink();
+              }}
+            >
+              링크 복사하기
+            </button>
+            <button
+              className="quick-menu__share secondary-button"
+              type="button"
+              onClick={() => {
+                onClose();
+                onShare();
+              }}
+            >
+              초대장 공유하기
+            </button>
+          </div>
 
           <nav className="quick-menu__nav" aria-label="초대장 섹션 바로가기">
             <ul>
@@ -111,17 +143,6 @@ export function QuickMenu({
               ))}
             </ul>
           </nav>
-
-          <button
-            className="quick-menu__share secondary-button"
-            type="button"
-            onClick={() => {
-              onClose();
-              onShare();
-            }}
-          >
-            초대장 공유하기
-          </button>
         </div>
       </Dialog>
     </>
