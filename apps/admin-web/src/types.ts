@@ -112,6 +112,8 @@ export interface MediaAsset {
   position: number;
   state: string;
   previewUrl: string;
+  connectedToDraft: boolean;
+  connectedToPublished: boolean;
 }
 
 export interface Rsvp {
