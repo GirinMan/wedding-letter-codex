@@ -18,6 +18,11 @@ import {
 } from "./api";
 import { Dialog } from "./components/Dialog";
 import { Media } from "./components/Media";
+import {
+  QuickMenu,
+  sectionAnchorId,
+  type QuickMenuSection,
+} from "./components/QuickMenu";
 import type {
   ContactRelationship,
   ContactSide,
@@ -27,9 +32,24 @@ import type {
   MediaReference,
 } from "./types";
 
-type DialogName = "contact" | "interview" | "rsvp" | "sketch-map" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
+type DialogName = "quick-menu" | "contact" | "interview" | "rsvp" | "sketch-map" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
 
 const defaultSlug = import.meta.env.VITE_INVITATION_SLUG ?? "our-wedding";
+const quickMenuSectionLabels: Record<string, string> = {
+  hero: "첫 화면",
+  invitation: "인사말",
+  interview: "인터뷰",
+  calendar: "달력·디데이",
+  timeline: "우리 이야기",
+  rsvp: "참석 의사",
+  location: "오시는 길",
+  gallery: "갤러리",
+  guestbook: "방명록",
+  middleImage: "중간 사진",
+  accounts: "마음 전하실 곳",
+  guestUploads: "축하 사진 공유",
+  closing: "마무리",
+};
 const contactRelationshipOrder: Record<ContactRelationship, number> = {
   partner: 0,
   father: 1,
@@ -357,9 +377,19 @@ export function App() {
   const eventDate = new Date(content.event.startsAt);
   const timeline = content.timeline[timelineIndex] ?? content.timeline[0]!;
   const accountGroup = content.accounts[accountIndex] ?? content.accounts[0];
+  const guestUploadsAvailable = Date.now() >= Date.parse(content.guestUploads.opensAt);
   const visibleGallery = galleryExpanded
     ? content.gallery.items
     : content.gallery.items.slice(0, content.gallery.initialCount);
+  const quickMenuSections = content.sections.flatMap<QuickMenuSection>((section) => {
+    if (!section.enabled) return [];
+    if (section.id === "rsvp" && !content.rsvp.enabled) return [];
+    if (section.id === "guestbook" && !content.guestbook.enabled) return [];
+    if (section.id === "guestUploads" && !content.guestUploads.enabled) return [];
+    if (section.id === "accounts" && !accountGroup) return [];
+    const label = quickMenuSectionLabels[section.id];
+    return label ? [{ id: section.id, label }] : [];
+  });
   const contactGroups = ([
     { side: "partnerOne", label: `${content.couple.partnerOne.label}측` },
     { side: "partnerTwo", label: `${content.couple.partnerTwo.label}측` },
@@ -391,6 +421,11 @@ export function App() {
       await navigator.clipboard.writeText(window.location.href);
       setNotice("초대장 주소를 복사했습니다.");
     }
+  };
+
+  const openQuickAction = (nextDialog: "rsvp" | "upload") => {
+    setDialog(null);
+    window.requestAnimationFrame(() => setDialog(nextDialog));
   };
 
   const toggleMusic = async () => {
@@ -503,7 +538,7 @@ export function App() {
     <div className="page-shell" style={style}>
       <main className="invitation">
         {enabledSections.has("hero") ? (
-          <section className="hero" data-reveal>
+          <section className="hero" id={sectionAnchorId("hero")} data-reveal>
             <p className="hero__eyebrow">{content.hero.eyebrow}</p>
             <h1>{content.hero.title}</h1>
             <p className="hero__subtitle">{content.hero.subtitle}</p>
@@ -524,7 +559,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("invitation") ? (
-          <section className="section invitation-section" data-reveal>
+          <section className="section invitation-section" id={sectionAnchorId("invitation")} data-reveal>
             <SectionHeading eyebrow="INVITATION" title={content.greeting.title} />
             <p className="multiline">{content.greeting.body}</p>
             <Media media={content.greeting.image} className="greeting-photo" preview={isPreview} />
@@ -536,7 +571,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("interview") ? (
-          <section className="section section--surface" data-reveal>
+          <section className="section section--surface" id={sectionAnchorId("interview")} data-reveal>
             <SectionHeading
               eyebrow="INTERVIEW"
               title="우리 두 사람의 이야기"
@@ -558,7 +593,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("calendar") ? (
-          <section className="section" data-reveal>
+          <section className="section" id={sectionAnchorId("calendar")} data-reveal>
             <SectionHeading
               eyebrow="THE WEDDING DAY"
               title={`${eventDate.getFullYear()}. ${String(eventDate.getMonth() + 1).padStart(2, "0")}. ${String(eventDate.getDate()).padStart(2, "0")}`}
@@ -577,7 +612,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("timeline") ? (
-          <section className="section section--timeline" data-reveal>
+          <section className="section section--timeline" id={sectionAnchorId("timeline")} data-reveal>
             <SectionHeading eyebrow="SINCE THE FIRST DAY" title="Our story" />
             <div className="timeline-card">
               <Media media={timeline.image} className="timeline-card__image" preview={isPreview} />
@@ -608,7 +643,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("rsvp") && content.rsvp.enabled ? (
-          <section className="section cta-section" data-reveal>
+          <section className="section cta-section" id={sectionAnchorId("rsvp")} data-reveal>
             <SectionHeading
               eyebrow="R.S.V.P."
               title={content.rsvp.title}
@@ -621,7 +656,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("location") ? (
-          <section className="section location-section" data-reveal>
+          <section className="section location-section" id={sectionAnchorId("location")} data-reveal>
             <SectionHeading eyebrow="LOCATION" title="오시는 길" />
             <div className="venue">
               <h3>{content.event.venueName} {content.event.hall}</h3>
@@ -687,7 +722,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("gallery") ? (
-          <section className="section gallery-section" data-reveal>
+          <section className="section gallery-section" id={sectionAnchorId("gallery")} data-reveal>
             <SectionHeading eyebrow="GALLERY" title="웨딩 갤러리" />
             <div className="gallery-grid">
               {visibleGallery.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
@@ -701,7 +736,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("guestbook") && content.guestbook.enabled ? (
-          <section className="section section--surface guestbook-section" data-reveal>
+          <section className="section section--surface guestbook-section" id={sectionAnchorId("guestbook")} data-reveal>
             <SectionHeading
               eyebrow="GUESTBOOK"
               title={content.guestbook.title}
@@ -719,7 +754,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("middleImage") ? (
-          <section className="middle-image" data-reveal>
+          <section className="middle-image" id={sectionAnchorId("middleImage")} data-reveal>
             <PlaceholderBand label="WEDDING CEREMONY" media={content.middleImage} preview={isPreview} />
             <div>
               <p>WEDDING CEREMONY</p>
@@ -729,7 +764,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("accounts") && accountGroup ? (
-          <section className="section account-section" data-reveal>
+          <section className="section account-section" id={sectionAnchorId("accounts")} data-reveal>
             <SectionHeading eyebrow="ACCOUNT" title="마음 전하실 곳" />
             <div className="tabs" role="tablist" aria-label="계좌 그룹">
               {content.accounts.map((group, index) => (
@@ -771,7 +806,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("guestUploads") && content.guestUploads.enabled ? (
-          <section className="section upload-section" data-reveal>
+          <section className="section upload-section" id={sectionAnchorId("guestUploads")} data-reveal>
             <SectionHeading
               eyebrow="CAPTURE OUR MOMENTS"
               title={content.guestUploads.title}
@@ -795,7 +830,7 @@ export function App() {
         ) : null}
 
         {enabledSections.has("closing") ? (
-          <section className="closing" data-reveal>
+          <section className="closing" id={sectionAnchorId("closing")} data-reveal>
             <Media media={content.closing.image} className="closing__image" preview={isPreview} />
             <div className="closing__copy">
               <p className="eyebrow">{content.closing.title}</p>
@@ -828,9 +863,18 @@ export function App() {
         </>
       ) : null}
 
-      <button className="floating-share" type="button" aria-label="초대장 공유" onClick={() => void share()}>
-        ↗
-      </button>
+      <QuickMenu
+        open={dialog === "quick-menu"}
+        sections={quickMenuSections}
+        rsvpEnabled={enabledSections.has("rsvp") && content.rsvp.enabled}
+        guestUploadsEnabled={enabledSections.has("guestUploads") && content.guestUploads.enabled}
+        guestUploadsAvailable={guestUploadsAvailable}
+        onOpen={() => setDialog("quick-menu")}
+        onClose={() => setDialog(null)}
+        onRsvp={() => openQuickAction("rsvp")}
+        onGuestUpload={() => openQuickAction("upload")}
+        onShare={() => void share()}
+      />
 
       <Dialog open={dialog === "sketch-map"} title="예식장 약도" onClose={() => setDialog(null)}>
         <Media
