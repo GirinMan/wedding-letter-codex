@@ -1311,6 +1311,14 @@ textarea:focus-visible {
   transform: none;
 }
 
+[data-reveal="from-left"] {
+  transform: translateX(-24px);
+}
+
+[data-reveal="from-right"] {
+  transform: translateX(24px);
+}
+
 @keyframes equalizer {
   to { height: 18px; }
 }
