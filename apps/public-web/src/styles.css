@@ -928,7 +928,7 @@ textarea:focus-visible {
 }
 
 .sketch-map-image {
-  max-height: calc(88vh - 150px);
+  height: min(calc(88vh - 190px), 540px);
   border-radius: var(--radius);
   object-fit: contain;
 }

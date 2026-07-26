@@ -21,6 +21,12 @@ export function Dialog({
       className="dialog"
       ref={dialogRef}
       aria-labelledby={titleId}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        event.stopPropagation();
+        onClose();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
