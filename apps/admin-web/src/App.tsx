@@ -816,6 +816,15 @@ export function App() {
                     <h3 className="subheading">갤러리</h3>
                     <label>처음 표시 <input type="number" min="2" max="30" value={invitation.draftContent.gallery.initialCount} onChange={(event) => updateContent((draft) => { draft.gallery.initialCount = Number(event.target.value); })} /></label>
                   </div>
+                  <div className="field-grid">
+                    <Field label="공개 레이아웃">
+                      <select value={invitation.draftContent.gallery.layout} onChange={(event) => updateContent((draft) => { draft.gallery.layout = event.target.value as typeof draft.gallery.layout; })}>
+                        <option value="grid">바둑판</option>
+                        <option value="carousel">좌우 슬라이드</option>
+                        <option value="both">슬라이드 + 바둑판</option>
+                      </select>
+                    </Field>
+                  </div>
                   <div className="gallery-slot-list">
                     {invitation.draftContent.gallery.items.map((item, index) => (
                       <div key={item.id}>
