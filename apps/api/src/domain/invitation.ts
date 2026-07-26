@@ -169,6 +169,19 @@ export const invitationContentSchema = z.object({
       alt: "예식장 약도",
       placeholder: "venue-sketch-map",
     }),
+    map: z.object({
+      naverMapClientId: z.string().trim().max(200).default(""),
+      zoom: z.number().int().min(6).max(21).default(16),
+      navigation: z.object({
+        naverUrl: optionalUrlSchema,
+        tmapUrl: optionalUrlSchema,
+        kakaoNaviUrl: optionalUrlSchema,
+      }).default({ naverUrl: "", tmapUrl: "", kakaoNaviUrl: "" }),
+    }).default({
+      naverMapClientId: "",
+      zoom: 16,
+      navigation: { naverUrl: "", tmapUrl: "", kakaoNaviUrl: "" },
+    }),
     transport: z.array(z.object({
       title: z.string().min(1).max(100),
       body: z.string().min(1).max(1_000),
@@ -417,6 +430,11 @@ export const sampleInvitationContent: InvitationContent = {
       assetId: null,
       alt: "예식장 약도",
       placeholder: "venue-sketch-map",
+    },
+    map: {
+      naverMapClientId: "",
+      zoom: 16,
+      navigation: { naverUrl: "", tmapUrl: "", kakaoNaviUrl: "" },
     },
     transport: [
       { title: "지하철", body: "가까운 역과 출구 정보를 입력해 주세요." },
