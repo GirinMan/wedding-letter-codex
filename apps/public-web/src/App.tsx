@@ -649,9 +649,9 @@ export function App() {
         {enabledSections.has("interview") ? (
           <section className="section section--surface" id={sectionAnchorId("interview")} data-reveal>
             <SectionHeading
-              eyebrow="INTERVIEW"
-              title="우리 두 사람의 이야기"
-              description="결혼을 앞둔 두 사람의 작은 이야기를 담았습니다."
+              eyebrow={content.sectionCopy.interview.eyebrow}
+              title={content.sectionCopy.interview.title}
+              description={content.sectionCopy.interview.description}
             />
             <div className="interview-grid">
               {content.interview.slice(0, 2).map((entry) => (
@@ -671,9 +671,9 @@ export function App() {
         {enabledSections.has("calendar") ? (
           <section className="section" id={sectionAnchorId("calendar")} data-reveal>
             <SectionHeading
-              eyebrow="THE WEDDING DAY"
-              title={`${eventDate.getFullYear()}. ${String(eventDate.getMonth() + 1).padStart(2, "0")}. ${String(eventDate.getDate()).padStart(2, "0")}`}
-              description={formatEventDate(content.event.startsAt)}
+              eyebrow={content.sectionCopy.calendar.eyebrow}
+              title={content.sectionCopy.calendar.title || `${eventDate.getFullYear()}. ${String(eventDate.getMonth() + 1).padStart(2, "0")}. ${String(eventDate.getDate()).padStart(2, "0")}`}
+              description={content.sectionCopy.calendar.description || formatEventDate(content.event.startsAt)}
             />
             <Calendar startsAt={content.event.startsAt} />
             <div className="countdown" aria-label="예식까지 남은 시간">
@@ -689,7 +689,11 @@ export function App() {
 
         {enabledSections.has("timeline") ? (
           <section className="section section--timeline" id={sectionAnchorId("timeline")} data-reveal>
-            <SectionHeading eyebrow="SINCE THE FIRST DAY" title="Our story" />
+            <SectionHeading
+              eyebrow={content.sectionCopy.timeline.eyebrow}
+              title={content.sectionCopy.timeline.title}
+              description={content.sectionCopy.timeline.description}
+            />
             <div className="timeline-card">
               <Media media={timeline.image} className="timeline-card__image" preview={isPreview} />
               <p className="timeline-card__date">{timeline.date}</p>
@@ -733,7 +737,11 @@ export function App() {
 
         {enabledSections.has("location") ? (
           <section className="section location-section" id={sectionAnchorId("location")} data-reveal>
-            <SectionHeading eyebrow="LOCATION" title="오시는 길" />
+            <SectionHeading
+              eyebrow={content.sectionCopy.location.eyebrow}
+              title={content.sectionCopy.location.title}
+              description={content.sectionCopy.location.description}
+            />
             <div className="venue">
               <h3>{content.event.venueName} {content.event.hall}</h3>
               <p>{content.event.address}</p>
@@ -799,7 +807,11 @@ export function App() {
 
         {enabledSections.has("gallery") ? (
           <section className="section gallery-section" id={sectionAnchorId("gallery")} data-reveal>
-            <SectionHeading eyebrow="GALLERY" title="웨딩 갤러리" />
+            <SectionHeading
+              eyebrow={content.sectionCopy.gallery.eyebrow}
+              title={content.sectionCopy.gallery.title}
+              description={content.sectionCopy.gallery.description}
+            />
             <div className="gallery-grid">
               {visibleGallery.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
             </div>
@@ -841,7 +853,11 @@ export function App() {
 
         {enabledSections.has("accounts") && accountGroup ? (
           <section className="section account-section" id={sectionAnchorId("accounts")} data-reveal>
-            <SectionHeading eyebrow="ACCOUNT" title="마음 전하실 곳" />
+            <SectionHeading
+              eyebrow={content.sectionCopy.accounts.eyebrow}
+              title={content.sectionCopy.accounts.title}
+              description={content.sectionCopy.accounts.description}
+            />
             <div className="tabs" role="tablist" aria-label="계좌 그룹">
               {content.accounts.map((group, index) => (
                 <button

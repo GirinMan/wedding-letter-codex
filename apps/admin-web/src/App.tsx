@@ -64,6 +64,18 @@ const sectionLabels: Record<InvitationContent["sections"][number]["id"], string>
   guestUploads: "축하 사진 공유",
   closing: "마무리",
 };
+const sectionCopyFields: Array<{
+  id: keyof InvitationContent["sectionCopy"];
+  label: string;
+  calendarFallback?: boolean;
+}> = [
+  { id: "interview", label: "인터뷰" },
+  { id: "calendar", label: "달력·카운트다운", calendarFallback: true },
+  { id: "timeline", label: "우리 이야기" },
+  { id: "location", label: "오시는 길" },
+  { id: "gallery", label: "갤러리" },
+  { id: "accounts", label: "마음 전하실 곳" },
+];
 
 function createId(prefix: string) {
   return `${prefix}-${crypto.randomUUID()}`;
@@ -410,6 +422,23 @@ export function App() {
                   <Field label="소개 한 줄" wide><input value={invitation.draftContent.hero.subtitle} onChange={(event) => updateContent((draft) => { draft.hero.subtitle = event.target.value; })} /></Field>
                   <Field label="인사말 제목" wide><input value={invitation.draftContent.greeting.title} onChange={(event) => updateContent((draft) => { draft.greeting.title = event.target.value; })} /></Field>
                   <Field label="인사말" wide><textarea rows={6} value={invitation.draftContent.greeting.body} onChange={(event) => updateContent((draft) => { draft.greeting.body = event.target.value; })} /></Field>
+                </div>
+                <h3 className="subheading">섹션 문구</h3>
+                <div className="repeat-list">
+                  {sectionCopyFields.map((section) => {
+                    const copy = invitation.draftContent.sectionCopy[section.id];
+                    return (
+                      <article className="section-copy-editor" key={section.id}>
+                        <h4>{section.label}</h4>
+                        <div className="field-grid">
+                          <Field label="영문 상단 문구"><input value={copy.eyebrow} onChange={(event) => updateContent((draft) => { draft.sectionCopy[section.id].eyebrow = event.target.value; })} /></Field>
+                          <Field label="제목"><input value={copy.title} onChange={(event) => updateContent((draft) => { draft.sectionCopy[section.id].title = event.target.value; })} /></Field>
+                          <Field label="설명" wide><textarea rows={2} value={copy.description} onChange={(event) => updateContent((draft) => { draft.sectionCopy[section.id].description = event.target.value; })} /></Field>
+                        </div>
+                        {section.calendarFallback ? <p className="panel-note">달력의 제목이나 설명을 비우면 설정한 예식 일시가 자동으로 표시됩니다.</p> : null}
+                      </article>
+                    );
+                  })}
                 </div>
                 <h3 className="subheading">예식 정보</h3>
                 <div className="field-grid">

@@ -53,6 +53,34 @@ const sectionIdSchema = z.enum([
   "closing",
 ]);
 
+const defaultSectionCopy = {
+  interview: {
+    eyebrow: "INTERVIEW",
+    title: "우리 두 사람의 이야기",
+    description: "결혼을 앞둔 두 사람의 작은 이야기를 담았습니다.",
+  },
+  calendar: { eyebrow: "THE WEDDING DAY", title: "", description: "" },
+  timeline: { eyebrow: "SINCE THE FIRST DAY", title: "Our story", description: "" },
+  location: { eyebrow: "LOCATION", title: "오시는 길", description: "" },
+  gallery: { eyebrow: "GALLERY", title: "웨딩 갤러리", description: "" },
+  accounts: { eyebrow: "ACCOUNT", title: "마음 전하실 곳", description: "" },
+};
+
+const sectionHeadingSchema = z.object({
+  eyebrow: z.string().max(100).default(""),
+  title: z.string().max(160).default(""),
+  description: z.string().max(500).default(""),
+});
+
+const sectionCopySchema = z.object({
+  interview: sectionHeadingSchema.default(defaultSectionCopy.interview),
+  calendar: sectionHeadingSchema.default(defaultSectionCopy.calendar),
+  timeline: sectionHeadingSchema.default(defaultSectionCopy.timeline),
+  location: sectionHeadingSchema.default(defaultSectionCopy.location),
+  gallery: sectionHeadingSchema.default(defaultSectionCopy.gallery),
+  accounts: sectionHeadingSchema.default(defaultSectionCopy.accounts),
+}).default(defaultSectionCopy);
+
 export const invitationContentSchema = z.object({
   locale: z.enum(["ko-KR", "en-US"]).default("ko-KR"),
   couple: z.object({
@@ -157,6 +185,7 @@ export const invitationContentSchema = z.object({
   sharing: z.object({
     kakaoJavaScriptKey: z.string().trim().max(160).default(""),
   }).default({ kakaoJavaScriptKey: "" }),
+  sectionCopy: sectionCopySchema,
   middleImage: mediaReferenceSchema.default({
     assetId: null,
     alt: "",
@@ -380,6 +409,7 @@ export const sampleInvitationContent: InvitationContent = {
   },
   music: { enabled: false, assetId: null, title: "" },
   sharing: { kakaoJavaScriptKey: "" },
+  sectionCopy: defaultSectionCopy,
   middleImage: {
     assetId: null,
     alt: "함께 걷는 두 사람",
