@@ -24,12 +24,16 @@ test("sample invitation content satisfies the public contract", () => {
 test("legacy invitation documents receive defaults for new media slots", () => {
   const legacy = structuredClone(sampleInvitationContent) as unknown as Record<string, unknown>;
   delete legacy.middleImage;
+  const event = legacy.event as Record<string, unknown>;
+  delete event.sketchMap;
   const interview = legacy.interview as Array<Record<string, unknown>>;
   interview.forEach((entry) => delete entry.image);
 
   const parsed = invitationContentSchema.parse(legacy);
 
   assert.equal(parsed.middleImage.placeholder, "middle");
+  assert.equal(parsed.event.sketchMap.assetId, null);
+  assert.equal(parsed.event.sketchMap.placeholder, "venue-sketch-map");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
 });
 
@@ -112,19 +116,22 @@ test("publishing exposes only media referenced by the validated invitation", () 
   const galleryId = "22222222-2222-4222-8222-222222222222";
   const stalePublishedId = "33333333-3333-4333-8333-333333333333";
   const archivedId = "44444444-4444-4444-8444-444444444444";
+  const sketchMapId = "66666666-6666-4666-8666-666666666666";
   content.greeting.image.assetId = greetingId;
   content.gallery.items[0]!.assetId = galleryId;
+  content.event.sketchMap.assetId = sketchMapId;
   content.music.assetId = greetingId;
 
   const plan = createMediaPublicationPlan(content, [
     { id: greetingId, state: "draft" },
     { id: galleryId, state: "published" },
+    { id: sketchMapId, state: "draft" },
     { id: stalePublishedId, state: "published" },
     { id: archivedId, state: "archived" },
   ]);
 
-  assert.deepEqual(plan.referencedIds, [greetingId, galleryId]);
-  assert.deepEqual(plan.publishedIds, [greetingId, galleryId]);
+  assert.deepEqual(plan.referencedIds, [greetingId, galleryId, sketchMapId]);
+  assert.deepEqual(plan.publishedIds, [greetingId, galleryId, sketchMapId]);
   assert.deepEqual(plan.draftIds, [stalePublishedId]);
   assert.deepEqual(plan.missingIds, []);
 });

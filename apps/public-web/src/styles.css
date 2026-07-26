@@ -587,6 +587,10 @@ textarea:focus-visible {
   gap: 6px;
 }
 
+.map-sketch-button {
+  margin: 18px auto 24px;
+}
+
 .navigation-links a {
   padding: 12px 4px;
   border: 1px solid var(--line);
@@ -921,6 +925,12 @@ textarea:focus-visible {
 
 .dialog__body {
   padding: 26px 22px 40px;
+}
+
+.sketch-map-image {
+  height: min(calc(88vh - 190px), 540px);
+  border-radius: var(--radius);
+  object-fit: contain;
 }
 
 .contact-groups {

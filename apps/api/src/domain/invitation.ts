@@ -87,6 +87,11 @@ export const invitationContentSchema = z.object({
     telephone: z.string().max(30),
     latitude: z.number().min(-90).max(90).nullable(),
     longitude: z.number().min(-180).max(180).nullable(),
+    sketchMap: mediaReferenceSchema.default({
+      assetId: null,
+      alt: "예식장 약도",
+      placeholder: "venue-sketch-map",
+    }),
     transport: z.array(z.object({
       title: z.string().min(1).max(100),
       body: z.string().min(1).max(1_000),
@@ -301,6 +306,11 @@ export const sampleInvitationContent: InvitationContent = {
     telephone: "02-000-0000",
     latitude: 37.5665,
     longitude: 126.978,
+    sketchMap: {
+      assetId: null,
+      alt: "예식장 약도",
+      placeholder: "venue-sketch-map",
+    },
     transport: [
       { title: "지하철", body: "가까운 역과 출구 정보를 입력해 주세요." },
       { title: "버스", body: "정류장과 버스 노선 정보를 입력해 주세요." },

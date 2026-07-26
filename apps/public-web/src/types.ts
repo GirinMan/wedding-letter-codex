@@ -34,6 +34,7 @@ export interface InvitationContent {
     telephone: string;
     latitude: number | null;
     longitude: number | null;
+    sketchMap: MediaReference;
     transport: Array<{ title: string; body: string }>;
   };
   interview: Array<{

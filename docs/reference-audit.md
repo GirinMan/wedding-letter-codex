@@ -35,7 +35,7 @@ actions provide quick navigation and sharing.
 | Calendar | Selected wedding day and live countdown | Timezone-aware countdown |
 | Timeline | Inline five-item carousel with previous/next controls | DB-managed, keyboard-operable carousel |
 | RSVP | Attendance, side, phone, party size, meal, bus, short note, privacy consent | Persisted submission and admin export |
-| Map | Embedded map, sketch-map dialog, external navigation apps | OpenStreetMap embed plus universal external links; provider adapter remains optional |
+| Map | Embedded map, sketch-map dialog, external navigation apps | OpenStreetMap embed, admin-managed MinIO sketch map, and universal external links |
 | Gallery | Two-column square grid; "show more" expands the list | DB/MinIO media slots with initial-limit control and publish state |
 | Guestbook | Public list, name/message/password write flow, password delete flow | Moderated list and verified password-based author delete |
 | Accounts | Partner tabs, swipeable account cards, copy and payment deep links | Encrypted-at-rest deployment option; masked admin list |
@@ -55,6 +55,12 @@ surfaces without navigating away from the invitation:
   before submission.
 - Guestbook entry and listing remain separate actions; no form was submitted
   during the audit.
+- The venue sketch-map action opens a dedicated image popup over the invitation.
+- The floating action opens a drawer with section shortcuts, RSVP/photo actions,
+  reminder, link-copy, and Kakao sharing entries.
+- Gallery tiles expose pointer styling, but an individual-tile click did not open
+  another visible surface in the inspected desktop state; list expansion remains
+  the confirmed gallery interaction.
 
 ## Visual system inventory
 
