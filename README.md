@@ -23,7 +23,7 @@ PostgreSQL과 MinIO를 기반으로 콘텐츠·디자인·미디어를 런타임
 - 이름·문구·예식 일정·장소·양가 관계별 연락처 편집
 - 인터뷰·연혁·디자인 토큰 편집과 실시간 공개 화면 미리보기
 - MinIO 이미지/음악 업로드
-- RSVP 조회, 방명록 moderation, 방문객 사진 승인
+- RSVP 조회·CSV 내보내기, 방명록 moderation, 방문객 사진 승인
 - draft revision 저장과 원자적 publish
 - Secure/HttpOnly/SameSite 세션
 

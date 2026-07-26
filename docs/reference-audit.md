@@ -126,6 +126,7 @@ the reference service's private API.
 - `DELETE /api/admin/invitations/:id/media/:assetId`
 - `GET /api/admin/media/:assetId/content`
 - `GET /api/admin/invitations/:id/rsvps`
+- `GET /api/admin/invitations/:id/rsvps.csv`
 - `GET /api/admin/invitations/:id/guestbook`
 - `PATCH /api/admin/invitations/:id/guestbook/:entryId`
 - `GET /api/admin/invitations/:id/guest-uploads`
