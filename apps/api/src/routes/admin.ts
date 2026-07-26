@@ -39,6 +39,7 @@ const mediaPurposeSchema = z.enum([
   "greeting",
   "interview",
   "timeline",
+  "map",
   "gallery",
   "middle",
   "closing",
