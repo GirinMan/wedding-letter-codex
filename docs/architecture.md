@@ -66,6 +66,10 @@ records use normalized tables.
 | `admin_sessions` | Revocable hashed session token and expiration |
 | `audit_events` | Administrative mutation history |
 
+RSVP rows remain normalized and can be exported through the authenticated
+admin API as an Excel-compatible UTF-8 CSV. Exported text cells are escaped for
+CSV and protected against spreadsheet-formula execution.
+
 The seed invitation contains generic placeholder content only. Real names,
 contacts, accounts, photographs, and music are created through the admin
 interface or a private production seed.
