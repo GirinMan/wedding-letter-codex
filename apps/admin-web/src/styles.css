@@ -164,6 +164,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .subheading { margin: 32px 0 16px; padding-top: 24px; border-top: 1px solid #e5e0da; font-size: .75rem; }
 
 .repeat-list { display: grid; gap: 10px; }
+.section-copy-editor { padding: 16px; border: 1px solid #e2ddd7; border-radius: 9px; background: #fff; }
+.section-copy-editor h4 { margin: 0 0 14px; color: #5b534d; font-size: .72rem; font-weight: 600; }
 .repeat-row { display: grid; grid-template-columns: 110px 1fr 1.2fr auto; gap: 8px; }
 .repeat-row--contact { grid-template-columns: 110px 110px 100px 1fr 1.25fr auto; }
 .story-editor { display: grid; padding: 16px; border: 1px solid #e2ddd7; border-radius: 9px; grid-template-columns: 42px 1fr; gap: 10px; }

@@ -28,6 +28,7 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   delete event.sketchMap;
   const interview = legacy.interview as Array<Record<string, unknown>>;
   interview.forEach((entry) => delete entry.image);
+  delete legacy.sectionCopy;
 
   const parsed = invitationContentSchema.parse(legacy);
 
@@ -36,6 +37,18 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.equal(parsed.event.sketchMap.placeholder, "venue-sketch-map");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
   assert.deepEqual(parsed.sharing, { kakaoJavaScriptKey: "" });
+  assert.deepEqual(parsed.sectionCopy, {
+    interview: {
+      eyebrow: "INTERVIEW",
+      title: "우리 두 사람의 이야기",
+      description: "결혼을 앞둔 두 사람의 작은 이야기를 담았습니다.",
+    },
+    calendar: { eyebrow: "THE WEDDING DAY", title: "", description: "" },
+    timeline: { eyebrow: "SINCE THE FIRST DAY", title: "Our story", description: "" },
+    location: { eyebrow: "LOCATION", title: "오시는 길", description: "" },
+    gallery: { eyebrow: "GALLERY", title: "웨딩 갤러리", description: "" },
+    accounts: { eyebrow: "ACCOUNT", title: "마음 전하실 곳", description: "" },
+  });
 });
 
 test("legacy family contacts receive structured group metadata", () => {

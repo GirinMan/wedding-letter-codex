@@ -81,9 +81,23 @@ export interface InvitationContent {
   };
   music: { enabled: boolean; assetId: string | null; title: string };
   sharing: { kakaoJavaScriptKey: string };
+  sectionCopy: {
+    interview: SectionHeadingCopy;
+    calendar: SectionHeadingCopy;
+    timeline: SectionHeadingCopy;
+    location: SectionHeadingCopy;
+    gallery: SectionHeadingCopy;
+    accounts: SectionHeadingCopy;
+  };
   middleImage: MediaReference;
   closing: { title: string; body: string; image: MediaReference };
   sections: Array<{ id: string; enabled: boolean }>;
+}
+
+export interface SectionHeadingCopy {
+  eyebrow: string;
+  title: string;
+  description: string;
 }
 
 export interface InvitationDesign {
