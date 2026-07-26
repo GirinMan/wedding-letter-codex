@@ -73,7 +73,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 .login-card form { display: grid; gap: 16px; text-align: left; }
 .login-card label, .field { display: grid; gap: 8px; color: #6c645e; font-size: .72rem; }
-.login-card input, .field input, .field textarea, .field select, .repeat-row input, .story-editor input, .story-editor textarea, .timeline-editor input, .timeline-editor textarea, .transport-editor input, .transport-editor textarea, .account-editor input, .media-slot select {
+.login-card input, .field input, .field textarea, .field select, .repeat-row input, .repeat-row select, .story-editor input, .story-editor textarea, .timeline-editor input, .timeline-editor textarea, .transport-editor input, .transport-editor textarea, .account-editor input, .media-slot select {
   width: 100%;
   min-height: 43px;
   padding: 10px 12px;
@@ -165,6 +165,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 .repeat-list { display: grid; gap: 10px; }
 .repeat-row { display: grid; grid-template-columns: 110px 1fr 1.2fr auto; gap: 8px; }
+.repeat-row--contact { grid-template-columns: 110px 110px 100px 1fr 1.25fr auto; }
 .story-editor { display: grid; padding: 16px; border: 1px solid #e2ddd7; border-radius: 9px; grid-template-columns: 42px 1fr; gap: 10px; }
 .story-editor > span { color: #d28f87; font-family: Georgia, serif; font-size: .7rem; }
 .story-editor textarea { grid-column: 2; resize: vertical; }
