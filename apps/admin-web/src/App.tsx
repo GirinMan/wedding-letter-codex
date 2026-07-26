@@ -607,6 +607,8 @@ export function App() {
                     </div>
                     <div className="field-grid">
                       <Field label="제목"><input value={invitation.draftContent.guestbook.title} onChange={(event) => updateContent((draft) => { draft.guestbook.title = event.target.value; })} /></Field>
+                      <Field label="작성 버튼"><input value={invitation.draftContent.guestbook.actions.writeLabel} onChange={(event) => updateContent((draft) => { draft.guestbook.actions.writeLabel = event.target.value; })} /></Field>
+                      <Field label="목록 버튼"><input value={invitation.draftContent.guestbook.actions.viewLabel} onChange={(event) => updateContent((draft) => { draft.guestbook.actions.viewLabel = event.target.value; })} /></Field>
                       <Field label="설명" wide><input value={invitation.draftContent.guestbook.description} onChange={(event) => updateContent((draft) => { draft.guestbook.description = event.target.value; })} /></Field>
                     </div>
                   </div>

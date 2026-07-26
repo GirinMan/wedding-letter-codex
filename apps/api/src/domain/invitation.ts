@@ -156,6 +156,13 @@ export const invitationContentSchema = z.object({
     title: z.string().min(1).max(160),
     description: z.string().max(500),
     enabled: z.boolean(),
+    actions: z.object({
+      writeLabel: z.string().min(1).max(80),
+      viewLabel: z.string().min(1).max(80),
+    }).default({
+      writeLabel: "방명록 작성하기",
+      viewLabel: "방명록 전체보기",
+    }),
   }),
   rsvp: z.object({
     title: z.string().min(1).max(160),
@@ -386,6 +393,10 @@ export const sampleInvitationContent: InvitationContent = {
     title: "방명록",
     description: "축하하는 마음을 글로 남겨 주세요.",
     enabled: true,
+    actions: {
+      writeLabel: "방명록 작성하기",
+      viewLabel: "방명록 전체보기",
+    },
   },
   rsvp: {
     title: "참석 의사 전달",

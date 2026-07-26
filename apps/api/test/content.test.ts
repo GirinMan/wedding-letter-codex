@@ -26,6 +26,8 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   delete legacy.middleImage;
   const hero = legacy.hero as Record<string, unknown>;
   delete hero.nameOrder;
+  const guestbook = legacy.guestbook as Record<string, unknown>;
+  delete guestbook.actions;
   const event = legacy.event as Record<string, unknown>;
   delete event.sketchMap;
   const interview = legacy.interview as Array<Record<string, unknown>>;
@@ -36,6 +38,10 @@ test("legacy invitation documents receive defaults for new media slots", () => {
 
   assert.equal(parsed.middleImage.placeholder, "middle");
   assert.deepEqual(parsed.hero.nameOrder, ["partnerTwo", "partnerOne"]);
+  assert.deepEqual(parsed.guestbook.actions, {
+    writeLabel: "방명록 작성하기",
+    viewLabel: "방명록 전체보기",
+  });
   assert.equal(parsed.event.sketchMap.assetId, null);
   assert.equal(parsed.event.sketchMap.placeholder, "venue-sketch-map");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));

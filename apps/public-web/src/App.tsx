@@ -923,11 +923,11 @@ export function App() {
               description={content.guestbook.description}
             />
             <div className="button-row">
-              <button className="secondary-button" type="button" onClick={() => setDialog("guestbook")}>
-                축하 글 보기
-              </button>
               <button className="primary-button" type="button" onClick={() => setDialog("guestbook-write")}>
-                축하 글 남기기
+                {content.guestbook.actions.writeLabel}
+              </button>
+              <button className="secondary-button" type="button" onClick={() => setDialog("guestbook")}>
+                {content.guestbook.actions.viewLabel}
               </button>
             </div>
           </section>
@@ -1149,12 +1149,12 @@ export function App() {
             </article>
           )) : <p className="empty-state">아직 작성된 방명록이 없습니다.</p>}
           <button className="primary-button" type="button" onClick={() => setDialog("guestbook-write")}>
-            축하 글 남기기
+            {content.guestbook.actions.writeLabel}
           </button>
         </div>
       </Dialog>
 
-      <Dialog open={dialog === "guestbook-write"} title="축하 글 남기기" onClose={() => setDialog(null)}>
+      <Dialog open={dialog === "guestbook-write"} title={content.guestbook.actions.writeLabel} onClose={() => setDialog(null)}>
         <form className="form-stack" onSubmit={(event) => void handleGuestbook(event)}>
           <label>이름<input name="name" required maxLength={40} /></label>
           <label>내용<textarea name="message" required maxLength={500} rows={6} /></label>

@@ -75,7 +75,12 @@ export interface InvitationContent {
     initialCount: number;
     items: Array<MediaReference & { id: string }>;
   };
-  guestbook: { title: string; description: string; enabled: boolean };
+  guestbook: {
+    title: string;
+    description: string;
+    enabled: boolean;
+    actions: { writeLabel: string; viewLabel: string };
+  };
   rsvp: {
     title: string;
     description: string;
