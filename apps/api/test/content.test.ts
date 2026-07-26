@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   createInvitationPreview,
+  createMediaPublicationPlan,
   invitationContentSchema,
   invitationDesignSchema,
   sampleInvitationContent,
@@ -61,4 +62,38 @@ test("an authenticated draft preview uses validated draft content and design", (
   assert.equal(preview.revision, 7);
   assert.equal(preview.content.hero.title, sampleInvitationContent.hero.title);
   assert.equal(preview.design.colors.paper, sampleInvitationDesign.colors.paper);
+});
+
+test("publishing exposes only media referenced by the validated invitation", () => {
+  const content = structuredClone(sampleInvitationContent);
+  const greetingId = "11111111-1111-4111-8111-111111111111";
+  const galleryId = "22222222-2222-4222-8222-222222222222";
+  const stalePublishedId = "33333333-3333-4333-8333-333333333333";
+  const archivedId = "44444444-4444-4444-8444-444444444444";
+  content.greeting.image.assetId = greetingId;
+  content.gallery.items[0]!.assetId = galleryId;
+  content.music.assetId = greetingId;
+
+  const plan = createMediaPublicationPlan(content, [
+    { id: greetingId, state: "draft" },
+    { id: galleryId, state: "published" },
+    { id: stalePublishedId, state: "published" },
+    { id: archivedId, state: "archived" },
+  ]);
+
+  assert.deepEqual(plan.referencedIds, [greetingId, galleryId]);
+  assert.deepEqual(plan.publishedIds, [greetingId, galleryId]);
+  assert.deepEqual(plan.draftIds, [stalePublishedId]);
+  assert.deepEqual(plan.missingIds, []);
+});
+
+test("publishing reports references to unavailable media", () => {
+  const content = structuredClone(sampleInvitationContent);
+  const missingId = "55555555-5555-4555-8555-555555555555";
+  content.closing.image.assetId = missingId;
+
+  const plan = createMediaPublicationPlan(content, []);
+
+  assert.deepEqual(plan.missingIds, [missingId]);
+  assert.deepEqual(plan.publishedIds, []);
 });

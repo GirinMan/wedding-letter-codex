@@ -670,15 +670,42 @@ export function App() {
                     })}>+ 갤러리 슬롯 추가</button>
                   </div>
                 </Panel>
-                <Panel title={`미디어 ${media.length}개`}>
+                <Panel
+                  title={`미디어 ${media.length}개`}
+                  description="초안 또는 현재 공개본이 사용하는 파일은 연결을 해제하고 새 버전을 발행한 뒤 삭제할 수 있습니다."
+                >
                   <div className="media-grid">
-                    {media.map((asset) => (
-                      <article key={asset.id}>
-                        {asset.contentType.startsWith("image/") ? <img src={asset.previewUrl} alt={asset.altText} /> : <div className="audio-tile">♪</div>}
-                        <div><strong>{asset.originalName}</strong><span>{asset.purpose} · {Math.round(asset.sizeBytes / 1024)}KB</span><small>{connectedAssetIds.has(asset.id) ? "연결됨" : asset.state}</small></div>
-                        <button type="button" aria-label="미디어 삭제" disabled={connectedAssetIds.has(asset.id)} title={connectedAssetIds.has(asset.id) ? "슬롯 연결을 먼저 해제해 주세요." : "미디어 삭제"} onClick={() => void api.removeMedia(invitation.id, asset.id).then(async () => setMedia((await api.media(invitation.id)).assets))}>×</button>
-                      </article>
-                    ))}
+                    {media.map((asset) => {
+                      const connectedToDraft = connectedAssetIds.has(asset.id);
+                      const deletionBlocked = connectedToDraft || asset.connectedToPublished;
+                      const connectionLabel = asset.connectedToPublished
+                        ? "공개본 사용 중"
+                        : connectedToDraft
+                          ? "초안 연결됨"
+                          : asset.state;
+                      const deletionTitle = asset.connectedToPublished
+                        ? "현재 공개본이 사용 중입니다. 새 버전을 발행한 뒤 삭제할 수 있습니다."
+                        : connectedToDraft
+                          ? "초안 슬롯 연결을 먼저 해제해 주세요."
+                          : "미디어 삭제";
+                      return (
+                        <article key={asset.id}>
+                          {asset.contentType.startsWith("image/") ? <img src={asset.previewUrl} alt={asset.altText} /> : <div className="audio-tile">♪</div>}
+                          <div><strong>{asset.originalName}</strong><span>{asset.purpose} · {Math.round(asset.sizeBytes / 1024)}KB</span><small>{connectionLabel}</small></div>
+                          <button
+                            type="button"
+                            aria-label="미디어 삭제"
+                            disabled={deletionBlocked}
+                            title={deletionTitle}
+                            onClick={() => void api.removeMedia(invitation.id, asset.id)
+                              .then(async () => setMedia((await api.media(invitation.id)).assets))
+                              .catch(() => setNotice("미디어를 삭제하지 못했습니다. 연결 상태를 확인해 주세요."))}
+                          >
+                            ×
+                          </button>
+                        </article>
+                      );
+                    })}
                   </div>
                 </Panel>
               </>

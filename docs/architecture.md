@@ -121,6 +121,12 @@ document and design tokens into the public revision in one transaction. Public
 requests use the published revision only, preventing partial edits from leaking
 to guests.
 
+That transaction also locks the invitation and its media rows. Only assets
+referenced by the validated draft become public; previously published assets
+that are no longer referenced return to draft state. A missing or archived
+reference rejects the entire publish operation with no revision or media-state
+change.
+
 The admin image also contains the public renderer at `/preview/`. It loads a
 server-validated draft from `GET /api/admin/invitations/:id/preview`, then
 receives unsaved content and design changes from the same-origin admin parent
@@ -134,5 +140,9 @@ retaining draft/published fields in the schema.
 
 The admin workspace edits every content group independently, connects uploaded
 assets to typed media slots, and publishes only after the draft passes the same
-schema used by public reads. Assets that are still connected to a draft slot
-cannot be deleted from the UI.
+schema used by public reads. Media state is owned by publication rather than by
+an independent admin toggle. Assets referenced by either the saved draft or the
+current public revision cannot be deleted; deletion and publication serialize
+on the same invitation lock so concurrent requests cannot break the public
+document. The admin UI mirrors these server-enforced rules and identifies draft
+and public connections separately.
