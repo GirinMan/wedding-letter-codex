@@ -717,9 +717,17 @@ textarea:focus-visible {
   color: var(--ink);
 }
 
-.account-list {
-  display: grid;
-  gap: 8px;
+.account-carousel {
+  touch-action: pan-y;
+}
+
+.account-carousel__viewport {
+  overflow: hidden;
+}
+
+.account-carousel__track {
+  display: flex;
+  transition: transform var(--motion-duration) ease;
 }
 
 .account-card {
@@ -731,6 +739,14 @@ textarea:focus-visible {
   grid-template-columns: 1fr auto auto;
   gap: 8px;
   text-align: left;
+}
+
+.account-card--slide {
+  min-width: 100%;
+}
+
+.account-carousel__controls {
+  margin-top: 14px;
 }
 
 .account-card > div {
@@ -1336,5 +1352,9 @@ textarea:focus-visible {
   [data-reveal] {
     opacity: 1;
     transform: none;
+  }
+
+  .account-carousel__track {
+    transition: none;
   }
 }
