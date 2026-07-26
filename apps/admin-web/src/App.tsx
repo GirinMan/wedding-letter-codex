@@ -597,6 +597,16 @@ export function App() {
                     </div>
                     <p className="panel-note">브라우저 정책에 따라 방문객이 음악 버튼을 눌러야 재생됩니다.</p>
                   </div>
+
+                  <div className="feature-block">
+                    <div className="feature-block__header">
+                      <h3>카카오 공유</h3>
+                    </div>
+                    <div className="field-grid">
+                      <Field label="JavaScript 키" wide><input value={invitation.draftContent.sharing.kakaoJavaScriptKey} onChange={(event) => updateContent((draft) => { draft.sharing.kakaoJavaScriptKey = event.target.value; })} /></Field>
+                    </div>
+                    <p className="panel-note">카카오 개발자 도구에서 공개 청첩장 도메인을 등록한 뒤 키와 공개 이미지를 연결하면 빠른 메뉴에 공유 버튼이 표시됩니다.</p>
+                  </div>
                 </Panel>
 
                 <Panel title="계좌 정보" description="신랑·신부 측 그룹과 계좌를 추가하거나 삭제할 수 있습니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>저장</button>}>

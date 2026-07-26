@@ -24,6 +24,7 @@ import {
   type QuickMenuSection,
 } from "./components/QuickMenu";
 import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
+import { createKakaoSharePayload, sendKakaoShare } from "./kakao-share";
 import type {
   ContactRelationship,
   ContactSide,
@@ -391,6 +392,10 @@ export function App() {
     const label = quickMenuSectionLabels[section.id];
     return label ? [{ id: section.id, label }] : [];
   });
+  const kakaoShareImageAssetId = content.greeting.image.assetId
+    ?? content.gallery.items.find((item) => item.assetId)?.assetId
+    ?? content.closing.image.assetId;
+  const kakaoShareEnabled = Boolean(content.sharing.kakaoJavaScriptKey && kakaoShareImageAssetId);
   const contactGroups = ([
     { side: "partnerOne", label: `${content.couple.partnerOne.label}측` },
     { side: "partnerTwo", label: `${content.couple.partnerTwo.label}측` },
@@ -468,6 +473,30 @@ export function App() {
     });
     downloadCalendarFile(calendarFile, `${slug}-wedding.ics`);
     setNotice("캘린더에 저장할 수 있는 일정 파일을 받았습니다.");
+  };
+
+  const shareWithKakao = async () => {
+    if (isPreview) {
+      setNotice("초안 미리보기에서는 카카오 공유를 열지 않습니다.");
+      return;
+    }
+    if (!kakaoShareImageAssetId) {
+      setNotice("카카오 공유에 사용할 이미지를 먼저 연결해 주세요.");
+      return;
+    }
+    try {
+      await sendKakaoShare({
+        javascriptKey: content.sharing.kakaoJavaScriptKey,
+        payload: createKakaoSharePayload({
+          title: document.title,
+          description: content.hero.subtitle,
+          imageUrl: new URL(`/api/media/${kakaoShareImageAssetId}/content`, window.location.origin).toString(),
+          pageUrl: window.location.href,
+        }),
+      });
+    } catch {
+      setNotice("카카오 공유를 열지 못했습니다. 일반 공유를 이용해 주세요.");
+    }
   };
 
   const openQuickAction = (nextDialog: "rsvp" | "upload") => {
@@ -922,6 +951,8 @@ export function App() {
         onGuestUpload={() => openQuickAction("upload")}
         onCalendar={saveEventToCalendar}
         onCopyLink={() => void copyInvitationLink()}
+        kakaoShareEnabled={kakaoShareEnabled}
+        onKakaoShare={() => void shareWithKakao()}
         onShare={() => void share()}
       />
 

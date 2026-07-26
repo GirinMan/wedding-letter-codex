@@ -42,7 +42,7 @@ actions provide quick navigation and sharing.
 | Guest uploads | Disabled until configured time, then upload flow | S3-compatible upload with moderation and event-time gate |
 | Music | Persistent toggle; reference attempts autoplay | User-initiated playback only |
 | Calendar reminder | Floating action saves the event for later | Event/venue DB fields generate a downloadable iCalendar file |
-| Sharing | Native/service share action and floating section drawer | Data-driven section drawer plus Web Share with clipboard fallback; optional Kakao adapter |
+| Sharing | Native/service share action and floating section drawer | Data-driven section drawer, Web Share/clipboard fallback, and DB-configured Kakao SDK adapter |
 
 Read-only interaction checks confirmed that these primary actions open modal
 surfaces without navigating away from the invitation:

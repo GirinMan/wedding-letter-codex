@@ -39,6 +39,8 @@ export function QuickMenu({
   onGuestUpload,
   onCalendar,
   onCopyLink,
+  kakaoShareEnabled,
+  onKakaoShare,
   onShare,
 }: {
   open: boolean;
@@ -52,6 +54,8 @@ export function QuickMenu({
   onGuestUpload: () => void;
   onCalendar: () => void;
   onCopyLink: () => void;
+  kakaoShareEnabled: boolean;
+  onKakaoShare: () => void;
   onShare: () => void;
 }) {
   const moveToSection = (sectionId: string) => {
@@ -128,6 +132,18 @@ export function QuickMenu({
             >
               초대장 공유하기
             </button>
+            {kakaoShareEnabled ? (
+              <button
+                className="quick-menu__share secondary-button"
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onKakaoShare();
+                }}
+              >
+                카카오로 공유하기
+              </button>
+            ) : null}
           </div>
 
           <nav className="quick-menu__nav" aria-label="초대장 섹션 바로가기">
