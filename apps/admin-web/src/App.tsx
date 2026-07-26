@@ -674,7 +674,7 @@ export function App() {
                     }).catch(() => setNotice("업로드하지 못했습니다."));
                   }}>
                     <select name="purpose" required defaultValue="gallery">
-                      <option value="hero">히어로</option><option value="greeting">인사말</option><option value="interview">인터뷰</option><option value="timeline">연혁</option><option value="gallery">갤러리</option><option value="middle">중간 이미지</option><option value="closing">마무리</option><option value="music">음악</option>
+                      <option value="hero">히어로</option><option value="greeting">인사말</option><option value="interview">인터뷰</option><option value="timeline">연혁</option><option value="map">약도</option><option value="gallery">갤러리</option><option value="middle">중간 이미지</option><option value="closing">마무리</option><option value="music">음악</option>
                     </select>
                     <input name="altText" placeholder="대체 텍스트" />
                     <input name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,audio/mpeg" required />
@@ -684,6 +684,7 @@ export function App() {
                 <Panel title="미디어 슬롯 연결" description="업로드한 파일을 공개 페이지의 실제 이미지·음악 슬롯에 연결합니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "연결 저장"}</button>}>
                   <div className="media-slot-grid">
                     <MediaSlotField label="초대 인사 사진" value={invitation.draftContent.greeting.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.greeting.image = connectMedia(draft.greeting.image, asset); })} />
+                    <MediaSlotField label="예식장 약도" value={invitation.draftContent.event.sketchMap.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.event.sketchMap = connectMedia(draft.event.sketchMap, asset); })} />
                     <MediaSlotField label="중간 이미지" value={invitation.draftContent.middleImage.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.middleImage = connectMedia(draft.middleImage, asset); })} />
                     <MediaSlotField label="마무리 이미지" value={invitation.draftContent.closing.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.closing.image = connectMedia(draft.closing.image, asset); })} />
                     <MediaSlotField label="배경 음악" value={invitation.draftContent.music.assetId} assets={media} kind="audio" onChange={(asset) => updateContent((draft) => {

@@ -27,7 +27,7 @@ import type {
   MediaReference,
 } from "./types";
 
-type DialogName = "contact" | "interview" | "rsvp" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
+type DialogName = "contact" | "interview" | "rsvp" | "sketch-map" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
 
 const defaultSlug = import.meta.env.VITE_INVITATION_SLUG ?? "our-wedding";
 const contactRelationshipOrder: Record<ContactRelationship, number> = {
@@ -643,6 +643,15 @@ export function App() {
                 <span>{content.event.address}</span>
               </div>
             )}
+            {content.event.sketchMap.assetId ? (
+              <button
+                className="map-sketch-button text-button"
+                type="button"
+                onClick={() => setDialog("sketch-map")}
+              >
+                약도 이미지 보기 <span aria-hidden="true">↗</span>
+              </button>
+            ) : null}
             <div className="navigation-links">
               <a
                 href={`https://map.naver.com/p/search/${encodeURIComponent(content.event.address)}`}
@@ -822,6 +831,14 @@ export function App() {
       <button className="floating-share" type="button" aria-label="초대장 공유" onClick={() => void share()}>
         ↗
       </button>
+
+      <Dialog open={dialog === "sketch-map"} title="예식장 약도" onClose={() => setDialog(null)}>
+        <Media
+          media={content.event.sketchMap}
+          className="sketch-map-image"
+          preview={isPreview}
+        />
+      </Dialog>
 
       <Dialog open={dialog === "contact"} title="연락하기" onClose={() => setDialog(null)}>
         <div className="contact-groups">
