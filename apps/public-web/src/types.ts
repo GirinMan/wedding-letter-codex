@@ -22,7 +22,12 @@ export interface InvitationContent {
     partnerOne: { name: string; label: string; familyRelation: string };
     partnerTwo: { name: string; label: string; familyRelation: string };
   };
-  hero: { eyebrow: string; title: string; subtitle: string };
+  hero: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    nameOrder: Array<"partnerOne" | "partnerTwo">;
+  };
   greeting: { title: string; body: string; image: MediaReference };
   contacts: InvitationContact[];
   event: {
@@ -54,7 +59,12 @@ export interface InvitationContent {
     initialCount: number;
     items: Array<MediaReference & { id: string }>;
   };
-  guestbook: { title: string; description: string; enabled: boolean };
+  guestbook: {
+    title: string;
+    description: string;
+    enabled: boolean;
+    actions: { writeLabel: string; viewLabel: string };
+  };
   rsvp: {
     title: string;
     description: string;

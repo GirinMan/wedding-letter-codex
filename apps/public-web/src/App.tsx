@@ -25,6 +25,7 @@ import {
   type QuickMenuSection,
 } from "./components/QuickMenu";
 import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
+import { formatHeroDate } from "./hero-date";
 import { createKakaoSharePayload, sendKakaoShare } from "./kakao-share";
 import { moveCarouselIndex } from "./carousel";
 import type {
@@ -460,6 +461,11 @@ export function App() {
     "--body-font": design.typography.body,
     "--motion-duration": `${design.motion.durationMs}ms`,
   } as CSSProperties;
+  const heroDate = formatHeroDate(content.event.startsAt, content.event.timezone);
+  const partnersByKey = {
+    partnerOne: content.couple.partnerOne,
+    partnerTwo: content.couple.partnerTwo,
+  };
 
   const eventDate = new Date(content.event.startsAt);
   const timeline = content.timeline[timelineIndex] ?? content.timeline[0]!;
@@ -700,20 +706,21 @@ export function App() {
       <main className="invitation">
         {enabledSections.has("hero") ? (
           <section className="hero" id={sectionAnchorId("hero")} data-reveal>
-            <p className="hero__eyebrow">{content.hero.eyebrow}</p>
-            <h1>{content.hero.title}</h1>
-            <p className="hero__subtitle">{content.hero.subtitle}</p>
+            {content.hero.eyebrow ? <p className="hero__eyebrow">{content.hero.eyebrow}</p> : null}
+            <h1 className="hero__mark">{content.hero.title}</h1>
+            <div className="hero__date-stack">
+              <p>{heroDate.weekday}</p>
+              <p>{heroDate.month} <strong>{heroDate.day}<sup>{heroDate.ordinal}</sup></strong></p>
+              <time dateTime={content.event.startsAt}>{heroDate.time}</time>
+            </div>
+            <span className="hero__divider" aria-hidden="true" />
             <div className="hero__names">
-              <span>{content.couple.partnerOne.name}</span>
-              <span aria-hidden="true">·</span>
-              <span>{content.couple.partnerTwo.name}</span>
+              {content.hero.nameOrder.map((partnerKey) => (
+                <span key={partnerKey}>{partnersByKey[partnerKey].name}</span>
+              ))}
             </div>
-            <div className="hero__date">
-              <time dateTime={content.event.startsAt}>
-                {formatEventDate(content.event.startsAt)}
-              </time>
-              <span>{content.event.venueName} {content.event.hall}</span>
-            </div>
+            <p className="hero__venue">{content.event.venueName} {content.event.hall}</p>
+            {content.hero.subtitle ? <p className="hero__subtitle">{content.hero.subtitle}</p> : null}
             <span className="hero__line" aria-hidden="true" />
             <span className="scroll-label">SCROLL</span>
           </section>
@@ -916,11 +923,11 @@ export function App() {
               description={content.guestbook.description}
             />
             <div className="button-row">
-              <button className="secondary-button" type="button" onClick={() => setDialog("guestbook")}>
-                축하 글 보기
-              </button>
               <button className="primary-button" type="button" onClick={() => setDialog("guestbook-write")}>
-                축하 글 남기기
+                {content.guestbook.actions.writeLabel}
+              </button>
+              <button className="secondary-button" type="button" onClick={() => setDialog("guestbook")}>
+                {content.guestbook.actions.viewLabel}
               </button>
             </div>
           </section>
@@ -1142,12 +1149,12 @@ export function App() {
             </article>
           )) : <p className="empty-state">아직 작성된 방명록이 없습니다.</p>}
           <button className="primary-button" type="button" onClick={() => setDialog("guestbook-write")}>
-            축하 글 남기기
+            {content.guestbook.actions.writeLabel}
           </button>
         </div>
       </Dialog>
 
-      <Dialog open={dialog === "guestbook-write"} title="축하 글 남기기" onClose={() => setDialog(null)}>
+      <Dialog open={dialog === "guestbook-write"} title={content.guestbook.actions.writeLabel} onClose={() => setDialog(null)}>
         <form className="form-stack" onSubmit={(event) => void handleGuestbook(event)}>
           <label>이름<input name="name" required maxLength={40} /></label>
           <label>내용<textarea name="message" required maxLength={500} rows={6} /></label>
