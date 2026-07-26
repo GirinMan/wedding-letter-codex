@@ -28,6 +28,11 @@ import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
 import { formatHeroDate } from "./hero-date";
 import { createKakaoSharePayload, sendKakaoShare } from "./kakao-share";
 import { moveCarouselIndex } from "./carousel";
+import {
+  dismissRsvpWelcomePromptForToday,
+  rsvpPromptStorageKey,
+  shouldShowRsvpWelcomePrompt,
+} from "./rsvp-welcome-prompt";
 import type {
   ContactRelationship,
   ContactSide,
@@ -333,6 +338,7 @@ export function App() {
   const [design, setDesign] = useState<InvitationDesign | null>(null);
   const [slug, setSlug] = useState(defaultSlug);
   const [dialog, setDialog] = useState<DialogName>(null);
+  const [rsvpWelcomeOpen, setRsvpWelcomeOpen] = useState(false);
   const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
   const [guestbookDeleteTarget, setGuestbookDeleteTarget] = useState<GuestbookEntry | null>(null);
   const [timelineIndex, setTimelineIndex] = useState(0);
@@ -344,6 +350,7 @@ export function App() {
   const [musicPlaying, setMusicPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const previewPositionedRef = useRef(false);
+  const rsvpWelcomeCheckedRef = useRef(false);
 
   useEffect(() => {
     if (!isPreview) return;
@@ -433,6 +440,18 @@ export function App() {
       void loadGuestbook(slug).then(setGuestbook).catch(() => setNotice("방명록을 불러오지 못했습니다."));
     }
   }, [dialog, isPreview, slug]);
+
+  useEffect(() => {
+    if (!content || isPreview || !content.rsvp.enabled || rsvpWelcomeCheckedRef.current) return;
+    rsvpWelcomeCheckedRef.current = true;
+    try {
+      setRsvpWelcomeOpen(shouldShowRsvpWelcomePrompt(
+        window.localStorage.getItem(rsvpPromptStorageKey(slug)),
+      ));
+    } catch {
+      setRsvpWelcomeOpen(true);
+    }
+  }, [content, isPreview, slug]);
 
   const countdown = useCountdown(content?.event.startsAt ?? new Date().toISOString());
   const enabledSections = useMemo(
@@ -544,6 +563,23 @@ export function App() {
       }
     }
     setNotice("초대장 주소를 복사했습니다.");
+  };
+
+  const dismissRsvpWelcomeForToday = () => {
+    try {
+      window.localStorage.setItem(
+        rsvpPromptStorageKey(slug),
+        dismissRsvpWelcomePromptForToday(),
+      );
+    } catch {
+      // The prompt can still close when browser storage is unavailable.
+    }
+    setRsvpWelcomeOpen(false);
+  };
+
+  const openRsvpFromWelcome = () => {
+    dismissRsvpWelcomeForToday();
+    setDialog("rsvp");
   };
 
   const saveEventToCalendar = () => {
@@ -1056,6 +1092,27 @@ export function App() {
         onKakaoShare={() => void shareWithKakao()}
         onShare={() => void share()}
       />
+
+      <Dialog
+        className="dialog--rsvp-welcome"
+        open={rsvpWelcomeOpen && content.rsvp.enabled}
+        title={content.rsvp.title}
+        onClose={() => setRsvpWelcomeOpen(false)}
+      >
+        <div className="rsvp-welcome">
+          <span className="rsvp-welcome__icon" aria-hidden="true">♧</span>
+          <p className="rsvp-welcome__lead">{content.rsvp.description}</p>
+          <dl className="rsvp-welcome__details">
+            <div><dt>예식 일시</dt><dd>{formatEventDate(content.event.startsAt)}</dd></div>
+            <div><dt>예식 장소</dt><dd>{[content.event.venueName, content.event.hall].filter(Boolean).join(" · ")}</dd></div>
+            <div><dt>주소</dt><dd>{content.event.address}</dd></div>
+          </dl>
+          <div className="rsvp-welcome__actions">
+            <button className="text-button" type="button" onClick={dismissRsvpWelcomeForToday}>오늘 하루 보지 않기</button>
+            <button className="primary-button" type="button" onClick={openRsvpFromWelcome}>참석 의사 전달하기</button>
+          </div>
+        </div>
+      </Dialog>
 
       <Dialog open={dialog === "sketch-map"} title="예식장 약도" onClose={() => setDialog(null)}>
         <Media

@@ -4,8 +4,9 @@ export function Dialog({
   open,
   title,
   onClose,
+  className = "",
   children,
-}: PropsWithChildren<{ open: boolean; title: string; onClose: () => void }>) {
+}: PropsWithChildren<{ open: boolean; title: string; onClose: () => void; className?: string }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -18,7 +19,7 @@ export function Dialog({
 
   return (
     <dialog
-      className="dialog"
+      className={`dialog ${className}`}
       ref={dialogRef}
       aria-labelledby={titleId}
       onKeyDown={(event) => {

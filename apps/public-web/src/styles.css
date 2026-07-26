@@ -989,6 +989,102 @@ textarea:focus-visible {
   padding: 26px 22px 40px;
 }
 
+.dialog--rsvp-welcome {
+  box-sizing: border-box;
+  width: min(calc(100% - 40px), 390px);
+  height: auto;
+  max-height: min(76vh, 600px);
+  margin: 0 auto;
+  inset: auto 0 0;
+}
+
+.dialog--rsvp-welcome .dialog__header {
+  min-height: 58px;
+  padding: 18px 22px 8px;
+  border-bottom: 0;
+  justify-content: center;
+}
+
+.dialog--rsvp-welcome .dialog__header .icon-button {
+  position: absolute;
+  right: 18px;
+  top: 12px;
+}
+
+.dialog--rsvp-welcome .dialog__body {
+  padding: 4px 28px 26px;
+}
+
+.rsvp-welcome {
+  display: grid;
+  text-align: center;
+}
+
+.rsvp-welcome__icon {
+  color: var(--muted);
+  font-family: serif;
+  font-size: 1.65rem;
+}
+
+.rsvp-welcome__lead {
+  max-width: 290px;
+  margin: 18px auto 26px;
+  color: #5d5751;
+  font-family: serif;
+  font-size: .88rem;
+  line-height: 1.8;
+}
+
+.rsvp-welcome__details {
+  display: grid;
+  margin: 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  gap: 14px;
+  text-align: left;
+}
+
+.rsvp-welcome__details div {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 10px;
+}
+
+.rsvp-welcome__details dt,
+.rsvp-welcome__details dd {
+  margin: 0;
+  font-size: .72rem;
+  line-height: 1.5;
+}
+
+.rsvp-welcome__details dt {
+  color: var(--muted);
+}
+
+.rsvp-welcome__details dd {
+  color: var(--ink);
+}
+
+.rsvp-welcome__actions {
+  display: grid;
+  margin-top: 18px;
+  align-items: center;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 12px;
+}
+
+.rsvp-welcome__actions .text-button {
+  margin: 0;
+  font-size: .69rem;
+}
+
+.rsvp-welcome__actions .primary-button {
+  min-height: 48px;
+  padding: 0 12px;
+  font-size: .76rem;
+}
+
 .quick-menu {
   display: grid;
   gap: 30px;
