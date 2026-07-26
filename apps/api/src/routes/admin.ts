@@ -37,6 +37,7 @@ const uploadParams = invitationParams.extend({ uploadId: z.string().uuid() });
 const mediaPurposeSchema = z.enum([
   "hero",
   "greeting",
+  "profile",
   "interview",
   "timeline",
   "map",

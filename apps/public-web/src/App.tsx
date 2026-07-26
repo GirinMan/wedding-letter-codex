@@ -42,12 +42,13 @@ import type {
   MediaReference,
 } from "./types";
 
-type DialogName = "quick-menu" | "contact" | "interview" | "rsvp" | "sketch-map" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
+type DialogName = "quick-menu" | "contact" | "interview" | "rsvp" | "celebration" | "sketch-map" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
 
 const defaultSlug = import.meta.env.VITE_INVITATION_SLUG ?? "our-wedding";
 const quickMenuSectionLabels: Record<string, string> = {
   hero: "첫 화면",
   invitation: "인사말",
+  profile: "프로필",
   interview: "인터뷰",
   calendar: "달력·디데이",
   timeline: "우리 이야기",
@@ -80,6 +81,15 @@ function MessageIcon() {
     <svg aria-hidden="true" viewBox="0 0 24 24">
       <path d="M4 5.5h16v11H8l-4 3v-14Z" />
       <path d="m7 9 5 3.5L17 9" />
+    </svg>
+  );
+}
+
+function CelebrationIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M12 20.5c-2.2-3.6-6.6-4.3-7.8-7.2-1-2.5.8-4.8 3-4.5 1.5.2 2.5 1.5 2.7 3.2.1-3 1.9-5.2 4.2-5.2 2.1 0 3.6 2 2.9 4.3-.7 2.1-2.9 3.2-4.1 4.7-.9 1.1-1.1 2.9-.9 4.7Z" />
+      <path d="M9.8 12.2c.2 1.7.8 3.4 2.2 4.5" />
     </svg>
   );
 }
@@ -767,9 +777,38 @@ export function App() {
             <p className="multiline">{content.greeting.body}</p>
             <Media media={content.greeting.image} className="greeting-photo" preview={isPreview} revealDirection="from-left" />
             <FamilyRelationshipLine content={content} />
-            <button className="text-button" type="button" onClick={() => setDialog("contact")}>
-              연락하기 <span aria-hidden="true">↗</span>
+            <button className="contact-button" type="button" onClick={() => setDialog("contact")}>
+              <PhoneIcon />
+              연락하기
             </button>
+          </section>
+        ) : null}
+
+        {enabledSections.has("profile") ? (
+          <section className="section profile-section" id={sectionAnchorId("profile")} data-reveal>
+            <SectionHeading eyebrow={content.profiles.eyebrow} title={content.profiles.title} />
+            <div className="profile-grid">
+              {content.profiles.items.map((profile, index) => {
+                const partner = partnersByKey[profile.side];
+                return (
+                  <article className="profile-card" key={profile.id}>
+                    <Media
+                      media={profile.image}
+                      className="profile-card__image"
+                      preview={isPreview}
+                      revealDirection={index === 0 ? "from-left" : "from-right"}
+                    />
+                    <div className="profile-card__body">
+                      <p className="profile-card__name"><span>{partner.label}</span><strong>{partner.name}</strong></p>
+                      {profile.birthDate ? <p>{profile.birthDate}</p> : null}
+                      {profile.location ? <p>{profile.location}</p> : null}
+                      {profile.tags ? <p>{profile.tags}</p> : null}
+                      {profile.message ? <p className="profile-card__message">{profile.message}</p> : null}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </section>
         ) : null}
 
@@ -1076,6 +1115,17 @@ export function App() {
         </>
       ) : null}
 
+      {content.celebration.enabled ? (
+        <button
+          className="celebration-button"
+          type="button"
+          aria-label={content.celebration.triggerLabel}
+          onClick={() => setDialog("celebration")}
+        >
+          <CelebrationIcon />
+        </button>
+      ) : null}
+
       <QuickMenu
         open={dialog === "quick-menu"}
         sections={quickMenuSections}
@@ -1111,6 +1161,32 @@ export function App() {
             <button className="text-button" type="button" onClick={dismissRsvpWelcomeForToday}>오늘 하루 보지 않기</button>
             <button className="primary-button" type="button" onClick={openRsvpFromWelcome}>참석 의사 전달하기</button>
           </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        className="dialog--celebration"
+        open={dialog === "celebration"}
+        title={content.celebration.triggerLabel}
+        onClose={() => setDialog(null)}
+      >
+        <div className="celebration-sheet">
+          <p className="celebration-sheet__names">
+            <span>{content.couple.partnerOne.label} <strong>{content.couple.partnerOne.name}</strong></span>
+            <i aria-hidden="true">♡</i>
+            <span>{content.couple.partnerTwo.label} <strong>{content.couple.partnerTwo.name}</strong></span>
+          </p>
+          <p className="celebration-sheet__message multiline">{content.celebration.message}</p>
+          <dl className="celebration-sheet__details">
+            <div><dt>예식 일시</dt><dd>{formatEventDate(content.event.startsAt)}</dd></div>
+            <div><dt>예식 장소</dt><dd>{[content.event.venueName, content.event.hall].filter(Boolean).join(" · ")}</dd></div>
+            <div><dt>주소</dt><dd>{content.event.address}</dd></div>
+          </dl>
+          {content.celebration.linkUrl ? (
+            <a className="celebration-sheet__link" href={content.celebration.linkUrl} rel="noreferrer" target="_blank">
+              {content.celebration.linkLabel}
+            </a>
+          ) : null}
         </div>
       </Dialog>
 

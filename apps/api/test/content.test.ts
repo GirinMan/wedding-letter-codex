@@ -33,6 +33,8 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   const interview = legacy.interview as Array<Record<string, unknown>>;
   interview.forEach((entry) => delete entry.image);
   delete legacy.sectionCopy;
+  delete legacy.profiles;
+  delete legacy.celebration;
 
   const parsed = invitationContentSchema.parse(legacy);
 
@@ -46,6 +48,11 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.equal(parsed.event.sketchMap.placeholder, "venue-sketch-map");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
   assert.deepEqual(parsed.sharing, { kakaoJavaScriptKey: "" });
+  assert.equal(parsed.profiles.items.length, 2);
+  assert.equal(parsed.profiles.items[0]?.side, "partnerOne");
+  assert.equal(parsed.profiles.items[1]?.side, "partnerTwo");
+  assert.equal(parsed.celebration.enabled, false);
+  assert.equal(parsed.celebration.linkUrl, "");
   assert.deepEqual(parsed.sectionCopy, {
     interview: {
       eyebrow: "INTERVIEW",
@@ -139,22 +146,25 @@ test("publishing exposes only media referenced by the validated invitation", () 
   const galleryId = "22222222-2222-4222-8222-222222222222";
   const stalePublishedId = "33333333-3333-4333-8333-333333333333";
   const archivedId = "44444444-4444-4444-8444-444444444444";
+  const profileId = "55555555-5555-4555-8555-555555555555";
   const sketchMapId = "66666666-6666-4666-8666-666666666666";
   content.greeting.image.assetId = greetingId;
   content.gallery.items[0]!.assetId = galleryId;
   content.event.sketchMap.assetId = sketchMapId;
+  content.profiles.items[0]!.image.assetId = profileId;
   content.music.assetId = greetingId;
 
   const plan = createMediaPublicationPlan(content, [
     { id: greetingId, state: "draft" },
     { id: galleryId, state: "published" },
     { id: sketchMapId, state: "draft" },
+    { id: profileId, state: "draft" },
     { id: stalePublishedId, state: "published" },
     { id: archivedId, state: "archived" },
   ]);
 
-  assert.deepEqual(plan.referencedIds, [greetingId, galleryId, sketchMapId]);
-  assert.deepEqual(plan.publishedIds, [greetingId, galleryId, sketchMapId]);
+  assert.deepEqual(plan.referencedIds, [greetingId, galleryId, profileId, sketchMapId]);
+  assert.deepEqual(plan.publishedIds, [greetingId, galleryId, profileId, sketchMapId]);
   assert.deepEqual(plan.draftIds, [stalePublishedId]);
   assert.deepEqual(plan.missingIds, []);
 });
