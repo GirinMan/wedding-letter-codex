@@ -4,12 +4,32 @@ const colorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
 const textSchema = z.string().trim().min(1).max(2_000);
 const optionalUrlSchema = z.union([z.string().url(), z.literal("")]).default("");
 
+const contactSideSchema = z.enum(["partnerOne", "partnerTwo"]);
+const contactRelationshipSchema = z.enum(["partner", "father", "mother", "other"]);
+
+function inferContactSide(role: string) {
+  return /신부|bride|partner\s*two/i.test(role) ? "partnerTwo" : "partnerOne";
+}
+
+function inferContactRelationship(role: string) {
+  if (/아버지|부친|father/i.test(role)) return "father";
+  if (/어머니|모친|mother/i.test(role)) return "mother";
+  if (/신랑|신부|bride|groom|partner/i.test(role)) return "partner";
+  return "other";
+}
+
 const contactSchema = z.object({
   id: z.string().min(1).max(80),
   role: z.string().min(1).max(40),
   name: z.string().min(1).max(80),
   phone: z.string().min(1).max(30),
-});
+  side: contactSideSchema.optional(),
+  relationship: contactRelationshipSchema.optional(),
+}).transform((contact) => ({
+  ...contact,
+  side: contact.side ?? inferContactSide(contact.role),
+  relationship: contact.relationship ?? inferContactRelationship(contact.role),
+}));
 
 const mediaReferenceSchema = z.object({
   assetId: z.string().uuid().nullable().default(null),
@@ -39,10 +59,12 @@ export const invitationContentSchema = z.object({
     partnerOne: z.object({
       name: z.string().min(1).max(80),
       label: z.string().min(1).max(30),
+      familyRelation: z.string().min(1).max(30).default("아들"),
     }),
     partnerTwo: z.object({
       name: z.string().min(1).max(80),
       label: z.string().min(1).max(30),
+      familyRelation: z.string().min(1).max(30).default("딸"),
     }),
   }),
   hero: z.object({
@@ -249,8 +271,8 @@ export function createInvitationPreview(input: {
 export const sampleInvitationContent: InvitationContent = {
   locale: "ko-KR",
   couple: {
-    partnerOne: { name: "신랑 이름", label: "신랑" },
-    partnerTwo: { name: "신부 이름", label: "신부" },
+    partnerOne: { name: "신랑 이름", label: "신랑", familyRelation: "아들" },
+    partnerTwo: { name: "신부 이름", label: "신부", familyRelation: "딸" },
   },
   hero: {
     eyebrow: "WE INVITE YOU",
@@ -263,8 +285,12 @@ export const sampleInvitationContent: InvitationContent = {
     image: { assetId: null, alt: "두 사람의 사진", placeholder: "portrait" },
   },
   contacts: [
-    { id: "partner-one", role: "신랑", name: "신랑 이름", phone: "010-0000-0000" },
-    { id: "partner-two", role: "신부", name: "신부 이름", phone: "010-0000-0000" },
+    { id: "partner-one", side: "partnerOne", relationship: "partner", role: "신랑", name: "신랑 이름", phone: "010-0000-0000" },
+    { id: "partner-one-father", side: "partnerOne", relationship: "father", role: "아버지", name: "신랑 아버지", phone: "010-0000-0000" },
+    { id: "partner-one-mother", side: "partnerOne", relationship: "mother", role: "어머니", name: "신랑 어머니", phone: "010-0000-0000" },
+    { id: "partner-two", side: "partnerTwo", relationship: "partner", role: "신부", name: "신부 이름", phone: "010-0000-0000" },
+    { id: "partner-two-father", side: "partnerTwo", relationship: "father", role: "아버지", name: "신부 아버지", phone: "010-0000-0000" },
+    { id: "partner-two-mother", side: "partnerTwo", relationship: "mother", role: "어머니", name: "신부 어머니", phone: "010-0000-0000" },
   ],
   event: {
     startsAt: "2027-05-22T14:00:00+09:00",
