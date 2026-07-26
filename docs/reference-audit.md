@@ -41,7 +41,7 @@ actions provide quick navigation and sharing.
 | Accounts | Partner tabs, swipeable account cards, copy and payment deep links | Encrypted-at-rest deployment option; masked admin list |
 | Guest uploads | Disabled until configured time, then upload flow | MinIO upload with moderation and event-time gate |
 | Music | Persistent toggle; reference attempts autoplay | User-initiated playback only |
-| Sharing | Native/service share action | Web Share with clipboard fallback; optional Kakao adapter |
+| Sharing | Native/service share action and floating section drawer | Data-driven section drawer plus Web Share with clipboard fallback; optional Kakao adapter |
 
 Read-only interaction checks confirmed that these primary actions open modal
 surfaces without navigating away from the invitation:

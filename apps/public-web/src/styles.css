@@ -143,6 +143,10 @@ textarea:focus-visible {
   letter-spacing: .2em;
 }
 
+[id^="invitation-section-"] {
+  scroll-margin-top: 24px;
+}
+
 .section {
   padding: var(--section-space) var(--content-space);
   text-align: center;
@@ -334,6 +338,11 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   background: var(--paper);
   color: var(--ink);
+}
+
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: .35;
 }
 
 .interview-grid {
@@ -834,7 +843,7 @@ textarea:focus-visible {
 }
 
 .music-button,
-.floating-share {
+.floating-menu-button {
   position: fixed;
   z-index: 20;
   right: max(20px, calc((100vw - 430px) / 2 + 18px));
@@ -874,8 +883,17 @@ textarea:focus-visible {
   animation-delay: -.4s;
 }
 
-.floating-share {
+.floating-menu-button {
   bottom: 22px;
+}
+
+.floating-menu-button svg {
+  width: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
 }
 
 .dialog {
@@ -925,6 +943,75 @@ textarea:focus-visible {
 
 .dialog__body {
   padding: 26px 22px 40px;
+}
+
+.quick-menu {
+  display: grid;
+  gap: 30px;
+}
+
+.quick-menu__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.quick-menu__actions > :only-child {
+  grid-column: 1 / -1;
+}
+
+.quick-menu__actions button {
+  min-height: 48px;
+  padding-right: 10px;
+  padding-left: 10px;
+  font-size: .72rem;
+}
+
+.quick-menu__nav ul {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.quick-menu__nav button {
+  display: grid;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+  grid-template-columns: 34px 1fr 20px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.quick-menu__nav button > span {
+  color: var(--muted);
+  font-family: var(--display-font);
+  font-size: .62rem;
+  letter-spacing: .08em;
+}
+
+.quick-menu__nav strong {
+  font-size: .78rem;
+  font-weight: 500;
+}
+
+.quick-menu__nav svg {
+  width: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.quick-menu__share {
+  min-height: 46px;
 }
 
 .sketch-map-image {
@@ -1227,7 +1314,7 @@ textarea:focus-visible {
   }
 
   .music-button,
-  .floating-share {
+  .floating-menu-button {
     right: 16px;
   }
 }
