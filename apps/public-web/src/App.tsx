@@ -18,7 +18,7 @@ import {
   uploadGuestPhoto,
 } from "./api";
 import { Dialog } from "./components/Dialog";
-import { Media } from "./components/Media";
+import { Media, type RevealDirection } from "./components/Media";
 import {
   QuickMenu,
   sectionAnchorId,
@@ -230,13 +230,15 @@ function PlaceholderBand({
   label,
   media,
   preview,
+  revealDirection,
 }: {
   label: string;
   media?: MediaReference;
   preview: boolean;
+  revealDirection?: RevealDirection;
 }) {
-  return media ? <Media media={media} className="placeholder-band" preview={preview} /> : (
-    <div className="placeholder-band media--placeholder" role="img" aria-label={label}>
+  return media ? <Media media={media} className="placeholder-band" preview={preview} revealDirection={revealDirection} /> : (
+    <div className="placeholder-band media--placeholder" role="img" aria-label={label} data-reveal={revealDirection}>
       <span>{label}</span>
     </div>
   );
@@ -721,7 +723,7 @@ export function App() {
           <section className="section invitation-section" id={sectionAnchorId("invitation")} data-reveal>
             <SectionHeading eyebrow="INVITATION" title={content.greeting.title} />
             <p className="multiline">{content.greeting.body}</p>
-            <Media media={content.greeting.image} className="greeting-photo" preview={isPreview} />
+            <Media media={content.greeting.image} className="greeting-photo" preview={isPreview} revealDirection="from-left" />
             <FamilyRelationshipLine content={content} />
             <button className="text-button" type="button" onClick={() => setDialog("contact")}>
               연락하기 <span aria-hidden="true">↗</span>
@@ -737,9 +739,9 @@ export function App() {
               description={content.sectionCopy.interview.description}
             />
             <div className="interview-grid">
-              {content.interview.slice(0, 2).map((entry) => (
+              {content.interview.slice(0, 2).map((entry, index) => (
                 <article className="interview-card" key={entry.id}>
-                  <Media media={entry.image} className="portrait-placeholder" preview={isPreview} />
+                  <Media media={entry.image} className="portrait-placeholder" preview={isPreview} revealDirection={index % 2 === 0 ? "from-right" : "from-left"} />
                   <h3>{entry.question}</h3>
                   <p>{entry.answer}</p>
                 </article>
@@ -778,7 +780,7 @@ export function App() {
               description={content.sectionCopy.timeline.description}
             />
             <div className="timeline-card">
-              <Media media={timeline.image} className="timeline-card__image" preview={isPreview} />
+              <Media media={timeline.image} className="timeline-card__image" preview={isPreview} revealDirection="from-right" />
               <p className="timeline-card__date">{timeline.date}</p>
               <h3>{timeline.title}</h3>
               <p>{timeline.body}</p>
@@ -926,7 +928,7 @@ export function App() {
 
         {enabledSections.has("middleImage") ? (
           <section className="middle-image" id={sectionAnchorId("middleImage")} data-reveal>
-            <PlaceholderBand label="WEDDING CEREMONY" media={content.middleImage} preview={isPreview} />
+            <PlaceholderBand label="WEDDING CEREMONY" media={content.middleImage} preview={isPreview} revealDirection="from-left" />
             <div>
               <p>WEDDING CEREMONY</p>
               <strong>D − {countdown.days}</strong>
@@ -1000,7 +1002,7 @@ export function App() {
 
         {enabledSections.has("closing") ? (
           <section className="closing" id={sectionAnchorId("closing")} data-reveal>
-            <Media media={content.closing.image} className="closing__image" preview={isPreview} />
+            <Media media={content.closing.image} className="closing__image" preview={isPreview} revealDirection="from-right" />
             <div className="closing__copy">
               <p className="eyebrow">{content.closing.title}</p>
               <p className="multiline">{content.closing.body}</p>
