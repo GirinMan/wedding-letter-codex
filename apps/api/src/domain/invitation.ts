@@ -280,7 +280,11 @@ export const invitationContentSchema = z.object({
       }
       ids.add(section.id);
     });
-  }),
+  }).transform((sections) => (
+    sections.some((section) => section.id === "profile")
+      ? sections
+      : [...sections, { id: "profile", enabled: false }]
+  )),
 });
 
 export const invitationDesignSchema = z.object({
