@@ -74,7 +74,8 @@ interface or a private production seed.
 
 The JSONB document is validated at every write and contains:
 
-- couple and family contact groups
+- couple and family contact groups, explicitly keyed by partner side and
+  partner/father/mother relationship
 - event date, timezone, venue, navigation, and transport
 - ordered section configuration and feature flags
 - greeting, interview, timeline, RSVP copy, notices, and closing copy
@@ -86,6 +87,10 @@ The JSONB document is validated at every write and contains:
 
 Visual tokens are stored separately from content to preserve the replaceable
 design-system boundary.
+
+Older content documents that only contain a free-form contact role remain
+readable. The API infers their family side and relationship at validation time,
+while all newly saved content uses the structured fields.
 
 ## Security
 
