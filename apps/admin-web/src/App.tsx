@@ -38,6 +38,16 @@ const contactRelationshipLabels: Record<
   mother: "어머니",
   other: "기타",
 };
+const mealLabels: Record<string, string> = {
+  yes: "식사함",
+  no: "식사 안 함",
+  undecided: "미정",
+};
+const shuttleLabels: Record<string, string> = {
+  yes: "이용함",
+  no: "이용 안 함",
+  undecided: "미정",
+};
 
 const sectionLabels: Record<InvitationContent["sections"][number]["id"], string> = {
   hero: "첫 화면",
@@ -757,9 +767,21 @@ export function App() {
             ) : null}
 
             {view === "rsvps" ? (
-              <Panel title={`RSVP ${rsvps.length}건`} description="방문객이 제출한 참석 의사와 준비 항목입니다.">
-                <div className="table-wrap"><table><thead><tr><th>이름</th><th>참석</th><th>구분</th><th>인원</th><th>식사</th><th>셔틀</th><th>연락처</th><th>접수일</th></tr></thead><tbody>
-                  {rsvps.map((rsvp) => <tr key={rsvp.id}><td>{rsvp.name}</td><td><span className={`pill ${rsvp.attending ? "pill--ok" : ""}`}>{rsvp.attending ? "참석" : "불참"}</span></td><td>{rsvp.party === "partnerOne" ? "신랑" : "신부"}</td><td>{rsvp.additionalGuests + 1}</td><td>{rsvp.meal ?? "—"}</td><td>{rsvp.shuttle ?? "—"}</td><td>{rsvp.phone}</td><td>{new Date(rsvp.createdAt).toLocaleDateString("ko-KR")}</td></tr>)}
+              <Panel
+                title={`RSVP ${rsvps.length}건`}
+                description="방문객이 제출한 참석 의사와 준비 항목입니다."
+                actions={(
+                  <a
+                    className="button button--ghost"
+                    href={`/api/admin/invitations/${invitation.id}/rsvps.csv`}
+                    download
+                  >
+                    CSV 내보내기
+                  </a>
+                )}
+              >
+                <div className="table-wrap"><table><thead><tr><th>이름</th><th>참석</th><th>구분</th><th>인원</th><th>식사</th><th>셔틀</th><th>연락처</th><th>메모</th><th>접수일</th></tr></thead><tbody>
+                  {rsvps.map((rsvp) => <tr key={rsvp.id}><td>{rsvp.name}</td><td><span className={`pill ${rsvp.attending ? "pill--ok" : ""}`}>{rsvp.attending ? "참석" : "불참"}</span></td><td>{rsvp.party === "partnerOne" ? "신랑" : "신부"}</td><td>{rsvp.additionalGuests + 1}</td><td>{rsvp.meal ? mealLabels[rsvp.meal] : "—"}</td><td>{rsvp.shuttle ? shuttleLabels[rsvp.shuttle] : "—"}</td><td>{rsvp.phone}</td><td>{rsvp.note || "—"}</td><td>{new Date(rsvp.createdAt).toLocaleDateString("ko-KR")}</td></tr>)}
                 </tbody></table></div>
               </Panel>
             ) : null}
