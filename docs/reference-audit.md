@@ -43,6 +43,19 @@ actions provide quick navigation and sharing.
 | Music | Persistent toggle; reference attempts autoplay | User-initiated playback only |
 | Sharing | Native/service share action | Web Share with clipboard fallback; optional Kakao adapter |
 
+Read-only interaction checks confirmed that these primary actions open modal
+surfaces without navigating away from the invitation:
+
+- Contact separates both families and exposes the partner, father, and mother
+  rows with distinct phone and SMS actions.
+- Interview presents an ordered question-and-answer document in a full-height
+  modal.
+- RSVP asks for attendance, name, partner side, representative phone, additional
+  guest count, meal, shuttle, a 30-character note, and explicit privacy consent
+  before submission.
+- Guestbook entry and listing remain separate actions; no form was submitted
+  during the audit.
+
 ## Visual system inventory
 
 - Paper-like white canvas with black ink and warm gray secondary text
