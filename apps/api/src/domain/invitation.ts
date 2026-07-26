@@ -205,6 +205,7 @@ export const invitationContentSchema = z.object({
     image: mediaReferenceSchema,
   })).min(1).max(20),
   gallery: z.object({
+    layout: z.enum(["grid", "carousel", "both"]).default("grid"),
     initialCount: z.number().int().min(2).max(30).default(6),
     items: z.array(mediaReferenceSchema.extend({
       id: z.string().min(1).max(80),
@@ -462,6 +463,7 @@ export const sampleInvitationContent: InvitationContent = {
     { id: "promise", date: "2026. 12", title: "평생을 약속한 날", body: "우리의 이야기를 입력해 주세요.", image: { assetId: null, alt: "", placeholder: "story-3" } },
   ],
   gallery: {
+    layout: "grid",
     initialCount: 6,
     items: Array.from({ length: 8 }, (_, index) => ({
       id: `gallery-${index + 1}`,

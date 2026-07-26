@@ -987,10 +987,17 @@ export function App() {
               title={content.sectionCopy.gallery.title}
               description={content.sectionCopy.gallery.description}
             />
-            <div className="gallery-grid">
-              {visibleGallery.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
-            </div>
-            {content.gallery.items.length > content.gallery.initialCount ? (
+            {content.gallery.layout === "carousel" || content.gallery.layout === "both" ? (
+              <div className="gallery-carousel" aria-label="웨딩 사진을 좌우로 밀어 볼 수 있습니다.">
+                {content.gallery.items.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
+              </div>
+            ) : null}
+            {content.gallery.layout === "grid" || content.gallery.layout === "both" ? (
+              <div className="gallery-grid">
+                {visibleGallery.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
+              </div>
+            ) : null}
+            {(content.gallery.layout === "grid" || content.gallery.layout === "both") && content.gallery.items.length > content.gallery.initialCount ? (
               <button className="text-button" type="button" onClick={() => setGalleryExpanded((value) => !value)}>
                 {galleryExpanded ? "접기" : "더보기"} <span aria-hidden="true">{galleryExpanded ? "↑" : "↓"}</span>
               </button>

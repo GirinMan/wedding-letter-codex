@@ -785,6 +785,28 @@ textarea:focus-visible {
   aspect-ratio: 1;
 }
 
+.gallery-carousel {
+  display: flex;
+  overflow-x: auto;
+  margin: 0 calc(var(--content-space) * -1) 30px;
+  padding: 0 var(--content-space) 6px;
+  gap: 10px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.gallery-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery-carousel .media {
+  width: min(78vw, 300px);
+  min-width: min(78vw, 300px);
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius);
+  scroll-snap-align: start;
+}
+
 .gallery-section > .text-button {
   margin-top: 24px;
 }

@@ -31,6 +31,8 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   const event = legacy.event as Record<string, unknown>;
   delete event.sketchMap;
   delete event.map;
+  const gallery = legacy.gallery as Record<string, unknown>;
+  delete gallery.layout;
   const interview = legacy.interview as Array<Record<string, unknown>>;
   interview.forEach((entry) => delete entry.image);
   delete legacy.sectionCopy;
@@ -51,6 +53,7 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.equal(parsed.event.sketchMap.placeholder, "venue-sketch-map");
   assert.equal(parsed.event.map.naverMapClientId, "");
   assert.equal(parsed.event.map.zoom, 16);
+  assert.equal(parsed.gallery.layout, "grid");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
   assert.deepEqual(parsed.sharing, { kakaoJavaScriptKey: "" });
   assert.equal(parsed.profiles.items.length, 2);

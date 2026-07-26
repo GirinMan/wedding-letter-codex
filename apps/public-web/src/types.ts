@@ -74,6 +74,7 @@ export interface InvitationContent {
     image: MediaReference;
   }>;
   gallery: {
+    layout: "grid" | "carousel" | "both";
     initialCount: number;
     items: Array<MediaReference & { id: string }>;
   };
