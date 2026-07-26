@@ -5,6 +5,7 @@ import {
   useState,
   type CSSProperties,
   type FormEvent,
+  type PointerEvent,
 } from "react";
 
 import {
@@ -25,6 +26,7 @@ import {
 } from "./components/QuickMenu";
 import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
 import { createKakaoSharePayload, sendKakaoShare } from "./kakao-share";
+import { moveCarouselIndex } from "./carousel";
 import type {
   ContactRelationship,
   ContactSide,
@@ -240,6 +242,86 @@ function PlaceholderBand({
   );
 }
 
+function AccountCardCarousel({
+  accounts,
+  activeIndex,
+  onActiveIndexChange,
+  onCopy,
+}: {
+  accounts: InvitationContent["accounts"][number]["items"];
+  activeIndex: number;
+  onActiveIndexChange: (index: number) => void;
+  onCopy: (accountNumber: string) => void | Promise<void>;
+}) {
+  const dragStartX = useRef<number | null>(null);
+  const activeAccount = accounts[activeIndex] ?? accounts[0];
+  if (!activeAccount) return null;
+
+  const move = (direction: -1 | 1) => {
+    onActiveIndexChange(moveCarouselIndex(activeIndex, direction, accounts.length));
+  };
+
+  const beginDrag = (event: PointerEvent<HTMLDivElement>) => {
+    dragStartX.current = event.clientX;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const finishDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragStartX.current === null) return;
+    const delta = event.clientX - dragStartX.current;
+    dragStartX.current = null;
+    if (Math.abs(delta) < 48) return;
+    move(delta > 0 ? -1 : 1);
+  };
+
+  return (
+    <div className="account-carousel" aria-label="계좌 카드" onPointerDown={beginDrag} onPointerUp={finishDrag} onPointerCancel={() => { dragStartX.current = null; }}>
+      <div className="account-carousel__viewport">
+        <div
+          className="account-carousel__track"
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+        >
+          {accounts.map((account, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <article
+                aria-hidden={!isActive}
+                className="account-card account-card--slide"
+                key={account.id}
+              >
+                <div>
+                  <span>{account.holder}</span>
+                  <strong>{account.bank} {account.accountNumber}</strong>
+                </div>
+                <button
+                  className="small-button"
+                  tabIndex={isActive ? 0 : -1}
+                  type="button"
+                  onClick={() => void onCopy(account.accountNumber)}
+                >
+                  복사
+                </button>
+                {account.paymentUrl ? (
+                  <a className="small-button" href={account.paymentUrl} rel="noreferrer" tabIndex={isActive ? 0 : -1} target="_blank">
+                    송금
+                  </a>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      </div>
+      {accounts.length > 1 ? (
+        <div className="carousel-controls account-carousel__controls">
+          <button className="icon-button" type="button" aria-label="이전 계좌" onClick={() => move(-1)}>←</button>
+          <span aria-live="polite">{activeIndex + 1} / {accounts.length}</span>
+          <button className="icon-button" type="button" aria-label="다음 계좌" onClick={() => move(1)}>→</button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function App() {
   const previewInvitationId = new URLSearchParams(window.location.search).get("invitationId");
   const isPreview = window.location.pathname.startsWith("/preview/")
@@ -252,6 +334,7 @@ export function App() {
   const [guestbookDeleteTarget, setGuestbookDeleteTarget] = useState<GuestbookEntry | null>(null);
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [accountIndex, setAccountIndex] = useState(0);
+  const [accountItemIndex, setAccountItemIndex] = useState(0);
   const [galleryExpanded, setGalleryExpanded] = useState(false);
   const [notice, setNotice] = useState("");
   const [loadingError, setLoadingError] = useState("");
@@ -866,34 +949,28 @@ export function App() {
                   role="tab"
                   aria-selected={index === accountIndex}
                   key={group.id}
-                  onClick={() => setAccountIndex(index)}
+                  onClick={() => {
+                    setAccountIndex(index);
+                    setAccountItemIndex(0);
+                  }}
                 >
                   {group.label}
                 </button>
               ))}
             </div>
-            <div className="account-list">
-              {accountGroup.items.map((account) => (
-                <article className="account-card" key={account.id}>
-                  <div>
-                    <span>{account.holder}</span>
-                    <strong>{account.bank} {account.accountNumber}</strong>
-                  </div>
-                  <button
-                    className="small-button"
-                    type="button"
-                    onClick={() => void navigator.clipboard.writeText(account.accountNumber).then(() => setNotice("계좌번호를 복사했습니다."))}
-                  >
-                    복사
-                  </button>
-                  {account.paymentUrl ? (
-                    <a className="small-button" href={account.paymentUrl} target="_blank" rel="noreferrer">
-                      송금
-                    </a>
-                  ) : null}
-                </article>
-              ))}
-            </div>
+            <AccountCardCarousel
+              accounts={accountGroup.items}
+              activeIndex={Math.min(accountItemIndex, Math.max(accountGroup.items.length - 1, 0))}
+              onActiveIndexChange={setAccountItemIndex}
+              onCopy={async (accountNumber) => {
+                try {
+                  await navigator.clipboard.writeText(accountNumber);
+                  setNotice("계좌번호를 복사했습니다.");
+                } catch {
+                  setNotice("계좌번호를 복사하지 못했습니다.");
+                }
+              }}
+            />
           </section>
         ) : null}
 
