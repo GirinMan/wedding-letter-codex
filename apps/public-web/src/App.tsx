@@ -19,6 +19,8 @@ import {
 import { Dialog } from "./components/Dialog";
 import { Media } from "./components/Media";
 import type {
+  ContactRelationship,
+  ContactSide,
   GuestbookEntry,
   InvitationContent,
   InvitationDesign,
@@ -28,6 +30,83 @@ import type {
 type DialogName = "contact" | "interview" | "rsvp" | "guestbook" | "guestbook-write" | "guestbook-delete" | "upload" | null;
 
 const defaultSlug = import.meta.env.VITE_INVITATION_SLUG ?? "our-wedding";
+const contactRelationshipOrder: Record<ContactRelationship, number> = {
+  partner: 0,
+  father: 1,
+  mother: 2,
+  other: 3,
+};
+
+function PhoneIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M7.4 3.5 9.8 8l-2 1.8a13.5 13.5 0 0 0 6.4 6.4l1.8-2 4.5 2.4-.8 3.2a2 2 0 0 1-2 1.5C9.4 20.6 3.4 14.6 2.7 6.3a2 2 0 0 1 1.5-2Z" />
+    </svg>
+  );
+}
+
+function MessageIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M4 5.5h16v11H8l-4 3v-14Z" />
+      <path d="m7 9 5 3.5L17 9" />
+    </svg>
+  );
+}
+
+function FamilyRelationshipLine({ content }: { content: InvitationContent }) {
+  const sides = [
+    { key: "partnerOne", partner: content.couple.partnerOne },
+    { key: "partnerTwo", partner: content.couple.partnerTwo },
+  ] as const;
+  const hasParentContacts = content.contacts.some(
+    (contact) => contact.relationship === "father" || contact.relationship === "mother",
+  );
+
+  if (!hasParentContacts) {
+    return (
+      <div className="couple-line">
+        <span>{content.couple.partnerOne.label}</span>
+        <strong>{content.couple.partnerOne.name}</strong>
+        <i aria-hidden="true" />
+        <span>{content.couple.partnerTwo.label}</span>
+        <strong>{content.couple.partnerTwo.name}</strong>
+      </div>
+    );
+  }
+
+  return (
+    <div className="family-relations">
+      {sides.map(({ key, partner }) => {
+        const parents = content.contacts
+          .filter((contact) => (
+            contact.side === key
+            && (contact.relationship === "father" || contact.relationship === "mother")
+          ))
+          .sort((left, right) => (
+            contactRelationshipOrder[left.relationship]
+            - contactRelationshipOrder[right.relationship]
+          ));
+        if (parents.length === 0) {
+          return (
+            <div className="family-relation family-relation--simple" key={key}>
+              <span>{partner.label}</span>
+              <strong>{partner.name}</strong>
+            </div>
+          );
+        }
+        return (
+          <div className="family-relation" key={key}>
+            <span>{parents.map((contact) => contact.name).join(" · ")}</span>
+            <em>의</em>
+            <span>{partner.familyRelation}</span>
+            <strong>{partner.name}</strong>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function useCountdown(startsAt: string) {
   const [now, setNow] = useState(Date.now());
@@ -281,6 +360,20 @@ export function App() {
   const visibleGallery = galleryExpanded
     ? content.gallery.items
     : content.gallery.items.slice(0, content.gallery.initialCount);
+  const contactGroups = ([
+    { side: "partnerOne", label: `${content.couple.partnerOne.label}측` },
+    { side: "partnerTwo", label: `${content.couple.partnerTwo.label}측` },
+  ] satisfies Array<{ side: ContactSide; label: string }>)
+    .map((group) => ({
+      ...group,
+      contacts: content.contacts
+        .filter((contact) => contact.side === group.side)
+        .sort((left, right) => (
+          contactRelationshipOrder[left.relationship]
+          - contactRelationshipOrder[right.relationship]
+        )),
+    }))
+    .filter((group) => group.contacts.length > 0);
 
   const share = async () => {
     if (isPreview) {
@@ -435,13 +528,7 @@ export function App() {
             <SectionHeading eyebrow="INVITATION" title={content.greeting.title} />
             <p className="multiline">{content.greeting.body}</p>
             <Media media={content.greeting.image} className="greeting-photo" preview={isPreview} />
-            <div className="couple-line">
-              <span>{content.couple.partnerOne.label}</span>
-              <strong>{content.couple.partnerOne.name}</strong>
-              <i aria-hidden="true" />
-              <span>{content.couple.partnerTwo.label}</span>
-              <strong>{content.couple.partnerTwo.name}</strong>
-            </div>
+            <FamilyRelationshipLine content={content} />
             <button className="text-button" type="button" onClick={() => setDialog("contact")}>
               연락하기 <span aria-hidden="true">↗</span>
             </button>
@@ -737,15 +824,26 @@ export function App() {
       </button>
 
       <Dialog open={dialog === "contact"} title="연락하기" onClose={() => setDialog(null)}>
-        <div className="contact-list">
-          {content.contacts.map((contact) => (
-            <article key={contact.id}>
-              <div><span>{contact.role}</span><strong>{contact.name}</strong></div>
-              <div>
-                <a className="icon-button" href={`tel:${contact.phone}`} aria-label={`${contact.name}에게 전화`}>☎</a>
-                <a className="icon-button" href={`sms:${contact.phone}`} aria-label={`${contact.name}에게 문자`}>✉</a>
+        <div className="contact-groups">
+          {contactGroups.map((group) => (
+            <section aria-labelledby={`contact-group-${group.side}`} key={group.side}>
+              <h3 id={`contact-group-${group.side}`}>{group.label}</h3>
+              <div className="contact-list">
+                {group.contacts.map((contact) => (
+                  <article key={contact.id}>
+                    <div><span>{contact.role}</span><strong>{contact.name}</strong></div>
+                    <div>
+                      <a className="icon-button" href={`tel:${contact.phone}`} aria-label={`${contact.name}에게 전화`}>
+                        <PhoneIcon />
+                      </a>
+                      <a className="icon-button" href={`sms:${contact.phone}`} aria-label={`${contact.name}에게 문자`}>
+                        <MessageIcon />
+                      </a>
+                    </div>
+                  </article>
+                ))}
               </div>
-            </article>
+            </section>
           ))}
         </div>
       </Dialog>
