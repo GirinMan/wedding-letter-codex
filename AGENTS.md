@@ -10,7 +10,7 @@ separate private admin workspace.
 - `apps/api/src/domain/invitation.ts`: validated content and design contracts
 - PostgreSQL `invitations`: draft and published runtime content
 - PostgreSQL operational tables: RSVP, guestbook, media metadata, uploads, admin sessions
-- MinIO: uploaded images, music, and guest photographs
+- S3-compatible object storage: uploaded images, music, and guest photographs
 - `apps/public-web`: public invitation behavior and structural presentation
 - `apps/admin-web`: authenticated editor and moderation workspace
 - `docs/concepts/wedding-platform-concept.png`: accepted visual concept
@@ -49,11 +49,10 @@ dialog, carousel, upload, moderation, or publishing flow.
 
 ## Production
 
-- `wedding-invitation:80` is the public NPM target.
-- `wedding-admin:80` is the Tailscale-only admin NPM target.
-- `wedding-api:3000` is internal and shared by both web containers.
-- Production PostgreSQL and MinIO are Serengeti-managed services on `data-tier`.
-- Never add `wedding-admin.giraffe.ai.kr` to Cloudflare Tunnel application routes.
+- Keep provider-specific network topology, hostnames, registry configuration,
+  and deployment credentials out of this public repository.
+- Production requires PostgreSQL-compatible data storage, S3-compatible object
+  storage, and an authenticated admin workspace behind a private access boundary.
 
 ## Git
 

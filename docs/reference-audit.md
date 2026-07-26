@@ -158,7 +158,7 @@ the reference service's private API.
 - Maps and Kakao sharing are adapters with usable fallbacks, so the invitation
   remains functional without third-party keys.
 - Administrative actions require an authenticated session even though the
-  production admin hostname is also restricted to Tailscale.
+  production admin hostname is also restricted by a private access boundary.
 - The admin workspace provides a same-origin, authenticated live draft preview.
   Unsaved edits update the embedded invitation immediately without changing the
   separately served public revision.
