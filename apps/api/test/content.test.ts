@@ -35,6 +35,8 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   delete legacy.sectionCopy;
   delete legacy.profiles;
   delete legacy.celebration;
+  const sections = legacy.sections as Array<{ id: string }>;
+  legacy.sections = sections.filter((section) => section.id !== "profile");
 
   const parsed = invitationContentSchema.parse(legacy);
 
@@ -53,6 +55,10 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.equal(parsed.profiles.items[1]?.side, "partnerTwo");
   assert.equal(parsed.celebration.enabled, false);
   assert.equal(parsed.celebration.linkUrl, "");
+  assert.deepEqual(parsed.sections.find((section) => section.id === "profile"), {
+    id: "profile",
+    enabled: false,
+  });
   assert.deepEqual(parsed.sectionCopy, {
     interview: {
       eyebrow: "INTERVIEW",
