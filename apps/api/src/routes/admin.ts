@@ -16,6 +16,7 @@ import {
   invitationContentSchema,
   invitationDesignSchema,
 } from "../domain/invitation.js";
+import { createRsvpCsv, type RsvpCsvRow } from "../export/rsvp-csv.js";
 import {
   createPasswordVerifier,
   createSessionToken,
@@ -569,6 +570,43 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
         ORDER BY created_at DESC
       `,
     };
+  });
+
+  app.get("/api/admin/invitations/:id/rsvps.csv", async (request, reply) => {
+    const { id } = invitationParams.parse(request.params);
+    const sql = getDatabase();
+    const [invitation] = await sql<{ slug: string }[]>`
+      SELECT slug
+      FROM invitations
+      WHERE id = ${id}
+      LIMIT 1
+    `;
+    if (!invitation) {
+      return reply.code(404).send({ error: "invitation_not_found" });
+    }
+    const rows = await sql<RsvpCsvRow[]>`
+      SELECT
+        created_at,
+        attending,
+        party,
+        name,
+        phone,
+        additional_guests,
+        meal,
+        shuttle,
+        note
+      FROM rsvps
+      WHERE invitation_id = ${id}
+      ORDER BY created_at DESC
+    `;
+
+    reply.header("Content-Type", "text/csv; charset=utf-8");
+    reply.header(
+      "Content-Disposition",
+      `attachment; filename="${invitation.slug}-rsvps.csv"`,
+    );
+    reply.header("Cache-Control", "private, no-store");
+    return reply.send(createRsvpCsv(rows));
   });
 
   app.get("/api/admin/invitations/:id/guestbook", async (request, reply) => {
