@@ -45,6 +45,19 @@ export interface InvitationContent {
     nameOrder: Array<"partnerOne" | "partnerTwo">;
   };
   greeting: { title: string; body: string; image: MediaReference };
+  profiles: {
+    eyebrow: string;
+    title: string;
+    items: Array<{
+      id: string;
+      side: ContactSide;
+      birthDate: string;
+      location: string;
+      tags: string;
+      message: string;
+      image: MediaReference;
+    }>;
+  };
   contacts: InvitationContact[];
   event: {
     startsAt: string;
@@ -87,6 +100,13 @@ export interface InvitationContent {
     enabled: boolean;
     collectMeal: boolean;
     collectShuttle: boolean;
+  };
+  celebration: {
+    enabled: boolean;
+    triggerLabel: string;
+    message: string;
+    linkLabel: string;
+    linkUrl: string;
   };
   accounts: Array<{
     id: string;

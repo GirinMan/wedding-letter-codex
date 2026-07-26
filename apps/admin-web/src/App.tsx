@@ -52,6 +52,7 @@ const shuttleLabels: Record<string, string> = {
 const sectionLabels: Record<InvitationContent["sections"][number]["id"], string> = {
   hero: "첫 화면",
   invitation: "초대 인사",
+  profile: "프로필 소개",
   interview: "인터뷰",
   calendar: "달력·카운트다운",
   timeline: "우리의 연혁",
@@ -431,6 +432,29 @@ export function App() {
                   <Field label="인사말 제목" wide><input value={invitation.draftContent.greeting.title} onChange={(event) => updateContent((draft) => { draft.greeting.title = event.target.value; })} /></Field>
                   <Field label="인사말" wide><textarea rows={6} value={invitation.draftContent.greeting.body} onChange={(event) => updateContent((draft) => { draft.greeting.body = event.target.value; })} /></Field>
                 </div>
+                <h3 className="subheading">프로필 소개</h3>
+                <div className="field-grid">
+                  <Field label="영문 상단 문구"><input value={invitation.draftContent.profiles.eyebrow} onChange={(event) => updateContent((draft) => { draft.profiles.eyebrow = event.target.value; })} /></Field>
+                  <Field label="제목"><input value={invitation.draftContent.profiles.title} onChange={(event) => updateContent((draft) => { draft.profiles.title = event.target.value; })} /></Field>
+                </div>
+                <div className="repeat-list">
+                  {invitation.draftContent.profiles.items.map((profile, index) => {
+                    const partner = profile.side === "partnerOne"
+                      ? invitation.draftContent.couple.partnerOne
+                      : invitation.draftContent.couple.partnerTwo;
+                    return (
+                      <article className="section-copy-editor" key={profile.id}>
+                        <h4>{partner.label} {partner.name}</h4>
+                        <div className="field-grid">
+                          <Field label="생년월일"><input value={profile.birthDate} onChange={(event) => updateContent((draft) => { draft.profiles.items[index]!.birthDate = event.target.value; })} /></Field>
+                          <Field label="거주지"><input value={profile.location} onChange={(event) => updateContent((draft) => { draft.profiles.items[index]!.location = event.target.value; })} /></Field>
+                          <Field label="태그"><input placeholder="#ENTJ #회사원" value={profile.tags} onChange={(event) => updateContent((draft) => { draft.profiles.items[index]!.tags = event.target.value; })} /></Field>
+                          <Field label="한 줄 소개" wide><input value={profile.message} onChange={(event) => updateContent((draft) => { draft.profiles.items[index]!.message = event.target.value; })} /></Field>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
                 <h3 className="subheading">섹션 문구</h3>
                 <div className="repeat-list">
                   {sectionCopyFields.map((section) => {
@@ -602,6 +626,20 @@ export function App() {
 
                   <div className="feature-block">
                     <div className="feature-block__header">
+                      <h3>축하 화환 안내</h3>
+                      <label className="toggle-row"><span>사용</span><input type="checkbox" checked={invitation.draftContent.celebration.enabled} onChange={(event) => updateContent((draft) => { draft.celebration.enabled = event.target.checked; })} /></label>
+                    </div>
+                    <div className="field-grid">
+                      <Field label="플로팅 버튼 설명"><input value={invitation.draftContent.celebration.triggerLabel} onChange={(event) => updateContent((draft) => { draft.celebration.triggerLabel = event.target.value; })} /></Field>
+                      <Field label="링크 버튼 문구"><input value={invitation.draftContent.celebration.linkLabel} onChange={(event) => updateContent((draft) => { draft.celebration.linkLabel = event.target.value; })} /></Field>
+                      <Field label="화환 주문 링크" wide><input type="url" placeholder="https://" value={invitation.draftContent.celebration.linkUrl} onChange={(event) => updateContent((draft) => { draft.celebration.linkUrl = event.target.value; })} /></Field>
+                      <Field label="안내 문구" wide><textarea rows={3} value={invitation.draftContent.celebration.message} onChange={(event) => updateContent((draft) => { draft.celebration.message = event.target.value; })} /></Field>
+                    </div>
+                    <p className="panel-note">사용하면 공개 초대장 오른쪽 아래에 선택형 안내 버튼이 표시됩니다.</p>
+                  </div>
+
+                  <div className="feature-block">
+                    <div className="feature-block__header">
                       <h3>방명록</h3>
                       <label className="toggle-row"><span>사용</span><input type="checkbox" checked={invitation.draftContent.guestbook.enabled} onChange={(event) => updateContent((draft) => { draft.guestbook.enabled = event.target.checked; })} /></label>
                     </div>
@@ -723,7 +761,7 @@ export function App() {
                     }).catch(() => setNotice("업로드하지 못했습니다."));
                   }}>
                     <select name="purpose" required defaultValue="gallery">
-                      <option value="hero">히어로</option><option value="greeting">인사말</option><option value="interview">인터뷰</option><option value="timeline">연혁</option><option value="map">약도</option><option value="gallery">갤러리</option><option value="middle">중간 이미지</option><option value="closing">마무리</option><option value="music">음악</option>
+                      <option value="hero">히어로</option><option value="greeting">인사말</option><option value="profile">프로필</option><option value="interview">인터뷰</option><option value="timeline">연혁</option><option value="map">약도</option><option value="gallery">갤러리</option><option value="middle">중간 이미지</option><option value="closing">마무리</option><option value="music">음악</option>
                     </select>
                     <input name="altText" placeholder="대체 텍스트" />
                     <input name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,audio/mpeg" required />
@@ -750,6 +788,16 @@ export function App() {
                     {invitation.draftContent.interview.map((entry, index) => (
                       <MediaSlotField key={entry.id} label={`Q${index + 1} · ${entry.question}`} value={entry.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.interview[index]!.image = connectMedia(draft.interview[index]!.image, asset); })} />
                     ))}
+                  </div>
+
+                  <h3 className="subheading">프로필 사진</h3>
+                  <div className="media-slot-grid">
+                    {invitation.draftContent.profiles.items.map((profile, index) => {
+                      const partner = profile.side === "partnerOne"
+                        ? invitation.draftContent.couple.partnerOne
+                        : invitation.draftContent.couple.partnerTwo;
+                      return <MediaSlotField key={profile.id} label={`${partner.label} · ${partner.name}`} value={profile.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.profiles.items[index]!.image = connectMedia(draft.profiles.items[index]!.image, asset); })} />;
+                    })}
                   </div>
 
                   <h3 className="subheading">연혁 사진</h3>

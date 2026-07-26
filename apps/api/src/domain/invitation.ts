@@ -40,6 +40,7 @@ const mediaReferenceSchema = z.object({
 const sectionIdSchema = z.enum([
   "hero",
   "invitation",
+  "profile",
   "interview",
   "calendar",
   "timeline",
@@ -81,6 +82,41 @@ const sectionCopySchema = z.object({
   accounts: sectionHeadingSchema.default(defaultSectionCopy.accounts),
 }).default(defaultSectionCopy);
 
+const defaultProfiles = {
+  eyebrow: "PROFILE",
+  title: "두 사람을 소개합니다.",
+  items: [
+    {
+      id: "partner-one",
+      side: "partnerOne" as const,
+      birthDate: "",
+      location: "",
+      tags: "",
+      message: "",
+      image: { assetId: null, alt: "신랑 프로필 사진", placeholder: "profile-partner-one" },
+    },
+    {
+      id: "partner-two",
+      side: "partnerTwo" as const,
+      birthDate: "",
+      location: "",
+      tags: "",
+      message: "",
+      image: { assetId: null, alt: "신부 프로필 사진", placeholder: "profile-partner-two" },
+    },
+  ],
+};
+
+const profileSchema = z.object({
+  id: z.string().min(1).max(80),
+  side: contactSideSchema,
+  birthDate: z.string().max(100).default(""),
+  location: z.string().max(160).default(""),
+  tags: z.string().max(240).default(""),
+  message: z.string().max(500).default(""),
+  image: mediaReferenceSchema.default({ assetId: null, alt: "", placeholder: "profile" }),
+});
+
 export const invitationContentSchema = z.object({
   locale: z.enum(["ko-KR", "en-US"]).default("ko-KR"),
   couple: z.object({
@@ -109,6 +145,15 @@ export const invitationContentSchema = z.object({
     body: z.string().trim().min(1).max(4_000),
     image: mediaReferenceSchema,
   }),
+  profiles: z.object({
+    eyebrow: z.string().max(100).default(defaultProfiles.eyebrow),
+    title: z.string().min(1).max(160).default(defaultProfiles.title),
+    items: z.array(profileSchema).min(2).max(2).superRefine((items, context) => {
+      if (new Set(items.map((item) => item.side)).size !== 2) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: "Each partner must have one profile." });
+      }
+    }).default(defaultProfiles.items),
+  }).default(defaultProfiles),
   contacts: z.array(contactSchema).max(12),
   event: z.object({
     startsAt: z.string().datetime({ offset: true }),
@@ -170,6 +215,19 @@ export const invitationContentSchema = z.object({
     enabled: z.boolean(),
     collectMeal: z.boolean(),
     collectShuttle: z.boolean(),
+  }),
+  celebration: z.object({
+    enabled: z.boolean().default(false),
+    triggerLabel: z.string().min(1).max(80).default("축하 화환 보내기"),
+    message: z.string().max(1_000).default("신랑, 신부의 결혼을 축하해주세요!\n예식일에 맞춰 웨딩홀로 배송됩니다."),
+    linkLabel: z.string().min(1).max(80).default("축하 화환 보내기"),
+    linkUrl: optionalUrlSchema,
+  }).default({
+    enabled: false,
+    triggerLabel: "축하 화환 보내기",
+    message: "신랑, 신부의 결혼을 축하해주세요!\n예식일에 맞춰 웨딩홀로 배송됩니다.",
+    linkLabel: "축하 화환 보내기",
+    linkUrl: "",
   }),
   accounts: z.array(z.object({
     id: z.string().min(1).max(80),
@@ -333,6 +391,7 @@ export const sampleInvitationContent: InvitationContent = {
     body: "두 사람이 같은 방향을 바라보며 새로운 시작을 합니다.\n귀한 걸음으로 축복해 주시면 감사하겠습니다.",
     image: { assetId: null, alt: "두 사람의 사진", placeholder: "portrait" },
   },
+  profiles: defaultProfiles,
   contacts: [
     { id: "partner-one", side: "partnerOne", relationship: "partner", role: "신랑", name: "신랑 이름", phone: "010-0000-0000" },
     { id: "partner-one-father", side: "partnerOne", relationship: "father", role: "아버지", name: "신랑 아버지", phone: "010-0000-0000" },
@@ -405,6 +464,13 @@ export const sampleInvitationContent: InvitationContent = {
     collectMeal: true,
     collectShuttle: true,
   },
+  celebration: {
+    enabled: false,
+    triggerLabel: "축하 화환 보내기",
+    message: "신랑, 신부의 결혼을 축하해주세요!\n예식일에 맞춰 웨딩홀로 배송됩니다.",
+    linkLabel: "축하 화환 보내기",
+    linkUrl: "",
+  },
   accounts: [
     {
       id: "partner-one",
@@ -439,6 +505,7 @@ export const sampleInvitationContent: InvitationContent = {
   sections: [
     { id: "hero", enabled: true },
     { id: "invitation", enabled: true },
+    { id: "profile", enabled: true },
     { id: "interview", enabled: true },
     { id: "calendar", enabled: true },
     { id: "timeline", enabled: true },
