@@ -29,6 +29,15 @@ const navigation: Array<{ id: View; label: string; icon: string }> = [
 ];
 
 const previewBase = import.meta.env.VITE_PUBLIC_PREVIEW_URL ?? "http://localhost:5173";
+const contactRelationshipLabels: Record<
+  InvitationContent["contacts"][number]["relationship"],
+  string
+> = {
+  partner: "본인",
+  father: "아버지",
+  mother: "어머니",
+  other: "기타",
+};
 
 const sectionLabels: Record<InvitationContent["sections"][number]["id"], string> = {
   hero: "첫 화면",
@@ -384,6 +393,8 @@ export function App() {
                   <Field label="신부 이름"><input value={invitation.draftContent.couple.partnerTwo.name} onChange={(event) => updateContent((draft) => { draft.couple.partnerTwo.name = event.target.value; })} /></Field>
                   <Field label="신랑 호칭"><input value={invitation.draftContent.couple.partnerOne.label} onChange={(event) => updateContent((draft) => { draft.couple.partnerOne.label = event.target.value; })} /></Field>
                   <Field label="신부 호칭"><input value={invitation.draftContent.couple.partnerTwo.label} onChange={(event) => updateContent((draft) => { draft.couple.partnerTwo.label = event.target.value; })} /></Field>
+                  <Field label="신랑 가족관계"><input value={invitation.draftContent.couple.partnerOne.familyRelation} onChange={(event) => updateContent((draft) => { draft.couple.partnerOne.familyRelation = event.target.value; })} /></Field>
+                  <Field label="신부 가족관계"><input value={invitation.draftContent.couple.partnerTwo.familyRelation} onChange={(event) => updateContent((draft) => { draft.couple.partnerTwo.familyRelation = event.target.value; })} /></Field>
                   <Field label="영문 상단 문구"><input value={invitation.draftContent.hero.eyebrow} onChange={(event) => updateContent((draft) => { draft.hero.eyebrow = event.target.value; })} /></Field>
                   <Field label="메인 제목"><input value={invitation.draftContent.hero.title} onChange={(event) => updateContent((draft) => { draft.hero.title = event.target.value; })} /></Field>
                   <Field label="소개 한 줄" wide><input value={invitation.draftContent.hero.subtitle} onChange={(event) => updateContent((draft) => { draft.hero.subtitle = event.target.value; })} /></Field>
@@ -405,15 +416,49 @@ export function App() {
                 <h3 className="subheading">연락처</h3>
                 <div className="repeat-list">
                   {invitation.draftContent.contacts.map((contact, index) => (
-                    <div className="repeat-row" key={contact.id}>
-                      <input aria-label="역할" value={contact.role} onChange={(event) => updateContent((draft) => { draft.contacts[index]!.role = event.target.value; })} />
+                    <div className="repeat-row repeat-row--contact" key={contact.id}>
+                      <select aria-label="가족 구분" value={contact.side} onChange={(event) => updateContent((draft) => {
+                        const side = event.target.value as InvitationContent["contacts"][number]["side"];
+                        draft.contacts[index]!.side = side;
+                        if (draft.contacts[index]!.relationship === "partner") {
+                          draft.contacts[index]!.role = side === "partnerOne"
+                            ? draft.couple.partnerOne.label
+                            : draft.couple.partnerTwo.label;
+                        }
+                      })}>
+                        <option value="partnerOne">{invitation.draftContent.couple.partnerOne.label}측</option>
+                        <option value="partnerTwo">{invitation.draftContent.couple.partnerTwo.label}측</option>
+                      </select>
+                      <select aria-label="관계" value={contact.relationship} onChange={(event) => updateContent((draft) => {
+                        const relationship = event.target.value as InvitationContent["contacts"][number]["relationship"];
+                        draft.contacts[index]!.relationship = relationship;
+                        if (relationship !== "other") {
+                          draft.contacts[index]!.role = relationship === "partner"
+                            ? draft.contacts[index]!.side === "partnerOne"
+                              ? draft.couple.partnerOne.label
+                              : draft.couple.partnerTwo.label
+                            : contactRelationshipLabels[relationship];
+                        }
+                      })}>
+                        {Object.entries(contactRelationshipLabels).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                      <input aria-label="표시 역할" value={contact.role} onChange={(event) => updateContent((draft) => { draft.contacts[index]!.role = event.target.value; })} />
                       <input aria-label="이름" value={contact.name} onChange={(event) => updateContent((draft) => { draft.contacts[index]!.name = event.target.value; })} />
                       <input aria-label="전화번호" value={contact.phone} onChange={(event) => updateContent((draft) => { draft.contacts[index]!.phone = event.target.value; })} />
                       <button className="remove-button" type="button" aria-label={`${contact.name} 연락처 삭제`} onClick={() => updateContent((draft) => { draft.contacts.splice(index, 1); })}>삭제</button>
                     </div>
                   ))}
-                  <button className="add-button" type="button" onClick={() => updateContent((draft) => {
-                    draft.contacts.push({ id: createId("contact"), role: "가족", name: "이름", phone: "010-0000-0000" });
+                  <button className="add-button" type="button" disabled={invitation.draftContent.contacts.length >= 12} onClick={() => updateContent((draft) => {
+                    draft.contacts.push({
+                      id: createId("contact"),
+                      side: "partnerOne",
+                      relationship: "other",
+                      role: "가족",
+                      name: "이름",
+                      phone: "010-0000-0000",
+                    });
                   })}>+ 연락처 추가</button>
                 </div>
                 <h3 className="subheading">교통 안내</h3>

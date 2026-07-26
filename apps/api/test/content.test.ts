@@ -33,6 +33,48 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
 });
 
+test("legacy family contacts receive structured group metadata", () => {
+  const legacy = structuredClone(sampleInvitationContent) as unknown as {
+    couple: {
+      partnerOne: Record<string, unknown>;
+      partnerTwo: Record<string, unknown>;
+    };
+    contacts: Array<Record<string, unknown>>;
+  };
+  delete legacy.couple.partnerOne.familyRelation;
+  delete legacy.couple.partnerTwo.familyRelation;
+  legacy.contacts = [
+    { id: "legacy-one", role: "신랑", name: "이름", phone: "010-0000-0000" },
+    { id: "legacy-two", role: "신부 어머니", name: "이름", phone: "010-0000-0000" },
+  ];
+
+  const parsed = invitationContentSchema.parse(legacy);
+
+  assert.equal(parsed.couple.partnerOne.familyRelation, "아들");
+  assert.equal(parsed.couple.partnerTwo.familyRelation, "딸");
+  assert.deepEqual(
+    parsed.contacts.map(({ side, relationship }) => ({ side, relationship })),
+    [
+      { side: "partnerOne", relationship: "partner" },
+      { side: "partnerTwo", relationship: "mother" },
+    ],
+  );
+});
+
+test("sample invitation contains complete structured family contact groups", () => {
+  const parsed = invitationContentSchema.parse(sampleInvitationContent);
+  const relationshipsBySide = parsed.contacts.reduce<Record<string, string[]>>((groups, contact) => {
+    groups[contact.side] ??= [];
+    groups[contact.side]!.push(contact.relationship);
+    return groups;
+  }, {});
+
+  assert.deepEqual(relationshipsBySide, {
+    partnerOne: ["partner", "father", "mother"],
+    partnerTwo: ["partner", "father", "mother"],
+  });
+});
+
 test("sample design satisfies the replaceable token contract", () => {
   const parsed = invitationDesignSchema.parse(sampleInvitationDesign);
 

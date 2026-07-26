@@ -20,15 +20,27 @@ export interface MediaReference {
   placeholder: string;
 }
 
+export type ContactSide = "partnerOne" | "partnerTwo";
+export type ContactRelationship = "partner" | "father" | "mother" | "other";
+
+export interface InvitationContact {
+  id: string;
+  side: ContactSide;
+  relationship: ContactRelationship;
+  role: string;
+  name: string;
+  phone: string;
+}
+
 export interface InvitationContent {
   locale: "ko-KR" | "en-US";
   couple: {
-    partnerOne: { name: string; label: string };
-    partnerTwo: { name: string; label: string };
+    partnerOne: { name: string; label: string; familyRelation: string };
+    partnerTwo: { name: string; label: string; familyRelation: string };
   };
   hero: { eyebrow: string; title: string; subtitle: string };
   greeting: { title: string; body: string; image: MediaReference };
-  contacts: Array<{ id: string; role: string; name: string; phone: string }>;
+  contacts: InvitationContact[];
   event: {
     startsAt: string;
     timezone: string;

@@ -251,6 +251,47 @@ textarea:focus-visible {
   background: var(--line);
 }
 
+.family-relations {
+  display: grid;
+  width: fit-content;
+  margin: 40px auto 22px;
+  gap: 10px;
+}
+
+.family-relation {
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(120px, auto) auto auto auto;
+  gap: 8px;
+  font-size: .74rem;
+}
+
+.family-relation > span:first-child {
+  color: var(--ink);
+  text-align: right;
+}
+
+.family-relation > span:nth-last-child(2),
+.family-relation em {
+  color: var(--muted);
+}
+
+.family-relation em {
+  font-style: normal;
+}
+
+.family-relation strong {
+  font-weight: 500;
+}
+
+.family-relation--simple {
+  grid-template-columns: minmax(120px, auto) auto;
+}
+
+.family-relation--simple > span:first-child {
+  color: var(--muted);
+}
+
 .text-button,
 .primary-button,
 .secondary-button,
@@ -882,6 +923,24 @@ textarea:focus-visible {
   padding: 26px 22px 40px;
 }
 
+.contact-groups {
+  display: grid;
+  gap: 30px;
+}
+
+.contact-groups section {
+  display: grid;
+  gap: 12px;
+}
+
+.contact-groups h3 {
+  margin: 0;
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+
 .contact-list {
   display: grid;
   gap: 12px;
@@ -921,7 +980,16 @@ textarea:focus-visible {
   width: 38px;
   height: 38px;
   border-color: var(--line);
-  font-size: .75rem;
+}
+
+.contact-list .icon-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
 }
 
 .qa-list article {
