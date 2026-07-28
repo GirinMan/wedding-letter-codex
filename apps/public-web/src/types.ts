@@ -116,7 +116,10 @@ export interface InvitationContent {
     description: string;
   };
   music: { enabled: boolean; assetId: string | null; title: string };
-  sharing: { kakaoJavaScriptKey: string };
+  sharing: {
+    kakaoJavaScriptKey: string;
+    channelTalk: { enabled: boolean; pluginKey: string };
+  };
   sectionCopy: {
     interview: SectionHeadingCopy;
     calendar: SectionHeadingCopy;

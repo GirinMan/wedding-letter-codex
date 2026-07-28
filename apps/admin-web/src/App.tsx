@@ -689,6 +689,17 @@ export function App() {
                     </div>
                     <p className="panel-note">카카오 개발자 도구에서 공개 청첩장 도메인을 등록한 뒤 키와 공개 이미지를 연결하면 빠른 메뉴에 공유 버튼이 표시됩니다.</p>
                   </div>
+
+                  <div className="feature-block">
+                    <div className="feature-block__header">
+                      <h3>채널톡</h3>
+                      <label className="toggle-row"><span>사용</span><input type="checkbox" checked={invitation.draftContent.sharing.channelTalk.enabled} onChange={(event) => updateContent((draft) => { draft.sharing.channelTalk.enabled = event.target.checked; })} /></label>
+                    </div>
+                    <div className="field-grid">
+                      <Field label="Plugin Key" wide><input value={invitation.draftContent.sharing.channelTalk.pluginKey} onChange={(event) => updateContent((draft) => { draft.sharing.channelTalk.pluginKey = event.target.value; })} /></Field>
+                    </div>
+                    <p className="panel-note">채널톡 설정의 Plugin Key만 입력하세요. Access Secret 등 비밀 키는 이 청첩장에 저장하지 않습니다.</p>
+                  </div>
                 </Panel>
 
                 <Panel title="계좌 정보" description="신랑·신부 측 그룹과 계좌를 추가하거나 삭제할 수 있습니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>저장</button>}>

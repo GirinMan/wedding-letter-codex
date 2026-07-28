@@ -267,7 +267,14 @@ export const invitationContentSchema = z.object({
   }),
   sharing: z.object({
     kakaoJavaScriptKey: z.string().trim().max(160).default(""),
-  }).default({ kakaoJavaScriptKey: "" }),
+    channelTalk: z.object({
+      enabled: z.boolean().default(false),
+      pluginKey: z.string().trim().max(200).default(""),
+    }).default({ enabled: false, pluginKey: "" }),
+  }).default({
+    kakaoJavaScriptKey: "",
+    channelTalk: { enabled: false, pluginKey: "" },
+  }),
   sectionCopy: sectionCopySchema,
   middleImage: mediaReferenceSchema.default({
     assetId: null,
@@ -514,7 +521,10 @@ export const sampleInvitationContent: InvitationContent = {
     description: "예식 당일, 두 사람의 행복한 순간을 담아 올려 주세요.",
   },
   music: { enabled: false, assetId: null, title: "" },
-  sharing: { kakaoJavaScriptKey: "" },
+  sharing: {
+    kakaoJavaScriptKey: "",
+    channelTalk: { enabled: false, pluginKey: "" },
+  },
   sectionCopy: defaultSectionCopy,
   middleImage: {
     assetId: null,
