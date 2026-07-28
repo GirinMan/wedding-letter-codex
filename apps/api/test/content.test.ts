@@ -55,7 +55,10 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.equal(parsed.event.map.zoom, 16);
   assert.equal(parsed.gallery.layout, "grid");
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
-  assert.deepEqual(parsed.sharing, { kakaoJavaScriptKey: "" });
+  assert.deepEqual(parsed.sharing, {
+    kakaoJavaScriptKey: "",
+    channelTalk: { enabled: false, pluginKey: "" },
+  });
   assert.equal(parsed.profiles.items.length, 2);
   assert.equal(parsed.profiles.items[0]?.side, "partnerOne");
   assert.equal(parsed.profiles.items[1]?.side, "partnerTwo");

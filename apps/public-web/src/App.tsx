@@ -28,6 +28,7 @@ import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
 import { formatHeroDate } from "./hero-date";
 import { createKakaoSharePayload, sendKakaoShare } from "./kakao-share";
 import { moveCarouselIndex } from "./carousel";
+import { bootChannelTalk } from "./channel-talk";
 import {
   dismissRsvpWelcomePromptForToday,
   rsvpPromptStorageKey,
@@ -501,6 +502,11 @@ export function App() {
       setRsvpWelcomeOpen(true);
     }
   }, [content, isPreview, slug]);
+
+  useEffect(() => {
+    if (!content || isPreview) return;
+    bootChannelTalk(content.sharing.channelTalk);
+  }, [content, isPreview]);
 
   const countdown = useCountdown(content?.event.startsAt ?? new Date().toISOString());
   const enabledSections = useMemo(

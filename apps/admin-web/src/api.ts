@@ -12,10 +12,11 @@ import type {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const isForm = init?.body instanceof FormData;
+  const hasBody = init?.body !== undefined && init.body !== null;
   const response = await fetch(path, {
     ...init,
     credentials: "include",
-    headers: isForm
+    headers: isForm || !hasBody
       ? init?.headers
       : { "Content-Type": "application/json", ...init?.headers },
   });
