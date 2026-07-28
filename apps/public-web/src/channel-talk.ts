@@ -7,7 +7,7 @@ interface ChannelIO {
   (command: "boot", options: { pluginKey: string; language: "ko" }): void;
   (command: "shutdown"): void;
   q?: IArguments[];
-  c?: (...args: unknown[]) => void;
+  c?: (args: IArguments) => void;
 }
 
 declare global {
@@ -22,6 +22,19 @@ let bootedPluginKey: string | undefined;
 function getPluginKey(config: ChannelTalkConfig): string | undefined {
   const pluginKey = config.pluginKey.trim();
   return config.enabled && pluginKey ? pluginKey : undefined;
+}
+
+function initializeChannelIO(): ChannelIO {
+  if (window.ChannelIO) return window.ChannelIO;
+
+  let channelIO: ChannelIO;
+  channelIO = function channelIOStub() {
+    channelIO.c?.(arguments);
+  } as ChannelIO;
+  channelIO.q = [];
+  channelIO.c = (args) => channelIO.q?.push(args);
+  window.ChannelIO = channelIO;
+  return channelIO;
 }
 
 function loadSdk(): Promise<void> {
@@ -52,10 +65,9 @@ export function bootChannelTalk(config: ChannelTalkConfig): void {
   if (!pluginKey || typeof window === "undefined" || typeof document === "undefined") return;
   if (bootedPluginKey === pluginKey) return;
 
-  void loadSdk().then(() => {
-    if (bootedPluginKey === pluginKey || !window.ChannelIO) return;
-    if (bootedPluginKey) window.ChannelIO("shutdown");
-    window.ChannelIO("boot", { pluginKey, language: "ko" });
-    bootedPluginKey = pluginKey;
-  }).catch(() => undefined);
+  const channelIO = initializeChannelIO();
+  if (bootedPluginKey) channelIO("shutdown");
+  channelIO("boot", { pluginKey, language: "ko" });
+  bootedPluginKey = pluginKey;
+  void loadSdk().catch(() => undefined);
 }
