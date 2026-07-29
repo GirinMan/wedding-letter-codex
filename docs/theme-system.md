@@ -38,9 +38,14 @@ Project interpretation:
   three-image wedding catalog grid;
 - black is reserved for structural anchors such as the hero details, story
   section, closing, and primary actions rather than covering every section;
-- media placeholders use flat tile-inspired fields without frame outlines, so
-  an invitation remains intentional before photos are uploaded.
+- the bundled Image Gen artwork `sicilian-editorial-terrace.jpg` supplies a
+  sunlit limestone, sea, lemon, and bougainvillea backdrop for the hero,
+  middle image, and closing only while those media slots are empty;
+- remaining media placeholders use flat tile-inspired fields without frame
+  outlines, so an invitation remains intentional before photos are uploaded;
+- uploaded media always replaces the bundled fallback artwork.
 
 The project does not ship the brand's logo, proprietary FuturaLTPro or Walbaum
-font files, campaign photography, generated ornamental artwork, or textile
-artwork.
+font files, campaign photography, or copied textile artwork. The bundled
+fallback photograph is original, unbranded generated artwork created for this
+project.

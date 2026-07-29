@@ -1753,6 +1753,7 @@ textarea:focus-visible {
   --sicilian-lemon: #e5b927;
   --sicilian-terracotta: #b94125;
   --sicilian-bougainvillea: #963c61;
+  --sicilian-editorial-art: url("/assets/sicilian-editorial-terrace.jpg");
   --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --radius: 2px;
@@ -1870,10 +1871,16 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(3) {
   background:
-    radial-gradient(circle at 25% 50%, var(--sicilian-bougainvillea) 0 12%, transparent 13%),
-    radial-gradient(circle at 75% 50%, var(--sicilian-lemon) 0 12%, transparent 13%),
-    var(--sicilian-cobalt);
-  background-size: 92px 92px;
+    linear-gradient(90deg, rgb(8 8 8 / 8%), transparent 44%, rgb(8 8 8 / 16%)),
+    var(--sicilian-editorial-art) center 62% / cover;
+}
+
+.page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(3)::before {
+  content: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(3) span {
+  display: none;
 }
 
 .page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder::before {
@@ -2216,6 +2223,23 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .placeholder-band {
   filter: saturate(1.08) contrast(1.03);
+}
+
+.page-shell[data-theme="sicilian-noir"] .middle-image .media--placeholder,
+.page-shell[data-theme="sicilian-noir"] .closing__image.media--placeholder {
+  background:
+    linear-gradient(180deg, rgb(8 8 8 / 4%), rgb(8 8 8 / 22%)),
+    var(--sicilian-editorial-art) center / cover;
+}
+
+.page-shell[data-theme="sicilian-noir"] .middle-image .media--placeholder::before,
+.page-shell[data-theme="sicilian-noir"] .closing__image.media--placeholder::before {
+  content: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] .middle-image .media--placeholder > span,
+.page-shell[data-theme="sicilian-noir"] .closing__image.media--placeholder > span {
+  display: none;
 }
 
 .page-shell[data-theme="sicilian-noir"] .polaroid-stack span {
