@@ -121,3 +121,53 @@ test("Sicilian Noir removes wireframe rules from sections and hero placeholders"
     /\.catalog-hero__visual \.media--placeholder\s*\{[^}]*border:\s*0;/s,
   );
 });
+
+test("Sicilian Noir empty media forms one restrained wedding-paper composition", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  for (const position of [1, 2, 3]) {
+    assert.match(
+      styles,
+      new RegExp(
+        String.raw`\.catalog-hero__visual \.media--placeholder:nth-child\(${position}\)\s*\{[^}]*var\(--sicilian-editorial-art\)`,
+        "s",
+      ),
+      `hero placeholder ${position} should be a crop of the same wedding artwork`,
+    );
+  }
+  assert.match(
+    styles,
+    /\.interview-card \.portrait-placeholder\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
+    "interview placeholders should inherit the wedding-paper art direction",
+  );
+  assert.match(
+    styles,
+    /\.timeline-card__image\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
+    "story placeholders should inherit the wedding-paper art direction",
+  );
+  assert.match(
+    styles,
+    /\.profile-card__image\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
+    "profile placeholders should be composed from the wedding-paper artwork",
+  );
+  assert.match(
+    styles,
+    /\.greeting-photo\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
+    "greeting placeholders should be composed from the wedding-paper artwork",
+  );
+  assert.match(
+    styles,
+    /\.gallery-grid \.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
+    "gallery placeholders should read as an intentional editorial contact sheet",
+  );
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.media--placeholder > span\s*\{[^}]*display:\s*none;/s,
+    "internal placeholder labels should not appear in the finished invitation",
+  );
+  assert.doesNotMatch(
+    styles,
+    /radial-gradient\(circle at 22% 24%, var\(--sicilian-lemon\)/,
+    "generic circles and diagonal strokes should not decorate empty media",
+  );
+});

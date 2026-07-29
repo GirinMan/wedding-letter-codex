@@ -40,10 +40,12 @@ Project interpretation:
   section, closing, and primary actions rather than covering every section;
 - the bundled Image Gen artwork `sicilian-wedding-paper-festa.jpg` supplies a
   sunlit handmade-paper, olive, lemon-blossom, black-ribbon, bougainvillea,
-  and restrained multicolor majolica backdrop for the hero, middle image,
-  and closing only while those media slots are empty;
-- remaining media placeholders use flat tile-inspired fields without frame
-  outlines, so an invitation remains intentional before photos are uploaded;
+  and restrained multicolor majolica composition; coordinated crops form the
+  hero triptych, profile and interview portraits, story image, gallery contact
+  sheet, middle image, and closing while those media slots are empty;
+- empty media never exposes internal placeholder labels or abstract wireframe
+  shapes, so the invitation reads as a finished paper composition before
+  photos are uploaded;
 - uploaded media always replaces the bundled fallback artwork.
 
 The project does not ship the brand's logo, proprietary FuturaLTPro or Walbaum

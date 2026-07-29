@@ -1813,7 +1813,7 @@ textarea:focus-visible {
 }
 
 .catalog-hero__tile-ribbon {
-  height: 20px;
+  height: 9px;
   background:
     conic-gradient(
       from 45deg at 50% 50%,
@@ -1823,12 +1823,11 @@ textarea:focus-visible {
       #f9e9c9 0 75%,
       var(--sicilian-lemon) 0
     )
-    0 0 / 28px 28px;
-  box-shadow: inset 0 4px var(--sicilian-noir), inset 0 -4px var(--sicilian-noir);
+    0 0 / 20px 20px;
 }
 
 .catalog-hero__canvas {
-  padding: 30px 24px 64px;
+  padding: 24px 24px 56px;
 }
 
 .catalog-hero__visual {
@@ -1839,13 +1838,13 @@ textarea:focus-visible {
 
 .catalog-hero__image {
   min-width: 0;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1;
   background: var(--surface);
 }
 
 .catalog-hero__image:nth-child(3) {
   grid-column: 1 / -1;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 3 / 2;
 }
 
 .catalog-hero__visual .media--placeholder {
@@ -1857,61 +1856,28 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(1) {
   background:
-    radial-gradient(circle at 50% 42%, var(--sicilian-lemon) 0 18%, transparent 19%),
-    repeating-conic-gradient(from 22.5deg, #f7e4bd 0 12.5%, var(--sicilian-cobalt) 0 25%);
+    linear-gradient(135deg, rgb(247 241 231 / 4%), rgb(8 8 8 / 8%)),
+    var(--sicilian-editorial-art) 4% 13% / 165% auto;
 }
 
 .page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(2) {
   background:
-    linear-gradient(45deg, transparent 38%, #f4c447 39% 47%, transparent 48%),
-    linear-gradient(-45deg, transparent 38%, #f4c447 39% 47%, transparent 48%),
-    var(--sicilian-terracotta);
-  background-size: 52px 52px;
+    linear-gradient(225deg, rgb(247 241 231 / 2%), rgb(8 8 8 / 10%)),
+    var(--sicilian-editorial-art) 96% 84% / 165% auto;
 }
 
 .page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(3) {
   background:
-    linear-gradient(90deg, rgb(8 8 8 / 8%), transparent 44%, rgb(8 8 8 / 16%)),
-    var(--sicilian-editorial-art) center 62% / cover;
-}
-
-.page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(3)::before {
-  content: none;
-}
-
-.page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(3) span {
-  display: none;
+    linear-gradient(90deg, rgb(8 8 8 / 6%), transparent 48%, rgb(8 8 8 / 12%)),
+    var(--sicilian-editorial-art) center 52% / cover;
 }
 
 .page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder::before {
-  inset: 50% auto auto 50%;
-  width: 76px;
-  height: 76px;
-  border: 0;
-  border-radius: 50%;
-  background:
-    conic-gradient(
-      #fff 0 12.5%,
-      transparent 0 25%,
-      #fff 0 37.5%,
-      transparent 0 50%,
-      #fff 0 62.5%,
-      transparent 0 75%,
-      #fff 0 87.5%,
-      transparent 0
-    );
-  opacity: .78;
-  transform: translate(-50%, -50%) rotate(22.5deg);
+  content: none;
 }
 
 .catalog-hero__visual .media--placeholder span {
-  z-index: 1;
-  padding: 7px 9px;
-  background: rgb(8 8 8 / 78%);
-  font-size: .45rem;
-  font-weight: 650;
-  letter-spacing: .12em;
-  text-transform: uppercase;
+  display: none;
 }
 
 .catalog-hero__details {
@@ -2056,18 +2022,11 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .media--placeholder::before {
-  inset: 0;
-  width: auto;
-  height: auto;
-  border: 0;
-  border-radius: 0;
-  background:
-    radial-gradient(circle at 22% 24%, var(--sicilian-lemon) 0 6%, transparent 6.5%),
-    radial-gradient(circle at 78% 76%, var(--sicilian-bougainvillea) 0 7%, transparent 7.5%),
-    linear-gradient(135deg, transparent 47%, rgb(33 85 138 / 28%) 48% 52%, transparent 53%);
-  content: "";
-  opacity: .72;
-  transform: none;
+  content: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] .media--placeholder > span {
+  display: none;
 }
 
 .page-shell[data-theme="sicilian-noir"] .greeting-photo,
@@ -2083,6 +2042,12 @@ textarea:focus-visible {
 .page-shell[data-theme="sicilian-noir"] .greeting-photo {
   aspect-ratio: 4 / 5;
   border: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .greeting-photo.media--placeholder {
+  background:
+    linear-gradient(180deg, rgb(247 241 231 / 3%), rgb(8 8 8 / 9%)),
+    var(--sicilian-editorial-art) 8% 22% / 150% auto;
 }
 
 .page-shell[data-theme="sicilian-noir"] .family-relations,
@@ -2119,6 +2084,16 @@ textarea:focus-visible {
   margin-top: 12px;
 }
 
+.page-shell[data-theme="sicilian-noir"] .profile-card__image.media--placeholder {
+  background:
+    linear-gradient(180deg, rgb(247 241 231 / 3%), rgb(8 8 8 / 8%)),
+    var(--sicilian-editorial-art) 4% 15% / 155% auto;
+}
+
+.page-shell[data-theme="sicilian-noir"] .profile-card:nth-child(2) .profile-card__image.media--placeholder {
+  background-position: center, 96% 84%;
+}
+
 .page-shell[data-theme="sicilian-noir"] .profile-card__name {
   justify-content: flex-start;
 }
@@ -2145,6 +2120,17 @@ textarea:focus-visible {
   border: 0;
   border-radius: var(--radius);
   background: var(--paper);
+}
+
+.page-shell[data-theme="sicilian-noir"] .interview-card .portrait-placeholder.media--placeholder {
+  aspect-ratio: 4 / 3;
+  background:
+    linear-gradient(180deg, rgb(247 241 231 / 2%), rgb(8 8 8 / 8%)),
+    var(--sicilian-editorial-art) 6% 20% / 155% auto;
+}
+
+.page-shell[data-theme="sicilian-noir"] .interview-card:nth-child(2) .portrait-placeholder.media--placeholder {
+  background-position: center, 94% 80%;
 }
 
 .page-shell[data-theme="sicilian-noir"] .calendar {
@@ -2175,7 +2161,12 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .timeline-card__image {
   border: 0;
-  background: #171412;
+}
+
+.page-shell[data-theme="sicilian-noir"] .timeline-card__image.media--placeholder {
+  background:
+    linear-gradient(180deg, rgb(8 8 8 / 2%), rgb(8 8 8 / 12%)),
+    var(--sicilian-editorial-art) 90% 16% / cover;
 }
 
 .page-shell[data-theme="sicilian-noir"] .primary-button {
@@ -2200,6 +2191,32 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .gallery-grid .media {
   aspect-ratio: 3 / 4;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder {
+  background:
+    linear-gradient(180deg, rgb(247 241 231 / 2%), rgb(8 8 8 / 8%)),
+    var(--sicilian-editorial-art) 4% 12% / 160% auto;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(2) {
+  background-position: center, 96% 15%;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(3) {
+  background-position: center, 4% 42%;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(4) {
+  background-position: center, 96% 48%;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(5) {
+  background-position: center, 4% 82%;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(6) {
+  background-position: center, 96% 88%;
 }
 
 .page-shell[data-theme="sicilian-noir"] .gallery-carousel {
