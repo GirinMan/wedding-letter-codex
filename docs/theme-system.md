@@ -38,9 +38,10 @@ Project interpretation:
   three-image wedding catalog grid;
 - black is reserved for structural anchors such as the hero details, story
   section, closing, and primary actions rather than covering every section;
-- the bundled Image Gen artwork `sicilian-editorial-terrace.jpg` supplies a
-  sunlit limestone, sea, lemon, and bougainvillea backdrop for the hero,
-  middle image, and closing only while those media slots are empty;
+- the bundled Image Gen artwork `sicilian-wedding-paper.jpg` supplies a
+  sunlit handmade-paper, olive, lemon-blossom, black-ribbon, and cobalt-tile
+  backdrop for the hero, middle image, and closing only while those media
+  slots are empty;
 - remaining media placeholders use flat tile-inspired fields without frame
   outlines, so an invitation remains intentional before photos are uploaded;
 - uploaded media always replaces the bundled fallback artwork.

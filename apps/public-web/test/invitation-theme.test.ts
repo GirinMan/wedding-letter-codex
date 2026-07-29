@@ -59,14 +59,15 @@ test("legacy Sicilian Noir drafts render with the current limestone and noir tok
 test("Sicilian Noir uses bundled generated artwork only for empty media", async () => {
   const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
   const artwork = await readFile(
-    new URL("../public/assets/sicilian-editorial-terrace.jpg", import.meta.url),
+    new URL("../public/assets/sicilian-wedding-paper.jpg", import.meta.url),
   ).catch(() => null);
 
   assert.ok(artwork && artwork.byteLength > 100_000, "generated artwork should be bundled");
   assert.match(
     styles,
-    /--sicilian-editorial-art:\s*url\("\/assets\/sicilian-editorial-terrace\.jpg"\)/,
+    /--sicilian-editorial-art:\s*url\("\/assets\/sicilian-wedding-paper\.jpg"\)/,
   );
+  assert.doesNotMatch(styles, /sicilian-editorial-terrace\.jpg/);
   assert.match(
     styles,
     /\.catalog-hero__visual \.media--placeholder:nth-child\(3\)/,
@@ -74,6 +75,11 @@ test("Sicilian Noir uses bundled generated artwork only for empty media", async 
   assert.match(
     styles,
     /\.middle-image \.media--placeholder/,
+  );
+  assert.match(
+    styles,
+    /\.middle-image \.media--placeholder\s*\{[\s\S]*?rgb\(8 8 8 \/ 48%\)/,
+    "the light paper artwork needs a stronger lower scrim behind D-Day text",
   );
   assert.match(
     styles,
