@@ -1749,6 +1749,9 @@ textarea:focus-visible {
   --surface: #f4f4f4;
   --sicilian-noir: #0a0a0a;
   --sicilian-transition-art: url("/assets/sicilian-courtyard-transition.webp");
+  --sicilian-frieze-art: url("/assets/sicilian-majolica-frieze.webp");
+  --sicilian-medallion-art: url("/assets/sicilian-star-medallion.webp");
+  --sicilian-inlay-art: url("/assets/sicilian-margin-inlay.webp");
   --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --radius: 0;
@@ -1808,8 +1811,8 @@ textarea:focus-visible {
 }
 
 .catalog-hero__tile-ribbon {
-  height: 2px;
-  background: var(--sicilian-noir);
+  height: 16px;
+  background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
 }
 
 .catalog-hero__canvas {
@@ -1948,11 +1951,11 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .section-heading .eyebrow::before {
-  width: 7px;
-  height: 7px;
-  background: var(--ink);
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  background: var(--sicilian-medallion-art) center / cover no-repeat;
   content: "";
-  transform: rotate(45deg);
 }
 
 .page-shell[data-theme="sicilian-noir"] .section-heading h2 {
@@ -2092,6 +2095,32 @@ textarea:focus-visible {
   color: #fff;
 }
 
+.page-shell[data-theme="sicilian-noir"] #invitation-section-calendar,
+.page-shell[data-theme="sicilian-noir"] #invitation-section-accounts {
+  overflow: hidden;
+}
+
+.page-shell[data-theme="sicilian-noir"] #invitation-section-calendar::after,
+.page-shell[data-theme="sicilian-noir"] #invitation-section-accounts::after {
+  position: absolute;
+  top: 88px;
+  width: 16px;
+  height: 270px;
+  background: var(--sicilian-inlay-art) center top / 16px auto repeat-y;
+  content: "";
+  opacity: .92;
+  pointer-events: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] #invitation-section-calendar::after {
+  right: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] #invitation-section-accounts::after {
+  left: 0;
+  background-position: center 38%;
+}
+
 .page-shell[data-theme="sicilian-noir"] .section--timeline {
   background: var(--sicilian-noir);
   color: #fff;
@@ -2203,6 +2232,13 @@ textarea:focus-visible {
 .page-shell[data-theme="sicilian-noir"] .closing {
   background: var(--sicilian-noir);
   color: #fff;
+}
+
+.page-shell[data-theme="sicilian-noir"] .closing::before {
+  display: block;
+  height: 16px;
+  background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
+  content: "";
 }
 
 .page-shell[data-theme="sicilian-noir"] .closing__copy .eyebrow {

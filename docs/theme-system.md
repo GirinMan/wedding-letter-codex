@@ -32,13 +32,18 @@ Project interpretation:
 - type fallback: Avenir Next / Helvetica Neue / Arial / Pretendard /
   Noto Sans KR;
 - signature: a compact black masthead, a strict three-image wedding catalog
-  grid, and one full-bleed Sicilian architecture transition;
+  grid, one full-bleed Sicilian architecture transition, and small repeated
+  ceramic details;
 - black is reserved for structural anchors such as the hero details, story
   section, closing, and primary actions rather than covering every section;
 - the bundled Image Gen artwork `sicilian-courtyard-transition.webp` shows a
   white limewashed wall, black volcanic-stone arch, and a narrow cobalt
   majolica edge with restrained red, yellow, and green accents; it is used only
   behind the middle D-Day transition;
+- three additional Image Gen assets extend that color language without
+  becoming photo substitutes: `sicilian-majolica-frieze.webp` forms the hero
+  and closing borders, `sicilian-star-medallion.webp` marks section labels, and
+  `sicilian-margin-inlay.webp` appears only in selected white margins;
 - hero, greeting, profile, interview, timeline, gallery, and closing photo
   slots stay neutral grayscale until real photos are uploaded;
 - empty media never exposes internal placeholder labels or abstract wireframe

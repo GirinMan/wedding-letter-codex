@@ -75,6 +75,47 @@ test("Sicilian Noir uses generated Sicilian architecture only as the middle back
   assert.doesNotMatch(styles, /sicilian-wedding-paper-festa\.jpg/);
 });
 
+test("Sicilian Noir distributes generated ceramic details through decorative layers", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+  const [frieze, medallion, inlay] = await Promise.all([
+    readFile(new URL("../public/assets/sicilian-majolica-frieze.webp", import.meta.url)),
+    readFile(new URL("../public/assets/sicilian-star-medallion.webp", import.meta.url)),
+    readFile(new URL("../public/assets/sicilian-margin-inlay.webp", import.meta.url)),
+  ]);
+
+  assert.ok(frieze.byteLength > 100_000, "the horizontal ceramic frieze should be bundled");
+  assert.ok(medallion.byteLength > 4_000, "the section medallion should be bundled");
+  assert.ok(inlay.byteLength > 20_000, "the vertical margin inlay should be bundled");
+  assert.match(
+    styles,
+    /--sicilian-frieze-art:\s*url\("\/assets\/sicilian-majolica-frieze\.webp"\)/,
+  );
+  assert.match(
+    styles,
+    /--sicilian-medallion-art:\s*url\("\/assets\/sicilian-star-medallion\.webp"\)/,
+  );
+  assert.match(
+    styles,
+    /--sicilian-inlay-art:\s*url\("\/assets\/sicilian-margin-inlay\.webp"\)/,
+  );
+  assert.match(
+    styles,
+    /\.catalog-hero__tile-ribbon\s*\{[^}]*var\(--sicilian-frieze-art\)/s,
+  );
+  assert.match(
+    styles,
+    /\.section-heading \.eyebrow::before\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
+  );
+  assert.match(
+    styles,
+    /#invitation-section-calendar::after[\s\S]*?var\(--sicilian-inlay-art\)/,
+  );
+  assert.match(
+    styles,
+    /\.closing::before\s*\{[^}]*var\(--sicilian-frieze-art\)/s,
+  );
+});
+
 test("Sicilian Noir keeps the interface monochrome and sans serif", async () => {
   const [app, styles] = await Promise.all([
     readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
@@ -132,8 +173,8 @@ test("Sicilian Noir photo slots stay neutral and never reuse the transition artw
     )?.join("\n") ?? "";
     assert.doesNotMatch(
       block,
-      /var\(--sicilian-transition-art\)/,
-      `${selector} must not use the Sicilian transition artwork as a photo`,
+      /var\(--sicilian-(?:transition|frieze|medallion|inlay)-art\)/,
+      `${selector} must not use Sicilian decorative artwork as a photo`,
     );
   }
 });
