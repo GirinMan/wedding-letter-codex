@@ -14,7 +14,7 @@ test("public invitation exposes the selected theme as a stable DOM attribute", a
   });
 });
 
-test("legacy Sicilian Noir drafts render with the current limestone and noir token set", async () => {
+test("legacy Sicilian Noir drafts render with the current black and white token set", async () => {
   const themeModule = await import("../src/invitation-theme.ts").catch(() => null);
   const legacyDesign = {
     themeId: "sicilian-noir" as const,
@@ -39,55 +39,43 @@ test("legacy Sicilian Noir drafts render with the current limestone and noir tok
   assert.deepEqual(themeModule.resolveInvitationThemeDesign(legacyDesign), {
     themeId: "sicilian-noir",
     colors: {
-      paper: "#f7f1e7",
-      ink: "#171412",
-      muted: "#766f65",
-      line: "#d7c9b5",
-      accent: "#b94125",
-      surface: "#efe3d2",
+      paper: "#ffffff",
+      ink: "#0a0a0a",
+      muted: "#6f6f6f",
+      line: "#dedede",
+      accent: "#0a0a0a",
+      surface: "#f4f4f4",
     },
     typography: {
       display: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
       body: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
     },
-    radius: 2,
+    radius: 0,
     spacing: { section: 96, content: 24 },
     motion: { reveal: "fade", durationMs: 700 },
   });
 });
 
-test("Sicilian Noir uses bundled generated artwork only for empty media", async () => {
+test("Sicilian Noir uses generated Sicilian architecture only as the middle background", async () => {
   const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
   const artwork = await readFile(
-    new URL("../public/assets/sicilian-wedding-paper-festa.jpg", import.meta.url),
+    new URL("../public/assets/sicilian-courtyard-transition.webp", import.meta.url),
   ).catch(() => null);
 
   assert.ok(artwork && artwork.byteLength > 100_000, "generated artwork should be bundled");
   assert.match(
     styles,
-    /--sicilian-editorial-art:\s*url\("\/assets\/sicilian-wedding-paper-festa\.jpg"\)/,
-  );
-  assert.doesNotMatch(styles, /sicilian-(?:editorial-terrace|wedding-paper)\.jpg/);
-  assert.match(
-    styles,
-    /\.catalog-hero__visual \.media--placeholder:nth-child\(3\)/,
+    /--sicilian-transition-art:\s*url\("\/assets\/sicilian-courtyard-transition\.webp"\)/,
   );
   assert.match(
     styles,
-    /\.middle-image \.media--placeholder/,
+    /\.middle-image \.media--placeholder\s*\{[^}]*var\(--sicilian-transition-art\)/s,
   );
-  assert.match(
-    styles,
-    /\.middle-image \.media--placeholder\s*\{[\s\S]*?rgb\(8 8 8 \/ 48%\)/,
-    "the light paper artwork needs a stronger lower scrim behind D-Day text",
-  );
-  assert.match(
-    styles,
-    /\.closing__image\.media--placeholder/,
-  );
+  assert.doesNotMatch(styles, /--sicilian-editorial-art/);
+  assert.doesNotMatch(styles, /sicilian-wedding-paper-festa\.jpg/);
 });
 
-test("Sicilian Noir balances a noir catalog hero with a Sicilian tile signature", async () => {
+test("Sicilian Noir keeps the interface monochrome and sans serif", async () => {
   const [app, styles] = await Promise.all([
     readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
@@ -101,10 +89,10 @@ test("Sicilian Noir balances a noir catalog hero with a Sicilian tile signature"
   assert.match(styles, /\.catalog-hero__masthead/);
   assert.match(styles, /\.catalog-hero__visual/);
   assert.match(styles, /\.catalog-hero__tile-ribbon/);
-  assert.match(styles, /--sicilian-cobalt:\s*#21558a/i);
-  assert.match(styles, /--sicilian-lemon:\s*#e5b927/i);
-  assert.match(styles, /--sicilian-terracotta:\s*#b94125/i);
-  assert.match(styles, /--sicilian-bougainvillea:\s*#963c61/i);
+  assert.match(styles, /--paper:\s*#fff(?:fff)?;/i);
+  assert.match(styles, /--ink:\s*#0a0a0a;/i);
+  assert.match(styles, /--surface:\s*#f4f4f4;/i);
+  assert.doesNotMatch(styles, /--sicilian-(?:cobalt|lemon|terracotta|bougainvillea):/);
   assert.doesNotMatch(styles, /\.page-shell\[data-theme="sicilian-noir"\] \.hero::after/);
   assert.doesNotMatch(styles, /border-radius:\s*140px 140px 0 0/);
 });
@@ -122,52 +110,30 @@ test("Sicilian Noir removes wireframe rules from sections and hero placeholders"
   );
 });
 
-test("Sicilian Noir empty media forms one restrained wedding-paper composition", async () => {
+test("Sicilian Noir photo slots stay neutral and never reuse the transition artwork", async () => {
   const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
 
-  for (const position of [1, 2, 3]) {
-    assert.match(
-      styles,
-      new RegExp(
-        String.raw`\.catalog-hero__visual \.media--placeholder:nth-child\(${position}\)\s*\{[^}]*var\(--sicilian-editorial-art\)`,
-        "s",
-      ),
-      `hero placeholder ${position} should be a crop of the same wedding artwork`,
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.media--placeholder,\s*[\s\S]*?\.portrait-placeholder\s*\{[^}]*background:\s*#f4f4f4;/s,
+    "empty photo slots should use a neutral grayscale surface",
+  );
+  for (const selector of [
+    "catalog-hero__visual",
+    "greeting-photo",
+    "profile-card__image",
+    "interview-card",
+    "timeline-card__image",
+    "gallery-grid",
+    "closing__image",
+  ]) {
+    const block = styles.match(
+      new RegExp(String.raw`[^}]*\.${selector.replaceAll("-", "\\-")}[^{}]*\{[^}]*\}`, "g"),
+    )?.join("\n") ?? "";
+    assert.doesNotMatch(
+      block,
+      /var\(--sicilian-transition-art\)/,
+      `${selector} must not use the Sicilian transition artwork as a photo`,
     );
   }
-  assert.match(
-    styles,
-    /\.interview-card \.portrait-placeholder\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
-    "interview placeholders should inherit the wedding-paper art direction",
-  );
-  assert.match(
-    styles,
-    /\.timeline-card__image\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
-    "story placeholders should inherit the wedding-paper art direction",
-  );
-  assert.match(
-    styles,
-    /\.profile-card__image\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
-    "profile placeholders should be composed from the wedding-paper artwork",
-  );
-  assert.match(
-    styles,
-    /\.greeting-photo\.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
-    "greeting placeholders should be composed from the wedding-paper artwork",
-  );
-  assert.match(
-    styles,
-    /\.gallery-grid \.media--placeholder\s*\{[^}]*var\(--sicilian-editorial-art\)/s,
-    "gallery placeholders should read as an intentional editorial contact sheet",
-  );
-  assert.match(
-    styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.media--placeholder > span\s*\{[^}]*display:\s*none;/s,
-    "internal placeholder labels should not appear in the finished invitation",
-  );
-  assert.doesNotMatch(
-    styles,
-    /radial-gradient\(circle at 22% 24%, var\(--sicilian-lemon\)/,
-    "generic circles and diagonal strokes should not decorate empty media",
-  );
 });

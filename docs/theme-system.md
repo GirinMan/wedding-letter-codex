@@ -14,41 +14,37 @@ to `botanic-garden` when the design contract is parsed.
 
 ## Sicilian Noir
 
-An original wedding catalog theme informed by the black fashion-show framing,
-sunlit limestone surfaces, saturated tableware, and floral color in the
-supplied Dolce & Gabbana commerce reference.
+An original wedding catalog theme built around a strict black-and-white
+interface and one photographic pause inspired by Sicilian architecture.
 
 Observed design language:
 
-- black and warm white as the interface system;
+- pure white and near-black as the interface system;
 - geometric sans-serif typography for both headings and utility labels;
 - square image frames, uppercase microcopy, and strict image grids;
-- saturated cobalt, lemon, terracotta, and bougainvillea used as focal color;
-- photography and generous limestone-toned space instead of repeated rules.
+- neutral gray empty-photo surfaces without decorative wireframes;
+- Sicilian color appears only inside the middle architectural transition.
 
 Project interpretation:
 
-- base palette: limestone `#f7f1e7`, nero `#080808`, ink `#171412`,
-  terracotta `#b94125`, and sand `#efe3d2`;
-- signature palette: cobalt `#21558a`, lemon `#e5b927`, terracotta
-  `#b94125`, and bougainvillea `#963c61`;
+- base palette: paper `#ffffff`, nero `#0a0a0a`, muted gray `#6f6f6f`,
+  line `#dedede`, and surface `#f4f4f4`;
 - type fallback: Avenir Next / Helvetica Neue / Arial / Pretendard /
   Noto Sans KR;
-- signature: a compact black masthead, a single majolica tile ribbon, and a
-  three-image wedding catalog grid;
+- signature: a compact black masthead, a strict three-image wedding catalog
+  grid, and one full-bleed Sicilian architecture transition;
 - black is reserved for structural anchors such as the hero details, story
   section, closing, and primary actions rather than covering every section;
-- the bundled Image Gen artwork `sicilian-wedding-paper-festa.jpg` supplies a
-  sunlit handmade-paper, olive, lemon-blossom, black-ribbon, bougainvillea,
-  and restrained multicolor majolica composition; coordinated crops form the
-  hero triptych, profile and interview portraits, story image, gallery contact
-  sheet, middle image, and closing while those media slots are empty;
+- the bundled Image Gen artwork `sicilian-courtyard-transition.webp` shows a
+  white limewashed wall, black volcanic-stone arch, and a narrow cobalt
+  majolica edge with restrained red, yellow, and green accents; it is used only
+  behind the middle D-Day transition;
+- hero, greeting, profile, interview, timeline, gallery, and closing photo
+  slots stay neutral grayscale until real photos are uploaded;
 - empty media never exposes internal placeholder labels or abstract wireframe
-  shapes, so the invitation reads as a finished paper composition before
-  photos are uploaded;
-- uploaded media always replaces the bundled fallback artwork.
+  shapes.
 
 The project does not ship the brand's logo, proprietary FuturaLTPro or Walbaum
 font files, campaign photography, or copied textile artwork. The bundled
-fallback photograph is original, unbranded generated artwork created for this
-project.
+transition photograph is original, unbranded generated artwork created for
+this project.

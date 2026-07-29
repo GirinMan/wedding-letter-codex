@@ -41,18 +41,18 @@ test("applying Sicilian Noir replaces the complete design token set without muta
 
   assert.equal(themed.themeId, "sicilian-noir");
   assert.deepEqual(themed.colors, {
-    paper: "#f7f1e7",
-    ink: "#171412",
-    muted: "#766f65",
-    line: "#d7c9b5",
-    accent: "#b94125",
-    surface: "#efe3d2",
+    paper: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#6f6f6f",
+    line: "#dedede",
+    accent: "#0a0a0a",
+    surface: "#f4f4f4",
   });
   assert.match(themed.typography.display, /Avenir Next/);
   assert.match(themed.typography.body, /Avenir Next/);
   assert.doesNotMatch(themed.typography.display, /Bodoni|Didot|Noto Serif/i);
   assert.doesNotMatch(themed.typography.body, /Bodoni|Didot|Noto Serif/i);
-  assert.equal(themed.radius, 2);
+  assert.equal(themed.radius, 0);
   assert.equal(themed.motion.reveal, "fade");
   assert.equal(gardenDesign.themeId, "botanic-garden");
   assert.equal(gardenDesign.colors.paper, "#fbfaf7");

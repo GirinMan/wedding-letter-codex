@@ -1737,29 +1737,24 @@ textarea:focus-visible {
 }
 
 /* Sicilian Noir
- * Black fashion-editorial framing meets sunlit limestone and the saturated
- * colors of Sicilian majolica. Black carries structure; color is concentrated
- * in one tile ribbon and in media, so the invitation stays calm and legible.
+ * A white, sans-serif wedding catalog with black editorial anchors.
+ * Sicilian color and architecture appear once, as the middle transition image.
  */
 .page-shell[data-theme="sicilian-noir"] {
-  --paper: #f7f1e7;
-  --ink: #171412;
-  --muted: #766f65;
-  --line: #d7c9b5;
-  --accent: #b94125;
-  --surface: #efe3d2;
-  --sicilian-noir: #080808;
-  --sicilian-cobalt: #21558a;
-  --sicilian-lemon: #e5b927;
-  --sicilian-terracotta: #b94125;
-  --sicilian-bougainvillea: #963c61;
-  --sicilian-editorial-art: url("/assets/sicilian-wedding-paper-festa.jpg");
+  --paper: #ffffff;
+  --ink: #0a0a0a;
+  --muted: #6f6f6f;
+  --line: #dedede;
+  --accent: #0a0a0a;
+  --surface: #f4f4f4;
+  --sicilian-noir: #0a0a0a;
+  --sicilian-transition-art: url("/assets/sicilian-courtyard-transition.webp");
   --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
-  --radius: 2px;
+  --radius: 0;
   --section-space: 96px;
   --content-space: 24px;
-  background: #191816;
+  background: #fff;
   color-scheme: light;
 }
 
@@ -1813,17 +1808,8 @@ textarea:focus-visible {
 }
 
 .catalog-hero__tile-ribbon {
-  height: 9px;
-  background:
-    conic-gradient(
-      from 45deg at 50% 50%,
-      var(--sicilian-cobalt) 0 25%,
-      #f9e9c9 0 37.5%,
-      var(--sicilian-terracotta) 0 62.5%,
-      #f9e9c9 0 75%,
-      var(--sicilian-lemon) 0
-    )
-    0 0 / 20px 20px;
+  height: 2px;
+  background: var(--sicilian-noir);
 }
 
 .catalog-hero__canvas {
@@ -1851,25 +1837,8 @@ textarea:focus-visible {
   position: relative;
   overflow: hidden;
   border: 0;
-  color: #fff;
-}
-
-.page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(1) {
-  background:
-    linear-gradient(135deg, rgb(247 241 231 / 4%), rgb(8 8 8 / 8%)),
-    var(--sicilian-editorial-art) 4% 13% / 165% auto;
-}
-
-.page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(2) {
-  background:
-    linear-gradient(225deg, rgb(247 241 231 / 2%), rgb(8 8 8 / 10%)),
-    var(--sicilian-editorial-art) 96% 84% / 165% auto;
-}
-
-.page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder:nth-child(3) {
-  background:
-    linear-gradient(90deg, rgb(8 8 8 / 6%), transparent 48%, rgb(8 8 8 / 12%)),
-    var(--sicilian-editorial-art) center 52% / cover;
+  background: #f4f4f4;
+  color: var(--muted);
 }
 
 .page-shell[data-theme="sicilian-noir"] .catalog-hero__visual .media--placeholder::before {
@@ -1900,7 +1869,7 @@ textarea:focus-visible {
 
 .catalog-hero__eyebrow {
   grid-column: 1 / -1;
-  color: var(--sicilian-lemon);
+  color: #fff;
   font-size: .52rem;
   font-weight: 650;
   letter-spacing: .2em;
@@ -1981,7 +1950,7 @@ textarea:focus-visible {
 .page-shell[data-theme="sicilian-noir"] .section-heading .eyebrow::before {
   width: 7px;
   height: 7px;
-  background: var(--sicilian-cobalt);
+  background: var(--ink);
   content: "";
   transform: rotate(45deg);
 }
@@ -2012,13 +1981,13 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .media {
-  filter: saturate(1.04) contrast(1.02);
+  filter: none;
 }
 
 .page-shell[data-theme="sicilian-noir"] .media--placeholder,
 .page-shell[data-theme="sicilian-noir"] .portrait-placeholder {
   position: relative;
-  background: var(--surface);
+  background: #f4f4f4;
 }
 
 .page-shell[data-theme="sicilian-noir"] .media--placeholder::before {
@@ -2042,12 +2011,6 @@ textarea:focus-visible {
 .page-shell[data-theme="sicilian-noir"] .greeting-photo {
   aspect-ratio: 4 / 5;
   border: 0;
-}
-
-.page-shell[data-theme="sicilian-noir"] .greeting-photo.media--placeholder {
-  background:
-    linear-gradient(180deg, rgb(247 241 231 / 3%), rgb(8 8 8 / 9%)),
-    var(--sicilian-editorial-art) 8% 22% / 150% auto;
 }
 
 .page-shell[data-theme="sicilian-noir"] .family-relations,
@@ -2084,16 +2047,6 @@ textarea:focus-visible {
   margin-top: 12px;
 }
 
-.page-shell[data-theme="sicilian-noir"] .profile-card__image.media--placeholder {
-  background:
-    linear-gradient(180deg, rgb(247 241 231 / 3%), rgb(8 8 8 / 8%)),
-    var(--sicilian-editorial-art) 4% 15% / 155% auto;
-}
-
-.page-shell[data-theme="sicilian-noir"] .profile-card:nth-child(2) .profile-card__image.media--placeholder {
-  background-position: center, 96% 84%;
-}
-
 .page-shell[data-theme="sicilian-noir"] .profile-card__name {
   justify-content: flex-start;
 }
@@ -2124,13 +2077,7 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .interview-card .portrait-placeholder.media--placeholder {
   aspect-ratio: 4 / 3;
-  background:
-    linear-gradient(180deg, rgb(247 241 231 / 2%), rgb(8 8 8 / 8%)),
-    var(--sicilian-editorial-art) 6% 20% / 155% auto;
-}
-
-.page-shell[data-theme="sicilian-noir"] .interview-card:nth-child(2) .portrait-placeholder.media--placeholder {
-  background-position: center, 94% 80%;
+  background: #f4f4f4;
 }
 
 .page-shell[data-theme="sicilian-noir"] .calendar {
@@ -2152,7 +2099,7 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .section--timeline .section-heading .eyebrow,
 .page-shell[data-theme="sicilian-noir"] .section--timeline .timeline-card__date {
-  color: var(--sicilian-lemon);
+  color: #fff;
 }
 
 .page-shell[data-theme="sicilian-noir"] .section--timeline .timeline-card > p:last-child {
@@ -2164,9 +2111,7 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .timeline-card__image.media--placeholder {
-  background:
-    linear-gradient(180deg, rgb(8 8 8 / 2%), rgb(8 8 8 / 12%)),
-    var(--sicilian-editorial-art) 90% 16% / cover;
+  background: #242424;
 }
 
 .page-shell[data-theme="sicilian-noir"] .primary-button {
@@ -2194,29 +2139,7 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder {
-  background:
-    linear-gradient(180deg, rgb(247 241 231 / 2%), rgb(8 8 8 / 8%)),
-    var(--sicilian-editorial-art) 4% 12% / 160% auto;
-}
-
-.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(2) {
-  background-position: center, 96% 15%;
-}
-
-.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(3) {
-  background-position: center, 4% 42%;
-}
-
-.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(4) {
-  background-position: center, 96% 48%;
-}
-
-.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(5) {
-  background-position: center, 4% 82%;
-}
-
-.page-shell[data-theme="sicilian-noir"] .gallery-grid .media--placeholder:nth-child(6) {
-  background-position: center, 96% 88%;
+  background: #f4f4f4;
 }
 
 .page-shell[data-theme="sicilian-noir"] .gallery-carousel {
@@ -2239,19 +2162,17 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .placeholder-band {
-  filter: saturate(1.08) contrast(1.03);
+  filter: none;
 }
 
 .page-shell[data-theme="sicilian-noir"] .middle-image .media--placeholder {
   background:
-    linear-gradient(180deg, rgb(8 8 8 / 5%), rgb(8 8 8 / 48%)),
-    var(--sicilian-editorial-art) center / cover;
+    linear-gradient(180deg, transparent 42%, rgb(10 10 10 / 76%) 100%),
+    var(--sicilian-transition-art) center / cover;
 }
 
 .page-shell[data-theme="sicilian-noir"] .closing__image.media--placeholder {
-  background:
-    linear-gradient(180deg, rgb(8 8 8 / 4%), rgb(8 8 8 / 22%)),
-    var(--sicilian-editorial-art) center / cover;
+  background: #242424;
 }
 
 .page-shell[data-theme="sicilian-noir"] .middle-image .media--placeholder::before,
@@ -2266,17 +2187,17 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .polaroid-stack span {
   border-color: #fff;
-  background: var(--sicilian-cobalt);
+  background: #2a2a2a;
   color: #fff;
   box-shadow: 0 16px 30px rgb(8 8 8 / 16%);
 }
 
 .page-shell[data-theme="sicilian-noir"] .polaroid-stack span:nth-child(2) {
-  background: var(--sicilian-terracotta);
+  background: #595959;
 }
 
 .page-shell[data-theme="sicilian-noir"] .polaroid-stack span:nth-child(3) {
-  background: var(--sicilian-bougainvillea);
+  background: #8a8a8a;
 }
 
 .page-shell[data-theme="sicilian-noir"] .closing {
@@ -2285,7 +2206,7 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .closing__copy .eyebrow {
-  color: var(--sicilian-lemon);
+  color: #fff;
 }
 
 .page-shell[data-theme="sicilian-noir"] .closing__copy p:last-child {
@@ -2326,7 +2247,7 @@ textarea:focus-visible {
 .page-shell[data-theme="sicilian-noir"] .form-stack select,
 .page-shell[data-theme="sicilian-noir"] .form-stack textarea {
   border-radius: var(--radius);
-  background: #fffdf8;
+  background: #fff;
   color: var(--ink);
 }
 
