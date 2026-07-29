@@ -14,7 +14,7 @@ test("public invitation exposes the selected theme as a stable DOM attribute", a
   });
 });
 
-test("legacy Sicilian Noir drafts render with the current monochrome sans-serif token set", async () => {
+test("legacy Sicilian Noir drafts render with the current limestone and noir token set", async () => {
   const themeModule = await import("../src/invitation-theme.ts").catch(() => null);
   const legacyDesign = {
     themeId: "sicilian-noir" as const,
@@ -39,20 +39,20 @@ test("legacy Sicilian Noir drafts render with the current monochrome sans-serif 
   assert.deepEqual(themeModule.resolveInvitationThemeDesign(legacyDesign), {
     themeId: "sicilian-noir",
     colors: {
-      paper: "#000000",
-      ink: "#ffffff",
-      muted: "#a3a3a3",
-      line: "#3a3a3a",
-      accent: "#ffffff",
-      surface: "#0a0a0a",
+      paper: "#f7f1e7",
+      ink: "#171412",
+      muted: "#766f65",
+      line: "#d7c9b5",
+      accent: "#b94125",
+      surface: "#efe3d2",
     },
     typography: {
       display: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
       body: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
     },
-    radius: 0,
-    spacing: { section: 88, content: 20 },
-    motion: { reveal: "fade", durationMs: 900 },
+    radius: 2,
+    spacing: { section: 96, content: 24 },
+    motion: { reveal: "fade", durationMs: 700 },
   });
 });
 
@@ -62,7 +62,7 @@ test("Sicilian Noir does not depend on generated ornamental artwork", async () =
   assert.doesNotMatch(styles, /sicilian-noir-ornament/);
 });
 
-test("Sicilian Noir uses a monochrome catalog hero instead of the old arch composition", async () => {
+test("Sicilian Noir balances a noir catalog hero with a Sicilian tile signature", async () => {
   const [app, styles] = await Promise.all([
     readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
@@ -72,9 +72,27 @@ test("Sicilian Noir uses a monochrome catalog hero instead of the old arch compo
   assert.match(app, /className="catalog-hero"/);
   assert.match(app, /className="catalog-hero__masthead"/);
   assert.match(app, /className="catalog-hero__visual"/);
+  assert.match(app, /className="catalog-hero__tile-ribbon"/);
   assert.match(styles, /\.catalog-hero__masthead/);
   assert.match(styles, /\.catalog-hero__visual/);
-  assert.doesNotMatch(styles, /#a6262f/i);
+  assert.match(styles, /\.catalog-hero__tile-ribbon/);
+  assert.match(styles, /--sicilian-cobalt:\s*#21558a/i);
+  assert.match(styles, /--sicilian-lemon:\s*#e5b927/i);
+  assert.match(styles, /--sicilian-terracotta:\s*#b94125/i);
+  assert.match(styles, /--sicilian-bougainvillea:\s*#963c61/i);
   assert.doesNotMatch(styles, /\.page-shell\[data-theme="sicilian-noir"\] \.hero::after/);
   assert.doesNotMatch(styles, /border-radius:\s*140px 140px 0 0/);
+});
+
+test("Sicilian Noir removes wireframe rules from sections and hero placeholders", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.section\s*\{[^}]*border-bottom:\s*0;/s,
+  );
+  assert.match(
+    styles,
+    /\.catalog-hero__visual \.media--placeholder\s*\{[^}]*border:\s*0;/s,
+  );
 });

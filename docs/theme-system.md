@@ -14,24 +14,32 @@ to `botanic-garden` when the design contract is parsed.
 
 ## Sicilian Noir
 
-An original wedding catalog theme informed by the black fashion-show grid and
-white navigation bar in the supplied Dolce & Gabbana commerce reference.
+An original wedding catalog theme informed by the black fashion-show framing,
+sunlit limestone surfaces, saturated tableware, and floral color in the
+supplied Dolce & Gabbana commerce reference.
 
 Observed design language:
 
-- pure black and white as the interface system;
+- black and warm white as the interface system;
 - geometric sans-serif typography for both headings and utility labels;
-- square image frames, neutral rules, uppercase microcopy, and strict grids;
-- photography as the dominant material, with interface elements kept quiet.
+- square image frames, uppercase microcopy, and strict image grids;
+- saturated cobalt, lemon, terracotta, and bougainvillea used as focal color;
+- photography and generous limestone-toned space instead of repeated rules.
 
 Project interpretation:
 
-- palette: black `#000000`, white `#ffffff`, grey `#a3a3a3`, rule
-  `#3a3a3a`, and surface `#0a0a0a`;
+- base palette: limestone `#f7f1e7`, nero `#080808`, ink `#171412`,
+  terracotta `#b94125`, and sand `#efe3d2`;
+- signature palette: cobalt `#21558a`, lemon `#e5b927`, terracotta
+  `#b94125`, and bougainvillea `#963c61`;
 - type fallback: Avenir Next / Helvetica Neue / Arial / Pretendard /
   Noto Sans KR;
-- signature: a compact white masthead followed by a three-image wedding
-  catalog grid.
+- signature: a compact black masthead, a single majolica tile ribbon, and a
+  three-image wedding catalog grid;
+- black is reserved for structural anchors such as the hero details, story
+  section, closing, and primary actions rather than covering every section;
+- media placeholders use flat tile-inspired fields without frame outlines, so
+  an invitation remains intentional before photos are uploaded.
 
 The project does not ship the brand's logo, proprietary FuturaLTPro or Walbaum
 font files, campaign photography, generated ornamental artwork, or textile

@@ -3,20 +3,20 @@ import type { InvitationDesign } from "./types";
 const sicilianNoirDesign: InvitationDesign = {
   themeId: "sicilian-noir",
   colors: {
-    paper: "#000000",
-    ink: "#ffffff",
-    muted: "#a3a3a3",
-    line: "#3a3a3a",
-    accent: "#ffffff",
-    surface: "#0a0a0a",
+    paper: "#f7f1e7",
+    ink: "#171412",
+    muted: "#766f65",
+    line: "#d7c9b5",
+    accent: "#b94125",
+    surface: "#efe3d2",
   },
   typography: {
     display: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
     body: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
   },
-  radius: 0,
-  spacing: { section: 88, content: 20 },
-  motion: { reveal: "fade", durationMs: 900 },
+  radius: 2,
+  spacing: { section: 96, content: 24 },
+  motion: { reveal: "fade", durationMs: 700 },
 };
 
 export function invitationThemeAttributes(

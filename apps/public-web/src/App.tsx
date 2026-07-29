@@ -284,6 +284,7 @@ function SicilianCatalogHero({
         <h1>{content.hero.title}</h1>
         <span>{eventYear}</span>
       </header>
+      <div className="catalog-hero__tile-ribbon" aria-hidden="true" />
       <div className="catalog-hero__canvas">
         <div className="catalog-hero__visual">
           {visuals.map((visual, index) => (
