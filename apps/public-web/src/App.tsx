@@ -26,7 +26,16 @@ import {
 } from "./components/QuickMenu";
 import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
 import { formatHeroDate } from "./hero-date";
-import { createKakaoSharePayload, sendKakaoShare } from "./kakao-share";
+import {
+  invitationThemeAttributes,
+  resolveInvitationThemeDesign,
+} from "./invitation-theme";
+import {
+  createKakaoSharePayload,
+  getClosingSharePresentations,
+  isKakaoShareAvailable,
+  sendKakaoShare,
+} from "./kakao-share";
 import { moveCarouselIndex } from "./carousel";
 import { bootChannelTalk } from "./channel-talk";
 import {
@@ -246,6 +255,71 @@ function SectionHeading({
       <h2>{title}</h2>
       {description ? <p>{description}</p> : null}
     </header>
+  );
+}
+
+function SicilianCatalogHero({
+  content,
+  heroDate,
+  preview,
+}: {
+  content: InvitationContent;
+  heroDate: ReturnType<typeof formatHeroDate>;
+  preview: boolean;
+}) {
+  const partnersByKey = {
+    partnerOne: content.couple.partnerOne,
+    partnerTwo: content.couple.partnerTwo,
+  };
+  const uploadedGallery = content.gallery.items.filter((item) => item.assetId);
+  const visuals = uploadedGallery.length > 0
+    ? uploadedGallery.slice(0, 3)
+    : [content.greeting.image, ...content.gallery.items.slice(0, 2)];
+  const eventYear = new Date(content.event.startsAt).getFullYear();
+
+  return (
+    <section className="catalog-hero" id={sectionAnchorId("hero")} data-reveal>
+      <header className="catalog-hero__masthead">
+        <span>WEDDING</span>
+        <h1>{content.hero.title}</h1>
+        <span>{eventYear}</span>
+      </header>
+      <div className="catalog-hero__canvas">
+        <div className="catalog-hero__visual">
+          {visuals.map((visual, index) => (
+            <Media
+              media={visual}
+              className="catalog-hero__image"
+              preview={preview}
+              key={`${visual.assetId ?? visual.placeholder ?? "visual"}-${index}`}
+            />
+          ))}
+        </div>
+        <div className="catalog-hero__details">
+          <p className="catalog-hero__eyebrow">
+            {content.hero.eyebrow || "THE WEDDING"}
+          </p>
+          <div className="catalog-hero__names">
+            {content.hero.nameOrder.map((partnerKey) => (
+              <strong key={partnerKey}>{partnersByKey[partnerKey].name}</strong>
+            ))}
+          </div>
+          <div className="catalog-hero__event">
+            <p>
+              {heroDate.weekday}, {heroDate.month} {heroDate.day}
+              <sup>{heroDate.ordinal}</sup>
+            </p>
+            <time dateTime={content.event.startsAt}>{heroDate.time}</time>
+          </div>
+          <p className="catalog-hero__venue">
+            {content.event.venueName} {content.event.hall}
+          </p>
+          {content.hero.subtitle ? (
+            <p className="catalog-hero__subtitle">{content.hero.subtitle}</p>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -521,19 +595,20 @@ export function App() {
     return <main className="load-state"><p>초대장을 준비하고 있습니다…</p></main>;
   }
 
+  const resolvedDesign = resolveInvitationThemeDesign(design);
   const style = {
-    "--paper": design.colors.paper,
-    "--ink": design.colors.ink,
-    "--muted": design.colors.muted,
-    "--line": design.colors.line,
-    "--accent": design.colors.accent,
-    "--surface": design.colors.surface,
-    "--radius": `${design.radius}px`,
-    "--section-space": `${design.spacing.section}px`,
-    "--content-space": `${design.spacing.content}px`,
-    "--display-font": design.typography.display,
-    "--body-font": design.typography.body,
-    "--motion-duration": `${design.motion.durationMs}ms`,
+    "--paper": resolvedDesign.colors.paper,
+    "--ink": resolvedDesign.colors.ink,
+    "--muted": resolvedDesign.colors.muted,
+    "--line": resolvedDesign.colors.line,
+    "--accent": resolvedDesign.colors.accent,
+    "--surface": resolvedDesign.colors.surface,
+    "--radius": `${resolvedDesign.radius}px`,
+    "--section-space": `${resolvedDesign.spacing.section}px`,
+    "--content-space": `${resolvedDesign.spacing.content}px`,
+    "--display-font": resolvedDesign.typography.display,
+    "--body-font": resolvedDesign.typography.body,
+    "--motion-duration": `${resolvedDesign.motion.durationMs}ms`,
   } as CSSProperties;
   const heroDate = formatHeroDate(content.event.startsAt, content.event.timezone);
   const partnersByKey = {
@@ -557,10 +632,11 @@ export function App() {
     const label = quickMenuSectionLabels[section.id];
     return label ? [{ id: section.id, label }] : [];
   });
-  const kakaoShareImageAssetId = content.greeting.image.assetId
-    ?? content.gallery.items.find((item) => item.assetId)?.assetId
-    ?? content.closing.image.assetId;
-  const kakaoShareEnabled = Boolean(content.sharing.kakaoJavaScriptKey && kakaoShareImageAssetId);
+  const kakaoShareImageAssetId = content.sharing.kakaoShareImage?.assetId ?? null;
+  const kakaoShareEnabled = isKakaoShareAvailable(content.sharing.kakaoJavaScriptKey);
+  const closingSharePresentations = getClosingSharePresentations(
+    content.sharing.kakaoJavaScriptKey,
+  );
   const contactGroups = ([
     { side: "partnerOne", label: `${content.couple.partnerOne.label}측` },
     { side: "partnerTwo", label: `${content.couple.partnerTwo.label}측` },
@@ -662,17 +738,15 @@ export function App() {
       setNotice("초안 미리보기에서는 카카오 공유를 열지 않습니다.");
       return;
     }
-    if (!kakaoShareImageAssetId) {
-      setNotice("카카오 공유에 사용할 이미지를 먼저 연결해 주세요.");
-      return;
-    }
     try {
       await sendKakaoShare({
         javascriptKey: content.sharing.kakaoJavaScriptKey,
         payload: createKakaoSharePayload({
           title: document.title,
           description: content.hero.subtitle,
-          imageUrl: new URL(`/api/media/${kakaoShareImageAssetId}/content`, window.location.origin).toString(),
+          imageUrl: kakaoShareImageAssetId
+            ? new URL(`/api/media/${kakaoShareImageAssetId}/content`, window.location.origin).toString()
+            : "",
           pageUrl: window.location.href,
         }),
       });
@@ -793,27 +867,31 @@ export function App() {
   };
 
   return (
-    <div className="page-shell" style={style}>
+    <div className="page-shell" style={style} {...invitationThemeAttributes(resolvedDesign.themeId)}>
       <main className="invitation">
         {enabledSections.has("hero") ? (
-          <section className="hero" id={sectionAnchorId("hero")} data-reveal>
-            {content.hero.eyebrow ? <p className="hero__eyebrow">{content.hero.eyebrow}</p> : null}
-            <h1 className="hero__mark">{content.hero.title}</h1>
-            <div className="hero__date-stack">
-              <p>{heroDate.weekday}</p>
-              <p>{heroDate.month} <strong>{heroDate.day}<sup>{heroDate.ordinal}</sup></strong></p>
-              <time dateTime={content.event.startsAt}>{heroDate.time}</time>
-            </div>
-            <span className="hero__divider" aria-hidden="true" />
-            <div className="hero__names">
-              {content.hero.nameOrder.map((partnerKey) => (
-                <span key={partnerKey}>{partnersByKey[partnerKey].name}</span>
-              ))}
-            </div>
-            <p className="hero__venue">{content.event.venueName} {content.event.hall}</p>
-            {content.hero.subtitle ? <p className="hero__subtitle">{content.hero.subtitle}</p> : null}
-            <span className="hero__line" aria-hidden="true" />
-          </section>
+          resolvedDesign.themeId === "sicilian-noir" ? (
+            <SicilianCatalogHero content={content} heroDate={heroDate} preview={isPreview} />
+          ) : (
+            <section className="hero" id={sectionAnchorId("hero")} data-reveal>
+              {content.hero.eyebrow ? <p className="hero__eyebrow">{content.hero.eyebrow}</p> : null}
+              <h1 className="hero__mark">{content.hero.title}</h1>
+              <div className="hero__date-stack">
+                <p>{heroDate.weekday}</p>
+                <p>{heroDate.month} <strong>{heroDate.day}<sup>{heroDate.ordinal}</sup></strong></p>
+                <time dateTime={content.event.startsAt}>{heroDate.time}</time>
+              </div>
+              <span className="hero__divider" aria-hidden="true" />
+              <div className="hero__names">
+                {content.hero.nameOrder.map((partnerKey) => (
+                  <span key={partnerKey}>{partnersByKey[partnerKey].name}</span>
+                ))}
+              </div>
+              <p className="hero__venue">{content.event.venueName} {content.event.hall}</p>
+              {content.hero.subtitle ? <p className="hero__subtitle">{content.hero.subtitle}</p> : null}
+              <span className="hero__line" aria-hidden="true" />
+            </section>
+          )
         ) : null}
 
         {enabledSections.has("invitation") ? (
@@ -1110,9 +1188,48 @@ export function App() {
               <p className="eyebrow">{content.closing.title}</p>
               <p className="multiline">{content.closing.body}</p>
             </div>
-            <button className="share-button" type="button" onClick={() => void share()}>
-              초대장 공유하기 <span aria-hidden="true">↗</span>
-            </button>
+            <div className="share-actions">
+              {closingSharePresentations.map((presentation) => (
+                <button
+                  className={[
+                    "share-button",
+                    presentation.provider === "kakao" ? "share-button--kakao" : "",
+                    presentation.provider === "generic" && closingSharePresentations.length > 1
+                      ? "share-button--secondary"
+                      : "",
+                  ].filter(Boolean).join(" ")}
+                  type="button"
+                  key={presentation.provider}
+                  onClick={() => void (
+                    presentation.provider === "kakao"
+                      ? shareWithKakao()
+                      : share()
+                  )}
+                >
+                  {presentation.provider === "kakao" ? (
+                    <svg
+                      className="share-button__kakao-icon"
+                      viewBox="0 0 28 28"
+                      aria-hidden="true"
+                    >
+                      <path d="M14 3.5c-6.1 0-11 3.9-11 8.75 0 3.1 2 5.82 5.04 7.38l-1.1 4.02c-.1.38.31.67.63.45l4.73-3.12c.55.06 1.12.1 1.7.1 6.1 0 11-3.92 11-8.83C25 7.4 20.1 3.5 14 3.5Z" />
+                      <text
+                        className="share-button__kakao-word"
+                        x="14"
+                        y="14.3"
+                        textAnchor="middle"
+                      >
+                        TALK
+                      </text>
+                    </svg>
+                  ) : null}
+                  <span>{presentation.label}</span>
+                  {presentation.provider === "generic" ? (
+                    <span aria-hidden="true">↗</span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
           </section>
         ) : null}
       </main>

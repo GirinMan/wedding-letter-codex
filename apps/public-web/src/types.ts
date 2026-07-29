@@ -118,6 +118,7 @@ export interface InvitationContent {
   music: { enabled: boolean; assetId: string | null; title: string };
   sharing: {
     kakaoJavaScriptKey: string;
+    kakaoShareImage: { assetId: string | null };
     channelTalk: { enabled: boolean; pluginKey: string };
   };
   sectionCopy: {
@@ -140,6 +141,7 @@ export interface SectionHeadingCopy {
 }
 
 export interface InvitationDesign {
+  themeId: "botanic-garden" | "sicilian-noir";
   colors: {
     paper: string;
     ink: string;

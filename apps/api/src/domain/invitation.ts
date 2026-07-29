@@ -267,12 +267,16 @@ export const invitationContentSchema = z.object({
   }),
   sharing: z.object({
     kakaoJavaScriptKey: z.string().trim().max(160).default(""),
+    kakaoShareImage: z.object({
+      assetId: z.string().uuid().nullable().default(null),
+    }).default({ assetId: null }),
     channelTalk: z.object({
       enabled: z.boolean().default(false),
       pluginKey: z.string().trim().max(200).default(""),
     }).default({ enabled: false, pluginKey: "" }),
   }).default({
     kakaoJavaScriptKey: "",
+    kakaoShareImage: { assetId: null },
     channelTalk: { enabled: false, pluginKey: "" },
   }),
   sectionCopy: sectionCopySchema,
@@ -308,7 +312,15 @@ export const invitationContentSchema = z.object({
   )),
 });
 
+const invitationThemeIdSchema = z
+  .enum(["garden-editorial", "botanic-garden", "sicilian-noir"])
+  .default("botanic-garden")
+  .transform((themeId) => (
+    themeId === "garden-editorial" ? "botanic-garden" as const : themeId
+  ));
+
 export const invitationDesignSchema = z.object({
+  themeId: invitationThemeIdSchema,
   colors: z.object({
     paper: colorSchema,
     ink: colorSchema,
@@ -523,6 +535,7 @@ export const sampleInvitationContent: InvitationContent = {
   music: { enabled: false, assetId: null, title: "" },
   sharing: {
     kakaoJavaScriptKey: "",
+    kakaoShareImage: { assetId: null },
     channelTalk: { enabled: false, pluginKey: "" },
   },
   sectionCopy: defaultSectionCopy,
@@ -555,6 +568,7 @@ export const sampleInvitationContent: InvitationContent = {
 };
 
 export const sampleInvitationDesign: InvitationDesign = {
+  themeId: "botanic-garden",
   colors: {
     paper: "#fbfaf7",
     ink: "#171717",

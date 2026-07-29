@@ -1009,11 +1009,49 @@ textarea:focus-visible {
   line-height: 1.9;
 }
 
-.share-button {
+.share-actions {
+  display: grid;
   width: calc(100% - 48px);
+  margin: 0 auto;
+  gap: 10px;
+}
+
+.share-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
   padding: 14px 18px;
   background: #f7df78;
   color: #342d17;
+}
+
+.share-button--kakao {
+  background: #fee500;
+  color: #191919;
+  font-weight: 600;
+}
+
+.share-button--secondary {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.share-button__kakao-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  fill: currentcolor;
+}
+
+.share-button__kakao-word {
+  fill: #fee500;
+  font-family: Arial, sans-serif;
+  font-size: 5px;
+  font-weight: 800;
+  letter-spacing: -.15px;
 }
 
 .music-button,
@@ -1696,6 +1734,479 @@ textarea:focus-visible {
 
 [data-reveal="from-right"] {
   transform: translateX(24px);
+}
+
+/* Sicilian Noir
+ * A monochrome, photography-first wedding catalog. The white masthead and
+ * strict image grid borrow the visual grammar of Italian fashion commerce
+ * without reproducing a brand logo or proprietary artwork.
+ */
+.page-shell[data-theme="sicilian-noir"] {
+  --paper: #000;
+  --ink: #fff;
+  --muted: #a3a3a3;
+  --line: #3a3a3a;
+  --accent: #fff;
+  --surface: #0a0a0a;
+  --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
+  --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
+  --radius: 0;
+  --section-space: 88px;
+  --content-space: 20px;
+  background: #161616;
+  color-scheme: dark;
+}
+
+.page-shell[data-theme="sicilian-noir"] .invitation {
+  background: var(--paper);
+}
+
+.catalog-hero {
+  min-height: 100vh;
+  border-bottom: 1px solid var(--line);
+  background: #000;
+}
+
+.catalog-hero__masthead {
+  display: grid;
+  min-height: 68px;
+  padding: 0 18px;
+  align-items: center;
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  background: #fff;
+  color: #000;
+  text-align: center;
+}
+
+.catalog-hero__masthead h1 {
+  overflow: hidden;
+  margin: 0;
+  font-family: var(--body-font);
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -.04em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.catalog-hero__masthead span {
+  font-size: .52rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+}
+
+.catalog-hero__masthead span:first-child {
+  text-align: left;
+}
+
+.catalog-hero__masthead span:last-child {
+  color: #575757;
+  text-align: right;
+}
+
+.catalog-hero__canvas {
+  padding: 48px 20px 72px;
+}
+
+.catalog-hero__visual {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.catalog-hero__image {
+  aspect-ratio: 3 / 4;
+  min-width: 0;
+  background: #101010;
+}
+
+.catalog-hero__visual .media--placeholder {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #292929;
+  color: #777;
+}
+
+.catalog-hero__visual .media--placeholder::before {
+  position: absolute;
+  inset: 50% 12px auto;
+  height: 1px;
+  background: #292929;
+  content: "";
+}
+
+.catalog-hero__visual .media--placeholder span {
+  z-index: 1;
+  padding: 10px 6px;
+  background: #101010;
+  font-size: .45rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.catalog-hero__details {
+  display: grid;
+  padding-top: 34px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px 16px;
+}
+
+.catalog-hero__eyebrow,
+.catalog-hero__venue,
+.catalog-hero__subtitle,
+.catalog-hero__event p,
+.catalog-hero__event time {
+  margin: 0;
+}
+
+.catalog-hero__eyebrow {
+  color: var(--muted);
+  font-size: .55rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.catalog-hero__names {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 7px 18px;
+}
+
+.catalog-hero__names strong {
+  font-size: clamp(1.35rem, 6vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+
+.catalog-hero__event {
+  display: grid;
+  gap: 5px;
+  font-size: .66rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.catalog-hero__event sup {
+  margin-left: 1px;
+  font-size: .6em;
+}
+
+.catalog-hero__venue {
+  max-width: 150px;
+  justify-self: end;
+  color: var(--muted);
+  font-size: .62rem;
+  line-height: 1.55;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.catalog-hero__subtitle {
+  grid-column: 1 / -1;
+  padding-top: 21px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .7rem;
+  line-height: 1.7;
+}
+
+.page-shell[data-theme="sicilian-noir"] .section {
+  position: relative;
+  padding-top: var(--section-space);
+  padding-bottom: var(--section-space);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  text-align: left;
+}
+
+.page-shell[data-theme="sicilian-noir"] .section-heading {
+  max-width: none;
+  margin: 0 0 36px;
+  text-align: left;
+}
+
+.page-shell[data-theme="sicilian-noir"] .section-heading .eyebrow {
+  color: var(--muted);
+  font-family: var(--body-font);
+  font-size: .52rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+}
+
+.page-shell[data-theme="sicilian-noir"] .section-heading .eyebrow::before {
+  content: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] .section-heading h2 {
+  font-family: var(--display-font);
+  font-size: clamp(1.2rem, 5vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.28;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+}
+
+.page-shell[data-theme="sicilian-noir"] .section-heading > p:last-child:not(.eyebrow) {
+  max-width: 320px;
+  margin: 12px 0 0;
+  font-size: .72rem;
+  line-height: 1.65;
+  text-align: left;
+}
+
+.page-shell[data-theme="sicilian-noir"] .invitation-section > .multiline {
+  color: var(--muted);
+  font-family: var(--body-font);
+  font-size: .76rem;
+  line-height: 1.85;
+  text-align: left;
+}
+
+.page-shell[data-theme="sicilian-noir"] .media {
+  filter: saturate(.9) contrast(1.03);
+}
+
+.page-shell[data-theme="sicilian-noir"] .media--placeholder,
+.page-shell[data-theme="sicilian-noir"] .portrait-placeholder {
+  background: var(--surface);
+}
+
+.page-shell[data-theme="sicilian-noir"] .greeting-photo,
+.page-shell[data-theme="sicilian-noir"] .profile-card__image,
+.page-shell[data-theme="sicilian-noir"] .portrait-placeholder,
+.page-shell[data-theme="sicilian-noir"] .timeline-card__image,
+.page-shell[data-theme="sicilian-noir"] .gallery-carousel .media,
+.page-shell[data-theme="sicilian-noir"] .map-embed,
+.page-shell[data-theme="sicilian-noir"] .sketch-map-image {
+  border-radius: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .greeting-photo {
+  aspect-ratio: 4 / 5;
+  border: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .family-relations,
+.page-shell[data-theme="sicilian-noir"] .couple-line {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.page-shell[data-theme="sicilian-noir"] .contact-button,
+.page-shell[data-theme="sicilian-noir"] .map-sketch-button {
+  border-color: var(--ink);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: .66rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.page-shell[data-theme="sicilian-noir"] .profile-grid {
+  gap: 12px;
+  background: transparent;
+  text-align: left;
+}
+
+.page-shell[data-theme="sicilian-noir"] .profile-card {
+  padding-bottom: 0;
+  background: var(--paper);
+}
+
+.page-shell[data-theme="sicilian-noir"] .profile-card__body {
+  margin-top: 12px;
+}
+
+.page-shell[data-theme="sicilian-noir"] .profile-card__name {
+  justify-content: flex-start;
+}
+
+.page-shell[data-theme="sicilian-noir"] .profile-card__name strong,
+.page-shell[data-theme="sicilian-noir"] .interview-card h3,
+.page-shell[data-theme="sicilian-noir"] .timeline-card h3,
+.page-shell[data-theme="sicilian-noir"] .venue h3,
+.page-shell[data-theme="sicilian-noir"] .dialog__header h2,
+.page-shell[data-theme="sicilian-noir"] .qa-list h3 {
+  font-family: var(--display-font);
+  font-weight: 500;
+}
+
+.page-shell[data-theme="sicilian-noir"] .section--surface {
+  background: var(--paper);
+}
+
+.page-shell[data-theme="sicilian-noir"] .interview-grid {
+  gap: 12px;
+}
+
+.page-shell[data-theme="sicilian-noir"] .interview-card {
+  border: 0;
+  border-radius: 0;
+  background: var(--paper);
+}
+
+.page-shell[data-theme="sicilian-noir"] .interview-card h3,
+.page-shell[data-theme="sicilian-noir"] .interview-card p {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .calendar {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .calendar__selected {
+  border-radius: 0;
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.page-shell[data-theme="sicilian-noir"] .section--timeline {
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.page-shell[data-theme="sicilian-noir"] .section--timeline .section-heading .eyebrow,
+.page-shell[data-theme="sicilian-noir"] .section--timeline .timeline-card__date,
+.page-shell[data-theme="sicilian-noir"] .section--timeline .timeline-card > p:last-child {
+  color: var(--muted);
+}
+
+.page-shell[data-theme="sicilian-noir"] .timeline-card__image {
+  border: 0;
+  background: var(--surface);
+}
+
+.page-shell[data-theme="sicilian-noir"] .icon-button {
+  border-radius: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .primary-button,
+.page-shell[data-theme="sicilian-noir"] .secondary-button,
+.page-shell[data-theme="sicilian-noir"] .small-button,
+.page-shell[data-theme="sicilian-noir"] .share-button,
+.page-shell[data-theme="sicilian-noir"] .tabs,
+.page-shell[data-theme="sicilian-noir"] .tabs button,
+.page-shell[data-theme="sicilian-noir"] .account-card,
+.page-shell[data-theme="sicilian-noir"] .contact-list article,
+.page-shell[data-theme="sicilian-noir"] .guestbook-list article,
+.page-shell[data-theme="sicilian-noir"] .celebration-sheet__link {
+  border-radius: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .primary-button {
+  background: var(--ink);
+  color: var(--paper);
+  font-size: .67rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.page-shell[data-theme="sicilian-noir"] .secondary-button,
+.page-shell[data-theme="sicilian-noir"] .navigation-links a,
+.page-shell[data-theme="sicilian-noir"] .account-card {
+  background: transparent;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  background: transparent;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-grid .media {
+  aspect-ratio: 3 / 4;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-carousel {
+  gap: 12px;
+}
+
+.page-shell[data-theme="sicilian-noir"] .gallery-carousel .media {
+  width: min(72vw, 280px);
+  min-width: min(72vw, 280px);
+}
+
+.page-shell[data-theme="sicilian-noir"] .middle-image {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.page-shell[data-theme="sicilian-noir"] .placeholder-band,
+.page-shell[data-theme="sicilian-noir"] .closing__image {
+  clip-path: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] .placeholder-band {
+  filter: saturate(.78) contrast(1.08);
+}
+
+.page-shell[data-theme="sicilian-noir"] .polaroid-stack span {
+  border-color: var(--ink);
+  background: #101010;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] .polaroid-stack span:nth-child(2) {
+  background: #1a1a1a;
+}
+
+.page-shell[data-theme="sicilian-noir"] .polaroid-stack span:nth-child(3) {
+  background: #242424;
+}
+
+.page-shell[data-theme="sicilian-noir"] .closing {
+  border-top: 1px solid var(--line);
+}
+
+.page-shell[data-theme="sicilian-noir"] .closing__copy p:last-child {
+  font-family: var(--body-font);
+}
+
+.page-shell[data-theme="sicilian-noir"] .music-button,
+.page-shell[data-theme="sicilian-noir"] .floating-menu-button,
+.page-shell[data-theme="sicilian-noir"] .celebration-button {
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: rgb(0 0 0 / 94%);
+  box-shadow: none;
+}
+
+.page-shell[data-theme="sicilian-noir"] .dialog {
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .dialog__header {
+  border-radius: 0;
+}
+
+.page-shell[data-theme="sicilian-noir"] .rsvp-welcome__lead,
+.page-shell[data-theme="sicilian-noir"] .celebration-sheet__message,
+.page-shell[data-theme="sicilian-noir"] .form-stack > label,
+.page-shell[data-theme="sicilian-noir"] .choice-grid legend,
+.page-shell[data-theme="sicilian-noir"] .guestbook-list p {
+  color: var(--muted);
+}
+
+.page-shell[data-theme="sicilian-noir"] .form-stack input,
+.page-shell[data-theme="sicilian-noir"] .form-stack select,
+.page-shell[data-theme="sicilian-noir"] .form-stack textarea {
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
 }
 
 @keyframes equalizer {

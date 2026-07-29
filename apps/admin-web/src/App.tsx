@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { api } from "./api";
+import { applyThemePreset, themePresets } from "./theme-presets";
 import type {
   AdminUser,
   GuestbookEntry,
@@ -304,6 +305,16 @@ export function App() {
       const draftDesign = structuredClone(current.draftDesign);
       mutate(draftDesign);
       return { ...current, draftDesign };
+    });
+  };
+
+  const selectTheme = (themeId: InvitationDetail["draftDesign"]["themeId"]) => {
+    setInvitation((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        draftDesign: applyThemePreset(current.draftDesign, themeId),
+      };
     });
   };
 
@@ -686,8 +697,23 @@ export function App() {
                     </div>
                     <div className="field-grid">
                       <Field label="JavaScript 키" wide><input value={invitation.draftContent.sharing.kakaoJavaScriptKey} onChange={(event) => updateContent((draft) => { draft.sharing.kakaoJavaScriptKey = event.target.value; })} /></Field>
+                      <Field label="공유 이미지" wide>
+                        <select
+                          value={invitation.draftContent.sharing.kakaoShareImage.assetId ?? ""}
+                          onChange={(event) => updateContent((draft) => {
+                            draft.sharing.kakaoShareImage.assetId = event.target.value || null;
+                          })}
+                        >
+                          <option value="">기본 botanical 이미지</option>
+                          {media
+                            .filter((asset) => asset.contentType.startsWith("image/"))
+                            .map((asset) => (
+                              <option key={asset.id} value={asset.id}>{asset.originalName}</option>
+                            ))}
+                        </select>
+                      </Field>
                     </div>
-                    <p className="panel-note">카카오 개발자 도구에서 공개 청첩장 도메인을 등록한 뒤 키와 공개 이미지를 연결하면 빠른 메뉴에 공유 버튼이 표시됩니다.</p>
+                    <p className="panel-note">JavaScript 키만 등록해도 기본 botanical 이미지로 공유할 수 있습니다. 업로드한 이미지로 바꾸려면 공유 이미지를 선택한 뒤 저장하고 새 버전을 발행하세요.</p>
                   </div>
 
                   <div className="feature-block">
@@ -744,7 +770,44 @@ export function App() {
             ) : null}
 
             {view === "design" ? (
-              <Panel title="디자인 토큰" description="색과 간격을 바꿔도 모든 핵심 컴포넌트가 같은 계약을 사용합니다." actions={<button className="button button--primary" onClick={() => void saveDesign()}>토큰 저장</button>}>
+              <Panel title="테마와 디자인 토큰" description="테마를 고른 뒤 색, 글꼴과 간격을 청첩장에 맞게 세밀하게 조정할 수 있습니다." actions={<button className="button button--primary" onClick={() => void saveDesign()}>{saving ? "저장 중…" : "디자인 저장"}</button>}>
+                <div className="theme-grid" role="radiogroup" aria-label="청첩장 테마 선택">
+                  {themePresets.map((theme) => {
+                    const selected = invitation.draftDesign.themeId === theme.id;
+                    return (
+                      <button
+                        className={`theme-card ${selected ? "is-selected" : ""}`}
+                        key={theme.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => selectTheme(theme.id)}
+                      >
+                        <span
+                          className="theme-card__preview"
+                          style={{
+                            "--theme-paper": theme.tokens.colors.paper,
+                            "--theme-ink": theme.tokens.colors.ink,
+                            "--theme-muted": theme.tokens.colors.muted,
+                            "--theme-accent": theme.tokens.colors.accent,
+                            "--theme-surface": theme.tokens.colors.surface,
+                          } as React.CSSProperties}
+                          aria-hidden="true"
+                        >
+                          <i>WEDDING</i>
+                          <strong>A &amp; B</strong>
+                          <span />
+                        </span>
+                        <span className="theme-card__copy">
+                          <span><strong>{theme.name}</strong>{selected ? <i>선택됨</i> : null}</span>
+                          <small>{theme.description}</small>
+                          <em>{theme.signature}</em>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="theme-note">테마를 선택하면 아래 토큰 전체가 프리셋 값으로 바뀝니다. 저장하기 전까지는 실시간 미리보기에서만 확인됩니다.</p>
                 <div className="token-grid">
                   {Object.entries(invitation.draftDesign.colors).map(([name, value]) => (
                     <label className="color-token" key={name}>

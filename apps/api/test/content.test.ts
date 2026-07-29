@@ -57,6 +57,7 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   assert.ok(parsed.interview.every((entry) => entry.image.assetId === null));
   assert.deepEqual(parsed.sharing, {
     kakaoJavaScriptKey: "",
+    kakaoShareImage: { assetId: null },
     channelTalk: { enabled: false, pluginKey: "" },
   });
   assert.equal(parsed.profiles.items.length, 2);
@@ -127,9 +128,28 @@ test("sample invitation contains complete structured family contact groups", () 
 test("sample design satisfies the replaceable token contract", () => {
   const parsed = invitationDesignSchema.parse(sampleInvitationDesign);
 
+  assert.equal(parsed.themeId, "botanic-garden");
   assert.match(parsed.colors.paper, /^#[0-9a-f]{6}$/i);
   assert.match(parsed.colors.ink, /^#[0-9a-f]{6}$/i);
   assert.ok(parsed.spacing.section >= 48);
+});
+
+test("legacy designs default to the Botanic Garden theme", () => {
+  const legacy = structuredClone(sampleInvitationDesign) as unknown as Record<string, unknown>;
+  delete legacy.themeId;
+
+  const parsed = invitationDesignSchema.parse(legacy);
+
+  assert.equal(parsed.themeId, "botanic-garden");
+});
+
+test("stored Garden Editorial designs migrate to Botanic Garden", () => {
+  const legacy = structuredClone(sampleInvitationDesign) as unknown as Record<string, unknown>;
+  legacy.themeId = "garden-editorial";
+
+  const parsed = invitationDesignSchema.parse(legacy);
+
+  assert.equal(parsed.themeId, "botanic-garden");
 });
 
 test("an invalid public account is rejected", () => {
@@ -163,10 +183,12 @@ test("publishing exposes only media referenced by the validated invitation", () 
   const archivedId = "44444444-4444-4444-8444-444444444444";
   const profileId = "55555555-5555-4555-8555-555555555555";
   const sketchMapId = "66666666-6666-4666-8666-666666666666";
+  const kakaoShareImageId = "77777777-7777-4777-8777-777777777777";
   content.greeting.image.assetId = greetingId;
   content.gallery.items[0]!.assetId = galleryId;
   content.event.sketchMap.assetId = sketchMapId;
   content.profiles.items[0]!.image.assetId = profileId;
+  content.sharing.kakaoShareImage.assetId = kakaoShareImageId;
   content.music.assetId = greetingId;
 
   const plan = createMediaPublicationPlan(content, [
@@ -174,12 +196,25 @@ test("publishing exposes only media referenced by the validated invitation", () 
     { id: galleryId, state: "published" },
     { id: sketchMapId, state: "draft" },
     { id: profileId, state: "draft" },
+    { id: kakaoShareImageId, state: "draft" },
     { id: stalePublishedId, state: "published" },
     { id: archivedId, state: "archived" },
   ]);
 
-  assert.deepEqual(plan.referencedIds, [greetingId, galleryId, profileId, sketchMapId]);
-  assert.deepEqual(plan.publishedIds, [greetingId, galleryId, profileId, sketchMapId]);
+  assert.deepEqual(plan.referencedIds, [
+    greetingId,
+    galleryId,
+    profileId,
+    sketchMapId,
+    kakaoShareImageId,
+  ]);
+  assert.deepEqual(plan.publishedIds, [
+    greetingId,
+    galleryId,
+    profileId,
+    sketchMapId,
+    kakaoShareImageId,
+  ]);
   assert.deepEqual(plan.draftIds, [stalePublishedId]);
   assert.deepEqual(plan.missingIds, []);
 });

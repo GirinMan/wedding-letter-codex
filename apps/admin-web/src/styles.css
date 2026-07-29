@@ -218,6 +218,58 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .revision-line { height: 1px; background: #ded9d2; }
 
 .token-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.theme-grid { display: grid; margin-bottom: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.theme-card {
+  display: grid;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #ded9d2;
+  border-radius: 10px;
+  grid-template-columns: 132px minmax(0, 1fr);
+  background: #fff;
+  color: #211f1d;
+  text-align: left;
+}
+.theme-card:hover { border-color: #aaa19a; }
+.theme-card.is-selected { border-color: #211f1d; box-shadow: 0 0 0 1px #211f1d; }
+.theme-card__preview {
+  --theme-paper: #fbfaf7;
+  --theme-ink: #171717;
+  --theme-muted: #8b8178;
+  --theme-accent: #d9a6a0;
+  --theme-surface: #f4f1ec;
+  display: flex;
+  min-height: 150px;
+  padding: 22px 14px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background:
+    linear-gradient(145deg, transparent 58%, color-mix(in srgb, var(--theme-accent) 16%, transparent) 58%),
+    var(--theme-paper);
+  color: var(--theme-ink);
+}
+.theme-card__preview i {
+  color: var(--theme-muted);
+  font-size: .47rem;
+  font-style: normal;
+  letter-spacing: .24em;
+}
+.theme-card__preview strong {
+  margin: 13px 0 16px;
+  font-family: "Bodoni Moda", Didot, Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: .08em;
+}
+.theme-card__preview > span { width: 1px; height: 32px; background: var(--theme-accent); }
+.theme-card__copy { display: flex; padding: 16px; justify-content: center; flex-direction: column; }
+.theme-card__copy > span { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.theme-card__copy strong { font-family: Georgia, serif; font-size: .82rem; font-weight: 500; }
+.theme-card__copy i { padding: 3px 6px; border-radius: 999px; background: #211f1d; color: #fff; font-size: .5rem; font-style: normal; }
+.theme-card__copy small { margin-top: 8px; color: #817870; font-size: .6rem; line-height: 1.55; }
+.theme-card__copy em { margin-top: 11px; color: #a6262f; font-size: .55rem; font-style: normal; }
+.theme-note { margin: 0 0 22px; color: #817870; font-size: .61rem; line-height: 1.6; }
 .color-token { display: flex; padding: 12px; border: 1px solid #e2ddd7; border-radius: 9px; align-items: center; gap: 10px; }
 .color-token input { width: 36px; height: 36px; padding: 0; border: 0; background: transparent; }
 .color-token span { display: flex; flex-direction: column; color: #5b554f; font-size: .67rem; text-transform: capitalize; }

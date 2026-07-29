@@ -31,6 +31,28 @@ declare global {
   }
 }
 
+export const defaultKakaoShareImagePath = "/assets/botanical-kakao-share.jpg";
+
+export function isKakaoShareAvailable(javascriptKey: string) {
+  return Boolean(javascriptKey.trim());
+}
+
+export function getPrimarySharePresentation(javascriptKey: string) {
+  return isKakaoShareAvailable(javascriptKey)
+    ? { provider: "kakao" as const, label: "카카오톡으로 공유하기" }
+    : { provider: "generic" as const, label: "초대장 공유하기" };
+}
+
+export function getClosingSharePresentations(javascriptKey: string) {
+  const primary = getPrimarySharePresentation(javascriptKey);
+  return primary.provider === "kakao"
+    ? [
+        primary,
+        { provider: "generic" as const, label: "다른 방법으로 공유하기" },
+      ]
+    : [primary];
+}
+
 const kakaoSdkUrl = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js";
 let kakaoSdkRequest: Promise<KakaoSdk> | null = null;
 
@@ -41,9 +63,10 @@ export function createKakaoSharePayload({
   pageUrl,
 }: KakaoSharePayloadInput): KakaoSharePayload {
   const link = { mobileWebUrl: pageUrl, webUrl: pageUrl };
+  const resolvedImageUrl = imageUrl || new URL(defaultKakaoShareImagePath, pageUrl).toString();
   return {
     objectType: "feed",
-    content: { title, description, imageUrl, link },
+    content: { title, description, imageUrl: resolvedImageUrl, link },
     buttons: [{ title: "청첩장 보기", link }],
   };
 }
