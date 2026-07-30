@@ -331,12 +331,13 @@ function SicilianCatalogHero({
     ? uploadedGallery.slice(0, 3)
     : [content.greeting.image, ...content.gallery.items.slice(0, 2)];
   const eventYear = new Date(content.event.startsAt).getFullYear();
+  const mastheadTitle = content.hero.title === "INVITÉ" ? "INVITATION" : content.hero.title;
 
   return (
     <section className="catalog-hero" id={sectionAnchorId("hero")} data-reveal>
       <header className="catalog-hero__masthead">
         <span>WEDDING</span>
-        <h1>{content.hero.title}</h1>
+        <h1>{mastheadTitle}</h1>
         <span>{eventYear}</span>
       </header>
       <div className="catalog-hero__tile-ribbon" aria-hidden="true" />

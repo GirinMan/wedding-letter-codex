@@ -175,11 +175,19 @@ test("Sicilian Noir keeps the interface monochrome and sans serif", async () => 
   assert.match(app, /resolvedDesign\.themeId === "sicilian-noir"/);
   assert.match(app, /className="catalog-hero"/);
   assert.match(app, /className="catalog-hero__masthead"/);
+  assert.match(
+    app,
+    /content\.hero\.title === "INVITÉ" \? "INVITATION" : content\.hero\.title/,
+  );
   assert.match(app, /className="catalog-hero__visual"/);
   assert.match(app, /className="catalog-hero__tile-ribbon"/);
   assert.match(styles, /\.catalog-hero__masthead/);
   assert.match(styles, /\.catalog-hero__visual/);
   assert.match(styles, /\.catalog-hero__tile-ribbon/);
+  assert.match(
+    styles,
+    /\.contact-button\s*\{[^}]*display:\s*flex;[^}]*margin:\s*8px auto 0;/s,
+  );
   assert.match(styles, /--paper:\s*#fff(?:fff)?;/i);
   assert.match(styles, /--ink:\s*#0a0a0a;/i);
   assert.match(styles, /--surface:\s*#f4f4f4;/i);

@@ -325,10 +325,10 @@ textarea:focus-visible {
 }
 
 .contact-button {
-  display: inline-flex;
+  display: flex;
   min-width: 202px;
   min-height: 52px;
-  margin-top: 8px;
+  margin: 8px auto 0;
   padding: 0 26px;
   border: 1px solid var(--line);
   border-radius: calc(var(--radius) + 4px);
