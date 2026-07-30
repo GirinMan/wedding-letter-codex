@@ -126,6 +126,31 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
 });
 
+test("Sicilian Noir carries its typography and ceramic details into the RSVP welcome dialog", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*#fff;[^}]*font-family:\s*var\(--body-font\);/s,
+  );
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome \.dialog__header\s*\{[^}]*background:\s*var\(--sicilian-noir\);[^}]*color:\s*#fff;/s,
+  );
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome \.dialog__header::after\s*\{[^}]*var\(--sicilian-frieze-art\)/s,
+  );
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.rsvp-welcome__icon\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
+  );
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.rsvp-welcome__lead\s*\{[^}]*font-family:\s*var\(--body-font\);/s,
+  );
+});
+
 test("Sicilian Noir keeps the interface monochrome and sans serif", async () => {
   const [app, styles] = await Promise.all([
     readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
