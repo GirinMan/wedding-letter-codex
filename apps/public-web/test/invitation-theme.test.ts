@@ -151,6 +151,15 @@ test("Sicilian Noir carries its typography and ceramic details into the RSVP wel
   );
 });
 
+test("Sicilian Noir keeps the secondary closing share action visible on black", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.closing \.share-button--secondary\s*\{[^}]*border-color:\s*#fff;[^}]*color:\s*#fff;/s,
+  );
+});
+
 test("Sicilian Noir keeps the interface monochrome and sans serif", async () => {
   const [app, styles] = await Promise.all([
     readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),

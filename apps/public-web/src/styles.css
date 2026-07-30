@@ -2251,6 +2251,11 @@ textarea:focus-visible {
   font-family: var(--body-font);
 }
 
+.page-shell[data-theme="sicilian-noir"] .closing .share-button--secondary {
+  border-color: #fff;
+  color: #fff;
+}
+
 .page-shell[data-theme="sicilian-noir"] .music-button,
 .page-shell[data-theme="sicilian-noir"] .floating-menu-button,
 .page-shell[data-theme="sicilian-noir"] .celebration-button {
