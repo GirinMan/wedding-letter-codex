@@ -77,10 +77,10 @@ test("Sicilian Noir uses generated Sicilian architecture only as the middle back
 
 test("Sicilian Noir distributes generated ceramic details through decorative layers", async () => {
   const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
-  const [frieze, medallion, inlay] = await Promise.all([
+  const [frieze, medallion, calendarRail] = await Promise.all([
     readFile(new URL("../public/assets/sicilian-majolica-frieze.webp", import.meta.url)),
     readFile(new URL("../public/assets/sicilian-star-medallion.png", import.meta.url)),
-    readFile(new URL("../public/assets/sicilian-margin-inlay.webp", import.meta.url)),
+    readFile(new URL("../public/assets/sicilian-calendar-rail.webp", import.meta.url)),
   ]);
 
   assert.ok(frieze.byteLength > 100_000, "the horizontal ceramic frieze should be bundled");
@@ -95,7 +95,7 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
     6,
     "the section medallion should use RGBA pixels so dark sections do not show a white tile",
   );
-  assert.ok(inlay.byteLength > 20_000, "the vertical margin inlay should be bundled");
+  assert.ok(calendarRail.byteLength > 20_000, "the modern calendar rail should be bundled");
   assert.match(
     styles,
     /--sicilian-frieze-art:\s*url\("\/assets\/sicilian-majolica-frieze\.webp"\)/,
@@ -106,7 +106,7 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.match(
     styles,
-    /--sicilian-inlay-art:\s*url\("\/assets\/sicilian-margin-inlay\.webp"\)/,
+    /--sicilian-calendar-rail-art:\s*url\("\/assets\/sicilian-calendar-rail\.webp"\)/,
   );
   assert.match(
     styles,
@@ -118,8 +118,10 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.match(
     styles,
-    /#invitation-section-calendar::after[\s\S]*?width:\s*30px;[\s\S]*?height:\s*371px;[\s\S]*?var\(--sicilian-inlay-art\)[^;]*\/\s*30px auto no-repeat;/,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.calendar::after\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*width:\s*32px;[^}]*var\(--sicilian-calendar-rail-art\)/s,
   );
+  assert.doesNotMatch(styles, /#invitation-section-accounts::after/);
+  assert.doesNotMatch(styles, /sicilian-margin-inlay\.webp/);
   assert.match(
     styles,
     /\.closing::before\s*\{[^}]*var\(--sicilian-frieze-art\)/s,

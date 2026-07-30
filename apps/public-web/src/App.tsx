@@ -652,6 +652,9 @@ export function App() {
   }
 
   const resolvedDesign = resolveInvitationThemeDesign(design);
+  const channelTalkEnabled = !isPreview
+    && content.sharing.channelTalk.enabled
+    && Boolean(content.sharing.channelTalk.pluginKey.trim());
   const style = {
     "--paper": resolvedDesign.colors.paper,
     "--ink": resolvedDesign.colors.ink,
@@ -923,7 +926,12 @@ export function App() {
   };
 
   return (
-    <div className="page-shell" style={style} {...invitationThemeAttributes(resolvedDesign.themeId)}>
+    <div
+      className="page-shell"
+      data-channel-talk={channelTalkEnabled ? "enabled" : "disabled"}
+      style={style}
+      {...invitationThemeAttributes(resolvedDesign.themeId)}
+    >
       <main className="invitation">
         {enabledSections.has("hero") ? (
           resolvedDesign.themeId === "sicilian-noir" ? (

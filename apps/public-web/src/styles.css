@@ -1099,6 +1099,10 @@ textarea:focus-visible {
   bottom: 22px;
 }
 
+.page-shell[data-channel-talk="enabled"] .floating-menu-button {
+  bottom: 96px;
+}
+
 .celebration-button {
   position: fixed;
   z-index: 20;
@@ -1114,6 +1118,10 @@ textarea:focus-visible {
   color: var(--ink);
   box-shadow: 0 8px 24px rgb(38 33 29 / 8%);
   cursor: pointer;
+}
+
+.page-shell[data-channel-talk="enabled"] .celebration-button {
+  bottom: 152px;
 }
 
 .celebration-button svg {
@@ -1751,7 +1759,7 @@ textarea:focus-visible {
   --sicilian-transition-art: url("/assets/sicilian-courtyard-transition.webp");
   --sicilian-frieze-art: url("/assets/sicilian-majolica-frieze.webp");
   --sicilian-medallion-art: url("/assets/sicilian-star-medallion.png");
-  --sicilian-inlay-art: url("/assets/sicilian-margin-inlay.webp");
+  --sicilian-calendar-rail-art: url("/assets/sicilian-calendar-rail.webp");
   --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --radius: 0;
@@ -2084,42 +2092,28 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .calendar {
-  padding: 28px 22px;
+  position: relative;
+  overflow: hidden;
+  padding: 28px 50px 28px 22px;
   border: 0;
   background: var(--surface);
+}
+
+.page-shell[data-theme="sicilian-noir"] .calendar::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  background: var(--sicilian-calendar-rail-art) center / 100% 100% no-repeat;
+  content: "";
+  pointer-events: none;
 }
 
 .page-shell[data-theme="sicilian-noir"] .calendar__selected {
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
-}
-
-.page-shell[data-theme="sicilian-noir"] #invitation-section-calendar,
-.page-shell[data-theme="sicilian-noir"] #invitation-section-accounts {
-  overflow: hidden;
-}
-
-.page-shell[data-theme="sicilian-noir"] #invitation-section-calendar::after,
-.page-shell[data-theme="sicilian-noir"] #invitation-section-accounts::after {
-  position: absolute;
-  top: 84px;
-  width: 30px;
-  height: 371px;
-  background: var(--sicilian-inlay-art) center top / 30px auto no-repeat;
-  box-shadow: 0 12px 24px rgb(0 0 0 / 12%);
-  content: "";
-  opacity: .96;
-  pointer-events: none;
-}
-
-.page-shell[data-theme="sicilian-noir"] #invitation-section-calendar::after {
-  right: 0;
-}
-
-.page-shell[data-theme="sicilian-noir"] #invitation-section-accounts::after {
-  left: 0;
-  transform: rotate(180deg);
 }
 
 .page-shell[data-theme="sicilian-noir"] .section--timeline {
