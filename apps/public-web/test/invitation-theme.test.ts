@@ -132,8 +132,11 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
 });
 
-test("Sicilian Noir carries its typography and ceramic details into the RSVP welcome dialog", async () => {
-  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+test("Sicilian Noir keeps only the star medallion in the RSVP welcome dialog", async () => {
+  const [app, styles] = await Promise.all([
+    readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
+  ]);
 
   assert.match(
     styles,
@@ -143,17 +146,14 @@ test("Sicilian Noir carries its typography and ceramic details into the RSVP wel
     styles,
     /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome \.dialog__header\s*\{[^}]*background:\s*var\(--sicilian-noir\);[^}]*color:\s*#fff;/s,
   );
-  assert.match(
+  assert.doesNotMatch(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome \.dialog__header::after\s*\{[^}]*var\(--sicilian-frieze-art\)/s,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome \.dialog__header::after/,
   );
+  assert.match(app, /className="rsvp-welcome__icon"/);
   assert.match(
     styles,
     /\.page-shell\[data-theme="sicilian-noir"\] \.rsvp-welcome__icon\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
-  );
-  assert.match(
-    styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.rsvp-welcome__lead\s*\{[^}]*font-family:\s*var\(--body-font\);/s,
   );
 });
 
@@ -183,7 +183,10 @@ test("Sicilian Noir keeps the interface monochrome and sans serif", async () => 
   assert.match(app, /className="catalog-hero__tile-ribbon"/);
   assert.match(styles, /\.catalog-hero__masthead/);
   assert.match(styles, /\.catalog-hero__visual/);
-  assert.match(styles, /\.catalog-hero__tile-ribbon/);
+  assert.match(
+    styles,
+    /\.catalog-hero__tile-ribbon\s*\{[^}]*height:\s*44px;/s,
+  );
   assert.match(
     styles,
     /\.contact-button\s*\{[^}]*display:\s*flex;[^}]*margin:\s*8px auto 0;/s,

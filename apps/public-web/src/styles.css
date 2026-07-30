@@ -1944,7 +1944,7 @@ textarea:focus-visible {
 }
 
 .catalog-hero__tile-ribbon {
-  height: 20px;
+  height: 44px;
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
 }
 
@@ -2410,21 +2410,11 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .dialog--rsvp-welcome .dialog__header {
-  min-height: 84px;
-  padding: 20px 62px 30px;
+  min-height: 72px;
+  padding: 18px 62px;
   border-radius: 0;
   background: var(--sicilian-noir);
   color: #fff;
-}
-
-.page-shell[data-theme="sicilian-noir"] .dialog--rsvp-welcome .dialog__header::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 14px;
-  background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
-  content: "";
 }
 
 .page-shell[data-theme="sicilian-noir"] .dialog--rsvp-welcome .dialog__header .icon-button {
