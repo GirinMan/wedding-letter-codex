@@ -1750,7 +1750,7 @@ textarea:focus-visible {
   --sicilian-noir: #0a0a0a;
   --sicilian-transition-art: url("/assets/sicilian-courtyard-transition.webp");
   --sicilian-frieze-art: url("/assets/sicilian-majolica-frieze.webp");
-  --sicilian-medallion-art: url("/assets/sicilian-star-medallion.webp");
+  --sicilian-medallion-art: url("/assets/sicilian-star-medallion.png");
   --sicilian-inlay-art: url("/assets/sicilian-margin-inlay.webp");
   --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
@@ -1951,10 +1951,10 @@ textarea:focus-visible {
 }
 
 .page-shell[data-theme="sicilian-noir"] .section-heading .eyebrow::before {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   flex: 0 0 auto;
-  background: var(--sicilian-medallion-art) center / cover no-repeat;
+  background: var(--sicilian-medallion-art) center / contain no-repeat;
   content: "";
 }
 
@@ -2103,12 +2103,13 @@ textarea:focus-visible {
 .page-shell[data-theme="sicilian-noir"] #invitation-section-calendar::after,
 .page-shell[data-theme="sicilian-noir"] #invitation-section-accounts::after {
   position: absolute;
-  top: 88px;
-  width: 16px;
-  height: 270px;
-  background: var(--sicilian-inlay-art) center top / 16px auto repeat-y;
+  top: 84px;
+  width: 30px;
+  height: 371px;
+  background: var(--sicilian-inlay-art) center top / 30px auto no-repeat;
+  box-shadow: 0 12px 24px rgb(0 0 0 / 12%);
   content: "";
-  opacity: .92;
+  opacity: .96;
   pointer-events: none;
 }
 
@@ -2118,7 +2119,7 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] #invitation-section-accounts::after {
   left: 0;
-  background-position: center 38%;
+  transform: rotate(180deg);
 }
 
 .page-shell[data-theme="sicilian-noir"] .section--timeline {

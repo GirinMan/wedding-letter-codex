@@ -79,12 +79,22 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
   const [frieze, medallion, inlay] = await Promise.all([
     readFile(new URL("../public/assets/sicilian-majolica-frieze.webp", import.meta.url)),
-    readFile(new URL("../public/assets/sicilian-star-medallion.webp", import.meta.url)),
+    readFile(new URL("../public/assets/sicilian-star-medallion.png", import.meta.url)),
     readFile(new URL("../public/assets/sicilian-margin-inlay.webp", import.meta.url)),
   ]);
 
   assert.ok(frieze.byteLength > 100_000, "the horizontal ceramic frieze should be bundled");
   assert.ok(medallion.byteLength > 4_000, "the section medallion should be bundled");
+  assert.deepEqual(
+    [...medallion.subarray(1, 4)],
+    [0x50, 0x4e, 0x47],
+    "the section medallion should be a PNG",
+  );
+  assert.equal(
+    medallion[25],
+    6,
+    "the section medallion should use RGBA pixels so dark sections do not show a white tile",
+  );
   assert.ok(inlay.byteLength > 20_000, "the vertical margin inlay should be bundled");
   assert.match(
     styles,
@@ -92,7 +102,7 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.match(
     styles,
-    /--sicilian-medallion-art:\s*url\("\/assets\/sicilian-star-medallion\.webp"\)/,
+    /--sicilian-medallion-art:\s*url\("\/assets\/sicilian-star-medallion\.png"\)/,
   );
   assert.match(
     styles,
@@ -104,11 +114,11 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.match(
     styles,
-    /\.section-heading \.eyebrow::before\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
+    /\.section-heading \.eyebrow::before\s*\{[^}]*width:\s*22px;[^}]*height:\s*22px;[^}]*var\(--sicilian-medallion-art\)/s,
   );
   assert.match(
     styles,
-    /#invitation-section-calendar::after[\s\S]*?var\(--sicilian-inlay-art\)/,
+    /#invitation-section-calendar::after[\s\S]*?width:\s*30px;[\s\S]*?height:\s*371px;[\s\S]*?var\(--sicilian-inlay-art\)[^;]*\/\s*30px auto no-repeat;/,
   );
   assert.match(
     styles,

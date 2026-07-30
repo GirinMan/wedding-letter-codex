@@ -42,8 +42,10 @@ Project interpretation:
   behind the middle D-Day transition;
 - three additional Image Gen assets extend that color language without
   becoming photo substitutes: `sicilian-majolica-frieze.webp` forms the hero
-  and closing borders, `sicilian-star-medallion.webp` marks section labels, and
-  `sicilian-margin-inlay.webp` appears only in selected white margins;
+  and closing borders, the transparent `sicilian-star-medallion.png` marks
+  section labels on both white and black surfaces, and
+  `sicilian-margin-inlay.webp` appears as a full-height tile bookmark in
+  selected white margins;
 - hero, greeting, profile, interview, timeline, gallery, and closing photo
   slots stay neutral grayscale until real photos are uploaded;
 - empty media never exposes internal placeholder labels or abstract wireframe
