@@ -39,6 +39,11 @@ import {
 import { moveCarouselIndex } from "./carousel";
 import { bootChannelTalk } from "./channel-talk";
 import {
+  buildOpenStreetMapEmbedUrl,
+  getKakaoMapLevel,
+  getMapProvider,
+} from "./map-provider";
+import {
   dismissRsvpWelcomePromptForToday,
   rsvpPromptStorageKey,
   shouldShowRsvpWelcomePrompt,
@@ -185,48 +190,98 @@ function formatEventDate(startsAt: string) {
   }).format(new Date(startsAt));
 }
 
-function NaverMap({ event }: { event: InvitationContent["event"] }) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = useState(false);
-  const { latitude, longitude, map } = event;
+interface KakaoMaps {
+  LatLng: new (latitude: number, longitude: number) => unknown;
+  Map: new (container: HTMLElement, options: { center: unknown; level: number }) => unknown;
+  Marker: new (options: { map: unknown; position: unknown }) => unknown;
+  load: (callback: () => void) => void;
+}
 
-  useEffect(() => {
-    if (!map.naverMapClientId || latitude === null || longitude === null || !mapRef.current) return;
-    let cancelled = false;
-    const initialize = () => {
-      const naver = (window as Window & { naver?: any }).naver;
-      if (!naver?.maps || !mapRef.current || cancelled) return;
-      const position = new naver.maps.LatLng(latitude, longitude);
-      const instance = new naver.maps.Map(mapRef.current, { center: position, zoom: map.zoom });
-      new naver.maps.Marker({ map: instance, position });
+declare global {
+  interface Window {
+    kakao?: { maps?: KakaoMaps };
+  }
+}
+
+let kakaoMapsPromise: Promise<KakaoMaps> | undefined;
+
+function loadKakaoMaps(javascriptKey: string): Promise<KakaoMaps> {
+  if (kakaoMapsPromise) return kakaoMapsPromise;
+
+  kakaoMapsPromise = new Promise((resolve, reject) => {
+    const load = () => {
+      const maps = window.kakao?.maps;
+      if (!maps) {
+        reject(new Error("Kakao Map SDK is unavailable."));
+        return;
+      }
+      maps.load(() => resolve(maps));
     };
-    const existing = document.querySelector<HTMLScriptElement>("script[data-wedding-naver-map]");
+    const existing = document.querySelector<HTMLScriptElement>("script[data-wedding-kakao-map]");
     if (existing) {
-      if ((window as Window & { naver?: any }).naver?.maps) initialize();
-      else existing.addEventListener("load", initialize, { once: true });
-      return () => {
-        cancelled = true;
-        existing.removeEventListener("load", initialize);
-      };
+      if (window.kakao?.maps) load();
+      else {
+        existing.addEventListener("load", load, { once: true });
+        existing.addEventListener("error", () => reject(new Error("Kakao Map SDK failed to load.")), { once: true });
+      }
+      return;
     }
     const script = document.createElement("script");
-    script.dataset.weddingNaverMap = "true";
+    script.dataset.weddingKakaoMap = "true";
     script.async = true;
-    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${encodeURIComponent(map.naverMapClientId)}`;
-    script.addEventListener("load", initialize, { once: true });
-    script.addEventListener("error", () => setFailed(true), { once: true });
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${encodeURIComponent(javascriptKey)}`;
+    script.addEventListener("load", load, { once: true });
+    script.addEventListener("error", () => reject(new Error("Kakao Map SDK failed to load.")), { once: true });
     document.head.append(script);
+  });
+
+  return kakaoMapsPromise;
+}
+
+function OpenStreetMap({ event }: { event: InvitationContent["event"] }) {
+  const { latitude, longitude } = event;
+  if (latitude === null || longitude === null) {
+    return <a className="map-embed map-embed--fallback" href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(event.address)}`} rel="noreferrer" target="_blank">OpenStreetMap에서 위치 보기</a>;
+  }
+  return <iframe className="map-embed" loading="lazy" src={buildOpenStreetMapEmbedUrl(latitude, longitude)} title={`${event.venueName} OpenStreetMap`} />;
+}
+
+function VenueMap({
+  event,
+  kakaoJavaScriptKey,
+}: {
+  event: InvitationContent["event"];
+  kakaoJavaScriptKey: string;
+}) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
+  const { latitude, longitude } = event;
+  const provider = getMapProvider(kakaoJavaScriptKey);
+
+  useEffect(() => {
+    if (provider !== "kakao" || latitude === null || longitude === null || !mapRef.current) return;
+    let cancelled = false;
+    setFailed(false);
+    void loadKakaoMaps(kakaoJavaScriptKey).then((maps) => {
+      if (cancelled || !mapRef.current) return;
+      const position = new maps.LatLng(latitude, longitude);
+      const instance = new maps.Map(mapRef.current, {
+        center: position,
+        level: getKakaoMapLevel(event.map.zoom),
+      });
+      new maps.Marker({ map: instance, position });
+    }).catch(() => {
+      if (!cancelled) setFailed(true);
+    });
     return () => {
       cancelled = true;
-      script.removeEventListener("load", initialize);
     };
-  }, [latitude, longitude, map.naverMapClientId, map.zoom]);
+  }, [event.map.zoom, kakaoJavaScriptKey, latitude, longitude, provider]);
 
-  const naverSearchUrl = `https://map.naver.com/p/search/${encodeURIComponent(event.address)}`;
-  if (!map.naverMapClientId || latitude === null || longitude === null || failed) {
-    return <a className="map-embed map-embed--fallback" href={naverSearchUrl} rel="noreferrer" target="_blank">네이버지도에서 위치 보기</a>;
+  if (provider !== "kakao" || latitude === null || longitude === null || failed) {
+    return <OpenStreetMap event={event} />;
   }
-  return <div className="map-embed" ref={mapRef} role="img" aria-label={`${event.venueName} 네이버 지도`} />;
+  return <div className="map-embed" ref={mapRef} role="img" aria-label={`${event.venueName} 카카오맵`} />;
 }
 
 function mapNavigationLinks(event: InvitationContent["event"]) {
@@ -1037,7 +1092,7 @@ export function App() {
               <p>{content.event.address}</p>
               <a href={`tel:${content.event.telephone}`}>{content.event.telephone}</a>
             </div>
-            <NaverMap event={content.event} />
+            <VenueMap event={content.event} kakaoJavaScriptKey={content.sharing.kakaoJavaScriptKey} />
             {content.event.sketchMap.assetId ? (
               <button
                 className="map-sketch-button"
