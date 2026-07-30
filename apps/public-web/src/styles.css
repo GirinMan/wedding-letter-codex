@@ -1054,6 +1054,131 @@ textarea:focus-visible {
   letter-spacing: -.15px;
 }
 
+.ambient-guestbook-letter {
+  position: fixed;
+  z-index: 19;
+  top: clamp(230px, 43vh, 430px);
+  right: max(0px, calc((100vw - 430px) / 2));
+  width: min(268px, calc(100vw - 72px));
+  min-height: 116px;
+  padding: 30px 42px 22px 26px;
+  overflow: hidden;
+  border: 1px solid #d9d9d9;
+  border-radius: 0;
+  background: #fff;
+  color: #101010;
+  box-shadow: 0 14px 36px rgb(0 0 0 / 16%);
+  text-align: left;
+  transform: translateX(18px) rotate(-.6deg);
+  animation: ambient-letter-arrive 420ms cubic-bezier(.2, .75, .25, 1) both;
+  cursor: pointer;
+}
+
+.ambient-guestbook-letter::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--accent);
+  content: "";
+}
+
+.ambient-guestbook-letter::after {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 24px;
+  height: 24px;
+  border-top: 1px solid #d9d9d9;
+  border-left: 1px solid #d9d9d9;
+  background: linear-gradient(135deg, #f0f0f0 0 49%, #fff 50%);
+  content: "";
+}
+
+.ambient-guestbook-letter__postmark {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  color: #777;
+  font-size: .5rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+}
+
+.ambient-guestbook-letter > strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: .88rem;
+  font-weight: 620;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ambient-guestbook-letter > span:last-child {
+  display: flex;
+  margin-top: 15px;
+  align-items: center;
+  gap: 8px;
+  color: #656565;
+  font-size: .68rem;
+}
+
+.ambient-guestbook-letter time::before {
+  margin-right: 8px;
+  content: "·";
+}
+
+.ambient-guestbook-dock {
+  position: fixed;
+  z-index: 19;
+  top: 56vh;
+  left: max(0px, calc((100vw - 430px) / 2));
+  display: grid;
+  width: 48px;
+  min-height: 64px;
+  padding: 10px 8px 8px;
+  border: 1px solid var(--line);
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+  place-items: center;
+  background: rgb(255 255 255 / 94%);
+  color: #111;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  cursor: pointer;
+}
+
+.ambient-guestbook-dock svg {
+  width: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+
+.ambient-guestbook-dock strong {
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.page-shell[data-theme="sicilian-noir"] .ambient-guestbook-letter::before {
+  background: linear-gradient(
+    to bottom,
+    #1746a2 0 25%,
+    #d7261e 25% 50%,
+    #f2c230 50% 75%,
+    #218c4a 75%
+  );
+}
+
+.page-shell[data-theme="sicilian-noir"] .ambient-guestbook-letter,
+.page-shell[data-theme="sicilian-noir"] .ambient-guestbook-dock {
+  border-color: #111;
+  font-family: var(--body-font);
+}
+
 .music-button,
 .floating-menu-button {
   position: fixed;
@@ -2388,6 +2513,18 @@ textarea:focus-visible {
   to { height: 18px; }
 }
 
+@keyframes ambient-letter-arrive {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100% + 30px)) translateY(-7px) rotate(1.4deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(18px) translateY(0) rotate(-.6deg);
+  }
+}
+
 @keyframes dialog-in {
   from {
     opacity: 0;
@@ -2411,6 +2548,10 @@ textarea:focus-visible {
   .celebration-button {
     right: 16px;
   }
+
+  .ambient-guestbook-letter {
+    right: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2430,5 +2571,10 @@ textarea:focus-visible {
 
   .account-carousel__track {
     transition: none;
+  }
+
+  .ambient-guestbook-letter {
+    animation: none;
+    transform: translateX(18px);
   }
 }
