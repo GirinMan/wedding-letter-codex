@@ -419,7 +419,7 @@ export const sampleInvitationContent: InvitationContent = {
   },
   hero: {
     eyebrow: "",
-    title: "INVITATION",
+    title: "CELEBRATE L’AMORE",
     subtitle: "",
     nameOrder: ["partnerTwo", "partnerOne"],
   },

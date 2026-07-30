@@ -177,7 +177,7 @@ test("Sicilian Noir keeps the interface monochrome and sans serif", async () => 
   assert.match(app, /className="catalog-hero__masthead"/);
   assert.match(
     app,
-    /content\.hero\.title === "INVITÉ" \? "INVITATION" : content\.hero\.title/,
+    /\["INVITÉ", "INVITATION"\]\.includes\(content\.hero\.title\)\s*\?\s*"CELEBRATE L’AMORE"\s*:\s*content\.hero\.title/,
   );
   assert.match(app, /className="catalog-hero__visual"/);
   assert.match(app, /className="catalog-hero__tile-ribbon"/);

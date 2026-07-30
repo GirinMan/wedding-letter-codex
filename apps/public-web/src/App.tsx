@@ -331,7 +331,9 @@ function SicilianCatalogHero({
     ? uploadedGallery.slice(0, 3)
     : [content.greeting.image, ...content.gallery.items.slice(0, 2)];
   const eventYear = new Date(content.event.startsAt).getFullYear();
-  const mastheadTitle = content.hero.title === "INVITÉ" ? "INVITATION" : content.hero.title;
+  const mastheadTitle = ["INVITÉ", "INVITATION"].includes(content.hero.title)
+    ? "CELEBRATE L’AMORE"
+    : content.hero.title;
 
   return (
     <section className="catalog-hero" id={sectionAnchorId("hero")} data-reveal>
