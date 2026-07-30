@@ -44,8 +44,9 @@ Project interpretation:
   becoming photo substitutes: `sicilian-majolica-frieze.webp` forms the hero
   and closing borders, the transparent `sicilian-star-medallion.png` marks
   section labels on both white and black surfaces, and
-  `sicilian-calendar-rail.webp` forms a bright geometric rail fitted exactly
-  to the calendar card height; account content intentionally has no side rail;
+  `sicilian-calendar-rail.webp` forms a warm, hand-painted majolica rail fitted
+  exactly to the calendar card height; account content intentionally has no
+  side rail;
 - hero, greeting, profile, interview, timeline, gallery, and closing photo
   slots stay neutral grayscale until real photos are uploaded;
 - empty media never exposes internal placeholder labels or abstract wireframe

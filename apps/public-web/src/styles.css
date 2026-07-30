@@ -2094,7 +2094,7 @@ textarea:focus-visible {
 .page-shell[data-theme="sicilian-noir"] .calendar {
   position: relative;
   overflow: hidden;
-  padding: 28px 50px 28px 22px;
+  padding: 28px 60px 28px 22px;
   border: 0;
   background: var(--surface);
 }
@@ -2104,7 +2104,7 @@ textarea:focus-visible {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 32px;
+  width: 42px;
   background: var(--sicilian-calendar-rail-art) center / 100% 100% no-repeat;
   content: "";
   pointer-events: none;

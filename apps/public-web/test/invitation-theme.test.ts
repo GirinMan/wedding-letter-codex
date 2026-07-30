@@ -118,7 +118,7 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.calendar::after\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*width:\s*32px;[^}]*var\(--sicilian-calendar-rail-art\)/s,
+    /\.page-shell\[data-theme="sicilian-noir"\] \.calendar::after\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*width:\s*42px;[^}]*var\(--sicilian-calendar-rail-art\)/s,
   );
   assert.doesNotMatch(styles, /#invitation-section-accounts::after/);
   assert.doesNotMatch(styles, /sicilian-margin-inlay\.webp/);
