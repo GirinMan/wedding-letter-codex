@@ -41,12 +41,13 @@ Project interpretation:
   majolica edge with restrained red, yellow, and green accents; it is used only
   behind the middle D-Day transition;
 - three additional Image Gen assets extend that color language without
-  becoming photo substitutes: `sicilian-majolica-frieze.webp` forms the hero
-  and closing borders, the transparent `sicilian-star-medallion.png` marks
-  section labels on both white and black surfaces, and
-  `sicilian-calendar-rail.webp` forms a warm, hand-painted majolica rail fitted
-  exactly to the calendar card height; account content intentionally has no
-  side rail;
+  becoming photo substitutes: `sicilian-ornamental-frieze.webp` forms the hero
+  and closing borders in the same warm yellow, cobalt, red, and green language
+  as the calendar, the transparent `sicilian-star-medallion.png` marks section
+  labels on both white and black surfaces, and
+  `sicilian-calendar-ornament.webp` repeats vertically at its natural aspect
+  ratio to fill the calendar card without stretching; account content
+  intentionally has no side rail;
 - hero, greeting, profile, interview, timeline, gallery, and closing photo
   slots stay neutral grayscale until real photos are uploaded;
 - empty media never exposes internal placeholder labels or abstract wireframe

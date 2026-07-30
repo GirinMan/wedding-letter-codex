@@ -1757,9 +1757,9 @@ textarea:focus-visible {
   --surface: #f4f4f4;
   --sicilian-noir: #0a0a0a;
   --sicilian-transition-art: url("/assets/sicilian-courtyard-transition.webp");
-  --sicilian-frieze-art: url("/assets/sicilian-majolica-frieze.webp");
+  --sicilian-frieze-art: url("/assets/sicilian-ornamental-frieze.webp");
   --sicilian-medallion-art: url("/assets/sicilian-star-medallion.png");
-  --sicilian-calendar-rail-art: url("/assets/sicilian-calendar-rail.webp");
+  --sicilian-calendar-rail-art: url("/assets/sicilian-calendar-ornament.webp");
   --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --radius: 0;
@@ -1819,7 +1819,7 @@ textarea:focus-visible {
 }
 
 .catalog-hero__tile-ribbon {
-  height: 16px;
+  height: 20px;
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
 }
 
@@ -2105,7 +2105,7 @@ textarea:focus-visible {
   right: 0;
   bottom: 0;
   width: 42px;
-  background: var(--sicilian-calendar-rail-art) center / 100% 100% no-repeat;
+  background: var(--sicilian-calendar-rail-art) center top / 100% auto repeat-y;
   content: "";
   pointer-events: none;
 }
@@ -2231,7 +2231,7 @@ textarea:focus-visible {
 
 .page-shell[data-theme="sicilian-noir"] .closing::before {
   display: block;
-  height: 16px;
+  height: 20px;
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
   content: "";
 }
@@ -2297,7 +2297,7 @@ textarea:focus-visible {
   right: 0;
   bottom: 0;
   left: 0;
-  height: 12px;
+  height: 14px;
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
   content: "";
 }
