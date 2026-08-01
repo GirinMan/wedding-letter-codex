@@ -13,3 +13,12 @@ test("family relationship labels remain visible without parent contact records",
 
   assert.match(source, /if \(!hasParentContacts\)[\s\S]*?\{content\.couple\.partnerOne\.familyRelation\}[\s\S]*?\{content\.couple\.partnerTwo\.familyRelation\}/);
 });
+
+test("family relationship labels remain visible when parent names are configured", async () => {
+  const source = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+
+  assert.match(
+    source,
+    /<div className="family-relation"[\s\S]*?\{partner\.label\}[\s\S]*?parents\.map[\s\S]*?\{partner\.familyRelation\}/,
+  );
+});
