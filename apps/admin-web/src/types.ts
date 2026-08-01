@@ -132,6 +132,7 @@ export interface InvitationContent {
     opensAt: string;
     title: string;
     description: string;
+    fallbackItems: MediaReference[];
   };
   music: { enabled: boolean; assetId: string | null; title: string };
   sharing: {

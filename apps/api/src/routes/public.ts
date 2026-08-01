@@ -10,6 +10,7 @@ import { getObject, putObject } from "../storage.js";
 
 const slugParams = z.object({ slug: z.string().regex(/^[a-z0-9-]+$/) });
 const idParams = slugParams.extend({ entryId: z.string().uuid() });
+const guestUploadParams = slugParams.extend({ uploadId: z.string().uuid() });
 
 const guestbookBody = z.object({
   name: z.string().trim().min(1).max(40),
@@ -117,6 +118,63 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       entries: rows,
       nextCursor: last?.createdAt instanceof Date ? last.createdAt.toISOString() : null,
     };
+  });
+
+  app.get("/api/public/invitations/:slug/guest-uploads", async (request, reply) => {
+    const { slug } = slugParams.parse(request.params);
+    const invitation = await findPublishedInvitation(slug);
+    if (!invitation) {
+      return reply.code(404).send({ error: "invitation_not_found" });
+    }
+
+    const sql = getDatabase();
+    const uploads = await sql<{
+      id: string;
+      uploaderName: string;
+      originalName: string;
+    }[]>`
+      SELECT id, uploader_name, original_name
+      FROM guest_uploads
+      WHERE invitation_id = ${invitation.id}
+        AND state = 'approved'
+      ORDER BY created_at DESC
+      LIMIT 30
+    `;
+    return {
+      photos: uploads.map((upload) => ({
+        id: upload.id,
+        url: `/api/public/invitations/${slug}/guest-uploads/${upload.id}/content`,
+        alt: upload.uploaderName ? `${upload.uploaderName}님이 공유한 사진` : upload.originalName,
+      })),
+    };
+  });
+
+  app.get("/api/public/invitations/:slug/guest-uploads/:uploadId/content", async (request, reply) => {
+    const { slug, uploadId } = guestUploadParams.parse(request.params);
+    const invitation = await findPublishedInvitation(slug);
+    if (!invitation) {
+      return reply.code(404).send({ error: "invitation_not_found" });
+    }
+
+    const sql = getDatabase();
+    const [upload] = await sql<{ objectKey: string }[]>`
+      SELECT object_key
+      FROM guest_uploads
+      WHERE id = ${uploadId}
+        AND invitation_id = ${invitation.id}
+        AND state = 'approved'
+      LIMIT 1
+    `;
+    if (!upload) {
+      return reply.code(404).send({ error: "guest_upload_not_found" });
+    }
+    const object = await getObject(upload.objectKey);
+    reply.type(object.contentType);
+    reply.header("Cache-Control", "public, max-age=300");
+    if (object.contentLength !== undefined) {
+      reply.header("Content-Length", String(object.contentLength));
+    }
+    return reply.send(object.body);
   });
 
   app.post("/api/public/invitations/:slug/guestbook", {

@@ -271,6 +271,7 @@ export const invitationContentSchema = z.object({
     opensAt: z.string().datetime({ offset: true }),
     title: z.string().min(1).max(160),
     description: z.string().max(1_000),
+    fallbackItems: z.array(mediaReferenceSchema).max(3).default([]),
   }),
   music: z.object({
     enabled: z.boolean(),
@@ -604,6 +605,7 @@ export const sampleInvitationContent: InvitationContent = {
     opensAt: "2027-05-22T10:00:00+09:00",
     title: "축하 사진 공유",
     description: "예식 당일, 두 사람의 행복한 순간을 담아 올려 주세요.",
+    fallbackItems: [],
   },
   music: { enabled: false, assetId: null, title: "" },
   sharing: {

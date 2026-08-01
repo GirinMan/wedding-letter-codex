@@ -749,6 +749,25 @@ export function App() {
                       <Field label="업로드 시작"><input type="datetime-local" value={invitation.draftContent.guestUploads.opensAt.slice(0, 16)} onChange={(event) => updateContent((draft) => { draft.guestUploads.opensAt = `${event.target.value}:00+09:00`; })} /></Field>
                       <Field label="설명" wide><textarea rows={3} value={invitation.draftContent.guestUploads.description} onChange={(event) => updateContent((draft) => { draft.guestUploads.description = event.target.value; })} /></Field>
                     </div>
+                    <div className="gallery-slot-list" aria-label="축하 사진 공유 기본 사진">
+                      {[0, 1, 2].map((index) => (
+                        <MediaSlotField
+                          key={index}
+                          label={`기본 사진 ${index + 1}`}
+                          value={invitation.draftContent.guestUploads.fallbackItems[index]?.assetId ?? null}
+                          assets={media}
+                          onChange={(asset) => updateContent((draft) => {
+                            const previous = draft.guestUploads.fallbackItems[index] ?? {
+                              assetId: null,
+                              alt: `축하 사진 기본 이미지 ${index + 1}`,
+                              placeholder: "guest-upload",
+                            };
+                            draft.guestUploads.fallbackItems[index] = connectMedia(previous, asset);
+                          })}
+                        />
+                      ))}
+                    </div>
+                    <p className="panel-note">승인된 하객 사진이 아직 없을 때 공개 초대장에 표시됩니다.</p>
                   </div>
 
                   <div className="feature-block">
