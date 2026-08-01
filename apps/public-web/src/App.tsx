@@ -180,16 +180,14 @@ function FamilyRelationshipLine({ content }: { content: InvitationContent }) {
 function GuestUploadShowcase({
   gallery,
   preview,
-  section = false,
 }: {
   gallery: GuestUploadGallery;
   preview: boolean;
-  section?: boolean;
 }) {
   if (gallery.items.length === 0) return null;
 
   return (
-    <section className={`guest-upload-showcase${section ? " guest-upload-showcase--section" : ""}`} aria-label="축하 사진">
+    <section className="guest-upload-showcase" aria-label="축하 사진">
       <p>{gallery.source === "guest" ? "함께 나눈 축하 사진" : "두 사람의 미리 보기"}</p>
       <div className="guest-upload-showcase__grid">
         {gallery.source === "guest"
@@ -197,6 +195,25 @@ function GuestUploadShowcase({
           : gallery.items.map((item, index) => <Media key={`${item.assetId}-${index}`} media={item} preview={preview} />)}
       </div>
     </section>
+  );
+}
+
+function GuestUploadPolaroid({
+  gallery,
+  preview,
+}: {
+  gallery: GuestUploadGallery;
+  preview: boolean;
+}) {
+  const cards = gallery.source === "guest"
+    ? gallery.items.slice(0, 3).map((photo) => <span key={photo.id}><img src={photo.url} alt={photo.alt} /></span>)
+    : gallery.items.slice(0, 3).map((item, index) => <span key={`${item.assetId}-${index}`}><Media media={item} preview={preview} /></span>);
+  return (
+    <div className="polaroid-stack" aria-label="축하 사진">
+      {cards.length > 0
+        ? cards
+        : <><span aria-hidden="true">01</span><span aria-hidden="true">02</span><span aria-hidden="true">03</span></>}
+    </div>
   );
 }
 
@@ -1499,9 +1516,7 @@ export function App() {
               title={content.guestUploads.title}
               description={content.guestUploads.description}
             />
-            {guestUploadGallery.items.length > 0
-              ? <GuestUploadShowcase gallery={guestUploadGallery} preview={isPreview} section />
-              : <div className="polaroid-stack" aria-hidden="true"><span>01</span><span>02</span><span>03</span></div>}
+            <GuestUploadPolaroid gallery={guestUploadGallery} preview={isPreview} />
             <p className="upload-date">
               업로드 시작 · {formatEventDate(content.guestUploads.opensAt)}
             </p>

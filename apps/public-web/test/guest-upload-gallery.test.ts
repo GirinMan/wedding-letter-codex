@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { selectGuestUploadGallery } from "../src/guest-upload-gallery.ts";
@@ -24,4 +25,13 @@ test("guest upload gallery replaces fallback photos with approved guest photos",
     source: "guest",
     items: guestPhotos,
   });
+});
+
+test("guest upload section keeps its stacked polaroid composition for fallback photos", async () => {
+  const source = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+
+  assert.match(
+    source,
+    /function GuestUploadPolaroid[\s\S]*?gallery\.source === "guest"[\s\S]*?<Media[\s\S]*?className="polaroid-stack"/,
+  );
 });
