@@ -119,6 +119,34 @@ function CelebrationIcon() {
   );
 }
 
+type NavigationProvider = "naver" | "tmap" | "kakao";
+
+function NavigationServiceIcon({ provider }: { provider: NavigationProvider }) {
+  if (provider === "naver") {
+    return (
+      <svg className="navigation-service-icon" aria-hidden="true" viewBox="0 0 24 24">
+        <path fill="#03c75a" d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+        <path fill="#fff" d="M7 6.5h2.35l5.1 6.9V6.5H17V17.5h-2.2L9.55 10.4v7.1H7V6.5Z" />
+      </svg>
+    );
+  }
+  if (provider === "tmap") {
+    return (
+      <svg className="navigation-service-icon" aria-hidden="true" viewBox="0 0 24 24">
+        <defs><linearGradient id="tmap-icon-gradient" x1="4" x2="20" y1="4" y2="20"><stop stopColor="#00b5ef" /><stop offset="1" stopColor="#8b55e8" /></linearGradient></defs>
+        <path fill="url(#tmap-icon-gradient)" d="M4 4h16v16H4z" rx="5" />
+        <path fill="#fff" d="M7 7h10v2.2h-3.8v7.8h-2.4V9.2H7V7Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="navigation-service-icon" aria-hidden="true" viewBox="0 0 24 24">
+      <path fill="#fee500" d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+      <path fill="#1c1c1c" d="M12 5.6c-3.45 0-6.25 2.28-6.25 5.1 0 1.82 1.18 3.42 2.96 4.33l-.54 2.02a.42.42 0 0 0 .65.45l2.42-1.62c.25.02.5.03.76.03 3.45 0 6.25-2.28 6.25-5.1s-2.8-5.17-6.25-5.17Zm2.65 5.38-3.62 2.62a.42.42 0 0 1-.67-.34v-1.88H8.92a.42.42 0 0 1-.25-.76l3.62-2.62a.42.42 0 0 1 .67.34v1.88h1.44a.42.42 0 0 1 .25.76Z" />
+    </svg>
+  );
+}
+
 function FamilyRelationshipLine({ content }: { content: InvitationContent }) {
   const sides = [
     { key: "partnerOne", partner: content.couple.partnerOne },
@@ -343,9 +371,9 @@ function mapNavigationLinks(event: InvitationContent["event"]) {
   const { latitude, longitude, map } = event;
   const coordinatesAvailable = latitude !== null && longitude !== null;
   return [
-    { label: "네이버지도", href: map.navigation.naverUrl || `https://map.naver.com/p/search/${encodeURIComponent(event.address)}` },
-    { label: "티맵", href: map.navigation.tmapUrl || (coordinatesAvailable ? `tmap://route?goalx=${longitude}&goaly=${latitude}&goalname=${destination}` : "") },
-    { label: "카카오내비", href: map.navigation.kakaoNaviUrl || (coordinatesAvailable ? `kakaonavi://navigate?name=${destination}&x=${longitude}&y=${latitude}&coord_type=wgs84` : "") },
+    { provider: "naver" as const, label: "네이버지도", href: map.navigation.naverUrl || `https://map.naver.com/p/search/${encodeURIComponent(event.address)}` },
+    { provider: "tmap" as const, label: "티맵", href: map.navigation.tmapUrl || (coordinatesAvailable ? `tmap://route?goalx=${longitude}&goaly=${latitude}&goalname=${destination}` : "") },
+    { provider: "kakao" as const, label: "카카오내비", href: map.navigation.kakaoNaviUrl || (coordinatesAvailable ? `kakaonavi://navigate?name=${destination}&x=${longitude}&y=${latitude}&coord_type=wgs84` : "") },
   ].filter((link) => link.href);
 }
 
@@ -1402,7 +1430,7 @@ export function App() {
               <h3>내비게이션</h3>
               <p>원하시는 앱을 선택하시면 길안내가 시작됩니다.</p>
               <div className="navigation-links">
-                {mapNavigationLinks(content.event).map((link) => <a href={link.href} key={link.label} rel="noreferrer" target="_blank">{link.label}</a>)}
+                {mapNavigationLinks(content.event).map((link) => <a href={link.href} key={link.label} rel="noreferrer" target="_blank"><NavigationServiceIcon provider={link.provider} /><span>{link.label}</span></a>)}
               </div>
             </div>
             <div className="transport-list">
