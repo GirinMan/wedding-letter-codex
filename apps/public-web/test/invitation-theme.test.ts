@@ -116,26 +116,36 @@ test("Sicilian Noir uses generated Sicilian architecture only as the middle back
 
 test("Sicilian Noir distributes generated ceramic details through decorative layers", async () => {
   const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
-  const [frieze, medallion, inlay] = await Promise.all([
-    readFile(new URL("../public/assets/sicilian-majolica-frieze.webp", import.meta.url)),
-    readFile(new URL("../public/assets/sicilian-star-medallion.webp", import.meta.url)),
-    readFile(new URL("../public/assets/sicilian-margin-inlay.webp", import.meta.url)),
+  const [frieze, medallion, calendarRail] = await Promise.all([
+    readFile(new URL("../public/assets/sicilian-ornamental-frieze.webp", import.meta.url)),
+    readFile(new URL("../public/assets/sicilian-star-medallion.png", import.meta.url)),
+    readFile(new URL("../public/assets/sicilian-calendar-ornament.webp", import.meta.url)),
   ]);
 
   assert.ok(frieze.byteLength > 100_000, "the horizontal ceramic frieze should be bundled");
   assert.ok(medallion.byteLength > 4_000, "the section medallion should be bundled");
-  assert.ok(inlay.byteLength > 20_000, "the vertical margin inlay should be bundled");
+  assert.deepEqual(
+    [...medallion.subarray(1, 4)],
+    [0x50, 0x4e, 0x47],
+    "the section medallion should be a PNG",
+  );
+  assert.equal(
+    medallion[25],
+    6,
+    "the section medallion should use RGBA pixels so dark sections do not show a white tile",
+  );
+  assert.ok(calendarRail.byteLength > 20_000, "the modern calendar rail should be bundled");
   assert.match(
     styles,
-    /--sicilian-frieze-art:\s*url\("\/assets\/sicilian-majolica-frieze\.webp"\)/,
+    /--sicilian-frieze-art:\s*url\("\/assets\/sicilian-ornamental-frieze\.webp"\)/,
   );
   assert.match(
     styles,
-    /--sicilian-medallion-art:\s*url\("\/assets\/sicilian-star-medallion\.webp"\)/,
+    /--sicilian-medallion-art:\s*url\("\/assets\/sicilian-star-medallion\.png"\)/,
   );
   assert.match(
     styles,
-    /--sicilian-inlay-art:\s*url\("\/assets\/sicilian-margin-inlay\.webp"\)/,
+    /--sicilian-calendar-rail-art:\s*url\("\/assets\/sicilian-calendar-ornament\.webp"\)/,
   );
   assert.match(
     styles,
@@ -143,15 +153,55 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.match(
     styles,
-    /\.section-heading \.eyebrow::before\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
+    /\.section-heading \.eyebrow::before\s*\{[^}]*width:\s*22px;[^}]*height:\s*22px;[^}]*var\(--sicilian-medallion-art\)/s,
   );
   assert.match(
     styles,
-    /#invitation-section-calendar::after[\s\S]*?var\(--sicilian-inlay-art\)/,
+    /\.page-shell--catalog \.calendar::after\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*width:\s*42px;[^}]*var\(--sicilian-calendar-rail-art\) center top\s*\/\s*100% auto repeat-y;/s,
   );
+  assert.doesNotMatch(
+    styles,
+    /var\(--sicilian-calendar-rail-art\)[^;]*100% 100%/,
+  );
+  assert.doesNotMatch(styles, /#invitation-section-accounts::after/);
+  assert.doesNotMatch(styles, /sicilian-margin-inlay\.webp/);
   assert.match(
     styles,
     /\.closing::before\s*\{[^}]*var\(--sicilian-frieze-art\)/s,
+  );
+});
+
+test("Sicilian Noir keeps only the star medallion in the RSVP welcome dialog", async () => {
+  const [app, styles] = await Promise.all([
+    readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(
+    styles,
+    /\.page-shell--catalog \.dialog--rsvp-welcome\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*#fff;[^}]*font-family:\s*var\(--body-font\);/s,
+  );
+  assert.match(
+    styles,
+    /\.page-shell--catalog \.dialog--rsvp-welcome \.dialog__header\s*\{[^}]*background:\s*var\(--sicilian-noir\);[^}]*color:\s*#fff;/s,
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.page-shell--catalog \.dialog--rsvp-welcome \.dialog__header::after/,
+  );
+  assert.match(app, /className="rsvp-welcome__icon"/);
+  assert.match(
+    styles,
+    /\.page-shell--catalog \.rsvp-welcome__icon\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
+  );
+});
+
+test("Sicilian Noir keeps the secondary closing share action visible on black", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(
+    styles,
+    /\.page-shell--catalog \.closing \.share-button--secondary\s*\{[^}]*border-color:\s*#fff;[^}]*color:\s*#fff;/s,
   );
 });
 
@@ -164,11 +214,22 @@ test("Sicilian Noir keeps the interface monochrome and sans serif", async () => 
   assert.match(app, /resolvedDesign\.themeId === "sicilian-noir"/);
   assert.match(app, /className="catalog-hero"/);
   assert.match(app, /className="catalog-hero__masthead"/);
+  assert.match(
+    app,
+    /\["INVITÉ", "INVITATION"\]\.includes\(content\.hero\.title\)\s*\?\s*"CELEBRATE L’AMORE"\s*:\s*content\.hero\.title/,
+  );
   assert.match(app, /className="catalog-hero__visual"/);
   assert.match(app, /className="catalog-hero__tile-ribbon"/);
   assert.match(styles, /\.catalog-hero__masthead/);
   assert.match(styles, /\.catalog-hero__visual/);
-  assert.match(styles, /\.catalog-hero__tile-ribbon/);
+  assert.match(
+    styles,
+    /\.catalog-hero__tile-ribbon\s*\{[^}]*height:\s*44px;/s,
+  );
+  assert.match(
+    styles,
+    /\.contact-button\s*\{[^}]*display:\s*flex;[^}]*margin:\s*8px auto 0;/s,
+  );
   assert.match(styles, /--paper:\s*#fff(?:fff)?;/i);
   assert.match(styles, /--ink:\s*#0a0a0a;/i);
   assert.match(styles, /--surface:\s*#f4f4f4;/i);

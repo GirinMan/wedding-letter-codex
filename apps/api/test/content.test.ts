@@ -14,6 +14,7 @@ test("sample invitation content satisfies the public contract", () => {
   const parsed = invitationContentSchema.parse(sampleInvitationContent);
 
   assert.equal(parsed.locale, "ko-KR");
+  assert.equal(parsed.hero.title, "CELEBRATE L’AMORE");
   assert.ok(parsed.sections.length >= 10);
   assert.ok(parsed.timeline.length >= 3);
   assert.equal(parsed.middleImage.assetId, null);

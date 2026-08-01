@@ -465,7 +465,7 @@ export const sampleInvitationContent: InvitationContent = {
   },
   hero: {
     eyebrow: "",
-    title: "INVITÉ",
+    title: "CELEBRATE L’AMORE",
     subtitle: "",
     image: { assetId: null, alt: "첫 화면 웨딩 사진", placeholder: "hero-photo" },
     nameOrder: ["partnerTwo", "partnerOne"],

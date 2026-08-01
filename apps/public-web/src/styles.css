@@ -144,7 +144,7 @@ textarea:focus-visible {
   max-width: 270px;
   margin: 14px 0 0;
   color: var(--muted);
-  font-family: var(--body-font);
+  font-family: serif;
   font-size: .95rem;
   line-height: 1.8;
 }
@@ -195,7 +195,7 @@ textarea:focus-visible {
 
 .section-heading h2 {
   margin: 0;
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: 1.45rem;
   font-weight: 500;
   letter-spacing: -.025em;
@@ -216,7 +216,7 @@ textarea:focus-visible {
 .invitation-section > .multiline {
   margin: 0 auto 38px;
   color: #5e5954;
-  font-family: var(--body-font);
+  font-family: serif;
   font-size: .95rem;
   line-height: 2.05;
 }
@@ -325,10 +325,10 @@ textarea:focus-visible {
 }
 
 .contact-button {
-  display: inline-flex;
+  display: flex;
   min-width: 202px;
   min-height: 52px;
-  margin-top: 8px;
+  margin: 8px auto 0;
   padding: 0 26px;
   border: 1px solid var(--line);
   border-radius: calc(var(--radius) + 4px);
@@ -478,13 +478,13 @@ textarea:focus-visible {
   place-items: center;
   background: #e9e4de;
   color: var(--muted);
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: .8rem;
 }
 
 .interview-card h3 {
   margin: 18px 14px 7px;
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: .92rem;
   font-weight: 500;
   line-height: 1.5;
@@ -603,7 +603,7 @@ textarea:focus-visible {
 
 .timeline-card h3 {
   margin: 0 0 10px;
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: 1.2rem;
   font-weight: 500;
 }
@@ -650,7 +650,7 @@ textarea:focus-visible {
 
 .venue h3 {
   margin: 0 0 10px;
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: 1rem;
   font-weight: 500;
 }
@@ -1004,7 +1004,7 @@ textarea:focus-visible {
 
 .closing__copy p:last-child {
   color: var(--muted);
-  font-family: var(--body-font);
+  font-family: serif;
   font-size: .9rem;
   line-height: 1.9;
 }
@@ -1054,6 +1054,131 @@ textarea:focus-visible {
   letter-spacing: -.15px;
 }
 
+.ambient-guestbook-letter {
+  position: fixed;
+  z-index: 19;
+  top: clamp(230px, 43vh, 430px);
+  right: max(0px, calc((100vw - 430px) / 2));
+  width: min(268px, calc(100vw - 72px));
+  min-height: 116px;
+  padding: 30px 42px 22px 26px;
+  overflow: hidden;
+  border: 1px solid #d9d9d9;
+  border-radius: 0;
+  background: #fff;
+  color: #101010;
+  box-shadow: 0 14px 36px rgb(0 0 0 / 16%);
+  text-align: left;
+  transform: translateX(18px) rotate(-.6deg);
+  animation: ambient-letter-arrive 420ms cubic-bezier(.2, .75, .25, 1) both;
+  cursor: pointer;
+}
+
+.ambient-guestbook-letter::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--accent);
+  content: "";
+}
+
+.ambient-guestbook-letter::after {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 24px;
+  height: 24px;
+  border-top: 1px solid #d9d9d9;
+  border-left: 1px solid #d9d9d9;
+  background: linear-gradient(135deg, #f0f0f0 0 49%, #fff 50%);
+  content: "";
+}
+
+.ambient-guestbook-letter__postmark {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  color: #777;
+  font-size: .5rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+}
+
+.ambient-guestbook-letter > strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: .88rem;
+  font-weight: 620;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ambient-guestbook-letter > span:last-child {
+  display: flex;
+  margin-top: 15px;
+  align-items: center;
+  gap: 8px;
+  color: #656565;
+  font-size: .68rem;
+}
+
+.ambient-guestbook-letter time::before {
+  margin-right: 8px;
+  content: "·";
+}
+
+.ambient-guestbook-dock {
+  position: fixed;
+  z-index: 19;
+  top: 56vh;
+  left: max(0px, calc((100vw - 430px) / 2));
+  display: grid;
+  width: 48px;
+  min-height: 64px;
+  padding: 10px 8px 8px;
+  border: 1px solid var(--line);
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+  place-items: center;
+  background: rgb(255 255 255 / 94%);
+  color: #111;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  cursor: pointer;
+}
+
+.ambient-guestbook-dock svg {
+  width: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+
+.ambient-guestbook-dock strong {
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.page-shell--catalog .ambient-guestbook-letter::before {
+  background: linear-gradient(
+    to bottom,
+    #1746a2 0 25%,
+    #d7261e 25% 50%,
+    #f2c230 50% 75%,
+    #218c4a 75%
+  );
+}
+
+.page-shell--catalog .ambient-guestbook-letter,
+.page-shell--catalog .ambient-guestbook-dock {
+  border-color: #111;
+  font-family: var(--body-font);
+}
+
 .music-button,
 .floating-menu-button {
   position: fixed;
@@ -1099,6 +1224,10 @@ textarea:focus-visible {
   bottom: 22px;
 }
 
+.page-shell[data-channel-talk="enabled"] .floating-menu-button {
+  bottom: 96px;
+}
+
 .celebration-button {
   position: fixed;
   z-index: 20;
@@ -1114,6 +1243,10 @@ textarea:focus-visible {
   color: var(--ink);
   box-shadow: 0 8px 24px rgb(38 33 29 / 8%);
   cursor: pointer;
+}
+
+.page-shell[data-channel-talk="enabled"] .celebration-button {
+  bottom: 152px;
 }
 
 .celebration-button svg {
@@ -1168,7 +1301,7 @@ textarea:focus-visible {
 
 .dialog__header h2 {
   margin: 0;
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: 1.05rem;
   font-weight: 500;
 }
@@ -1216,7 +1349,7 @@ textarea:focus-visible {
 
 .rsvp-welcome__icon {
   color: var(--muted);
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: 1.65rem;
 }
 
@@ -1224,7 +1357,7 @@ textarea:focus-visible {
   max-width: 290px;
   margin: 18px auto 26px;
   color: #5d5751;
-  font-family: var(--body-font);
+  font-family: serif;
   font-size: .88rem;
   line-height: 1.8;
 }
@@ -1334,7 +1467,7 @@ textarea:focus-visible {
 .celebration-sheet__message {
   margin: 0 auto 24px;
   color: #5d5751;
-  font-family: var(--body-font);
+  font-family: serif;
   font-size: .88rem;
   line-height: 1.8;
 }
@@ -1540,7 +1673,7 @@ textarea:focus-visible {
 
 .qa-list h3 {
   margin: 10px 0 14px;
-  font-family: var(--display-font);
+  font-family: serif;
   font-size: 1rem;
   font-weight: 500;
 }
@@ -1749,9 +1882,9 @@ textarea:focus-visible {
   --surface: #f4f4f4;
   --sicilian-noir: #0a0a0a;
   --sicilian-transition-art: url("/assets/sicilian-courtyard-transition.webp");
-  --sicilian-frieze-art: url("/assets/sicilian-majolica-frieze.webp");
-  --sicilian-medallion-art: url("/assets/sicilian-star-medallion.webp");
-  --sicilian-inlay-art: url("/assets/sicilian-margin-inlay.webp");
+  --sicilian-frieze-art: url("/assets/sicilian-ornamental-frieze.webp");
+  --sicilian-medallion-art: url("/assets/sicilian-star-medallion.png");
+  --sicilian-calendar-rail-art: url("/assets/sicilian-calendar-ornament.webp");
   --display-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --body-font: "Avenir Next", "Helvetica Neue", Arial, Pretendard, "Noto Sans KR", sans-serif;
   --radius: 0;
@@ -1761,17 +1894,40 @@ textarea:focus-visible {
   color-scheme: light;
 }
 
-.page-shell[data-theme="photo-editorial"] {
-  --sicilian-transition-art: none;
-  --sicilian-frieze-art: none;
-  --sicilian-medallion-art: none;
-  --sicilian-inlay-art: none;
-}
-
 .page-shell--catalog .invitation {
   background: var(--paper);
   box-shadow: 0 0 72px rgb(0 0 0 / 24%);
 }
+
+.page-shell[data-theme="photo-editorial"] {
+  --sicilian-transition-art: none;
+  --sicilian-frieze-art: none;
+  --sicilian-medallion-art: none;
+  --sicilian-calendar-rail-art: none;
+}
+
+.photo-hero {
+  position: relative;
+  display: grid;
+  min-height: 100svh;
+  overflow: hidden;
+  place-items: center;
+  background: #28231f;
+  color: #fff;
+  isolation: isolate;
+}
+
+.photo-hero__image { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.photo-hero__image.media--placeholder { display: grid; background: linear-gradient(145deg, #4f433a, #1e1a17); color: rgb(255 255 255 / 65%); }
+.photo-hero__scrim { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(13 10 8 / 30%) 0%, rgb(13 10 8 / 8%) 42%, rgb(13 10 8 / 48%) 100%); }
+.photo-hero__copy { display: flex; width: min(100%, 360px); padding: 64px 28px 84px; align-items: center; flex-direction: column; text-align: center; text-shadow: 0 1px 16px rgb(0 0 0 / 30%); }
+.photo-hero__copy > p, .photo-hero__copy time { margin: 0; font-family: var(--body-font); font-size: .61rem; font-weight: 550; letter-spacing: .27em; }
+.photo-hero__copy h1 { max-width: 100%; margin: 20px 0 24px; font-family: var(--display-font); font-size: clamp(2.7rem, 14vw, 4.2rem); font-weight: 400; letter-spacing: .03em; line-height: .92; overflow-wrap: anywhere; }
+.photo-hero__names { display: flex; align-items: center; gap: 11px; font-family: var(--body-font); font-size: .78rem; font-weight: 500; letter-spacing: .14em; }
+.photo-hero__names strong { font-weight: 500; }
+.photo-hero__names strong + strong::before { margin-right: 11px; content: "/"; font-weight: 300; }
+.photo-hero__copy time { margin-top: auto; padding-top: 178px; }
+.photo-hero__scroll { position: absolute; bottom: 28px; width: 1px; height: 42px; background: rgb(255 255 255 / 70%); }
 
 .catalog-hero {
   min-height: 100vh;
@@ -1818,7 +1974,7 @@ textarea:focus-visible {
 }
 
 .catalog-hero__tile-ribbon {
-  height: 16px;
+  height: 44px;
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
 }
 
@@ -1931,84 +2087,6 @@ textarea:focus-visible {
   line-height: 1.7;
 }
 
-.photo-hero {
-  position: relative;
-  display: grid;
-  min-height: 100svh;
-  overflow: hidden;
-  place-items: center;
-  background: #28231f;
-  color: #fff;
-  isolation: isolate;
-}
-
-.photo-hero__image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -2;
-}
-
-.photo-hero__image.media--placeholder {
-  display: grid;
-  background: linear-gradient(145deg, #4f433a, #1e1a17);
-  color: rgb(255 255 255 / 65%);
-}
-
-.photo-hero__scrim {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, rgb(13 10 8 / 30%) 0%, rgb(13 10 8 / 8%) 42%, rgb(13 10 8 / 48%) 100%);
-}
-
-.photo-hero__copy {
-  display: flex;
-  width: min(100%, 360px);
-  padding: 64px 28px 84px;
-  align-items: center;
-  flex-direction: column;
-  text-align: center;
-  text-shadow: 0 1px 16px rgb(0 0 0 / 30%);
-}
-
-.photo-hero__copy > p,
-.photo-hero__copy time {
-  margin: 0;
-  font-family: var(--body-font);
-  font-size: .61rem;
-  font-weight: 550;
-  letter-spacing: .27em;
-}
-
-.photo-hero__copy h1 {
-  max-width: 100%;
-  margin: 20px 0 24px;
-  font-family: var(--display-font);
-  font-size: clamp(2.7rem, 14vw, 4.2rem);
-  font-weight: 400;
-  letter-spacing: .03em;
-  line-height: .92;
-  overflow-wrap: anywhere;
-}
-
-.photo-hero__names {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  font-family: var(--body-font);
-  font-size: .78rem;
-  font-weight: 500;
-  letter-spacing: .14em;
-}
-
-.photo-hero__names strong { font-weight: 500; }
-.photo-hero__names strong + strong::before { content: "/"; margin-right: 11px; font-weight: 300; }
-.photo-hero__copy time { margin-top: auto; padding-top: 178px; }
-.photo-hero__scroll { position: absolute; bottom: 28px; width: 1px; height: 42px; background: rgb(255 255 255 / 70%); }
-
 .page-shell--catalog .section {
   position: relative;
   padding-top: var(--section-space);
@@ -2036,10 +2114,10 @@ textarea:focus-visible {
 }
 
 .page-shell--catalog .section-heading .eyebrow::before {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   flex: 0 0 auto;
-  background: var(--sicilian-medallion-art) center / cover no-repeat;
+  background: var(--sicilian-medallion-art) center / contain no-repeat;
   content: "";
 }
 
@@ -2169,41 +2247,28 @@ textarea:focus-visible {
 }
 
 .page-shell--catalog .calendar {
-  padding: 28px 22px;
+  position: relative;
+  overflow: hidden;
+  padding: 28px 60px 28px 22px;
   border: 0;
   background: var(--surface);
+}
+
+.page-shell--catalog .calendar::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  background: var(--sicilian-calendar-rail-art) center top / 100% auto repeat-y;
+  content: "";
+  pointer-events: none;
 }
 
 .page-shell--catalog .calendar__selected {
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
-}
-
-.page-shell--catalog #invitation-section-calendar,
-.page-shell--catalog #invitation-section-accounts {
-  overflow: hidden;
-}
-
-.page-shell--catalog #invitation-section-calendar::after,
-.page-shell--catalog #invitation-section-accounts::after {
-  position: absolute;
-  top: 88px;
-  width: 16px;
-  height: 270px;
-  background: var(--sicilian-inlay-art) center top / 16px auto repeat-y;
-  content: "";
-  opacity: .92;
-  pointer-events: none;
-}
-
-.page-shell--catalog #invitation-section-calendar::after {
-  right: 0;
-}
-
-.page-shell--catalog #invitation-section-accounts::after {
-  left: 0;
-  background-position: center 38%;
 }
 
 .page-shell--catalog .section--timeline {
@@ -2321,7 +2386,7 @@ textarea:focus-visible {
 
 .page-shell--catalog .closing::before {
   display: block;
-  height: 16px;
+  height: 20px;
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
   content: "";
 }
@@ -2333,6 +2398,11 @@ textarea:focus-visible {
 .page-shell--catalog .closing__copy p:last-child {
   color: #b9b0a5;
   font-family: var(--body-font);
+}
+
+.page-shell--catalog .closing .share-button--secondary {
+  border-color: #fff;
+  color: #fff;
 }
 
 .page-shell--catalog .music-button,
@@ -2356,6 +2426,93 @@ textarea:focus-visible {
   border-radius: 18px 18px 0 0;
 }
 
+.page-shell--catalog .dialog--rsvp-welcome {
+  overflow: hidden;
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 -18px 52px rgb(0 0 0 / 28%);
+  font-family: var(--body-font);
+}
+
+.page-shell--catalog .dialog--rsvp-welcome::backdrop {
+  background: rgb(10 10 10 / 68%);
+}
+
+.page-shell--catalog .dialog--rsvp-welcome .dialog__header {
+  min-height: 72px;
+  padding: 18px 62px;
+  border-radius: 0;
+  background: var(--sicilian-noir);
+  color: #fff;
+}
+
+.page-shell--catalog .dialog--rsvp-welcome .dialog__header .icon-button {
+  top: 13px;
+  right: 16px;
+  border: 1px solid rgb(255 255 255 / 72%);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+}
+
+.page-shell--catalog .dialog--rsvp-welcome .dialog__body {
+  padding: 24px 28px 28px;
+  background: #fff;
+}
+
+.page-shell--catalog .rsvp-welcome__icon {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto;
+  background: var(--sicilian-medallion-art) center / contain no-repeat;
+  font-size: 0;
+}
+
+.page-shell--catalog .rsvp-welcome__lead {
+  margin: 14px auto 24px;
+  color: var(--muted);
+  font-family: var(--body-font);
+  font-size: .82rem;
+  line-height: 1.75;
+}
+
+.page-shell--catalog .rsvp-welcome__details {
+  padding: 18px;
+  border: 0;
+  background: var(--surface);
+  gap: 12px;
+}
+
+.page-shell--catalog .rsvp-welcome__details dt {
+  color: var(--muted);
+  font-weight: 650;
+  letter-spacing: .04em;
+}
+
+.page-shell--catalog .rsvp-welcome__details dd {
+  color: var(--ink);
+  font-weight: 520;
+}
+
+.page-shell--catalog .rsvp-welcome__actions {
+  gap: 10px;
+}
+
+.page-shell--catalog .rsvp-welcome__actions .text-button {
+  min-height: 48px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: #fff;
+}
+
+.page-shell--catalog .rsvp-welcome__actions .primary-button {
+  border-radius: 0;
+  background: var(--sicilian-noir);
+  color: #fff;
+  font-weight: 650;
+}
+
 .page-shell--catalog .rsvp-welcome__lead,
 .page-shell--catalog .celebration-sheet__message,
 .page-shell--catalog .form-stack > label,
@@ -2372,18 +2529,32 @@ textarea:focus-visible {
   color: var(--ink);
 }
 
-/* Photo Editorial shares the catalog layout, without Sicilian ornaments. */
+/* Photo Editorial shares the catalog layout but intentionally excludes every
+ * Sicilian-specific rail, frieze, and medallion treatment. */
 .page-shell[data-theme="photo-editorial"] .section-heading .eyebrow::before,
-.page-shell[data-theme="photo-editorial"] #invitation-section-calendar::after,
-.page-shell[data-theme="photo-editorial"] #invitation-section-accounts::after,
+.page-shell[data-theme="photo-editorial"] .calendar::after,
 .page-shell[data-theme="photo-editorial"] .middle-image .media--placeholder::before,
-.page-shell[data-theme="photo-editorial"] .closing::before {
-  content: none;
+.page-shell[data-theme="photo-editorial"] .closing::before,
+.page-shell[data-theme="photo-editorial"] .rsvp-welcome__icon {
+  display: none;
   background: none;
+  content: none;
 }
 
 @keyframes equalizer {
   to { height: 18px; }
+}
+
+@keyframes ambient-letter-arrive {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100% + 30px)) translateY(-7px) rotate(1.4deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(18px) translateY(0) rotate(-.6deg);
+  }
 }
 
 @keyframes dialog-in {
@@ -2409,6 +2580,10 @@ textarea:focus-visible {
   .celebration-button {
     right: 16px;
   }
+
+  .ambient-guestbook-letter {
+    right: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2428,5 +2603,10 @@ textarea:focus-visible {
 
   .account-carousel__track {
     transition: none;
+  }
+
+  .ambient-guestbook-letter {
+    animation: none;
+    transform: translateX(18px);
   }
 }

@@ -17,6 +17,10 @@ import {
   submitRsvp,
   uploadGuestPhoto,
 } from "./api";
+import {
+  chooseAmbientGuestbookEntry,
+  shouldRevealAmbientGuestbook,
+} from "./ambient-guestbook";
 import { Dialog } from "./components/Dialog";
 import { Media, type RevealDirection } from "./components/Media";
 import {
@@ -331,12 +335,15 @@ function SicilianCatalogHero({
     ? uploadedGallery.slice(0, 3)
     : [content.greeting.image, ...content.gallery.items.slice(0, 2)];
   const eventYear = new Date(content.event.startsAt).getFullYear();
+  const mastheadTitle = ["INVITÉ", "INVITATION"].includes(content.hero.title)
+    ? "CELEBRATE L’AMORE"
+    : content.hero.title;
 
   return (
     <section className="catalog-hero" id={sectionAnchorId("hero")} data-reveal>
       <header className="catalog-hero__masthead">
         <span>WEDDING</span>
-        <h1>{content.hero.title}</h1>
+        <h1>{mastheadTitle}</h1>
         <span>{eventYear}</span>
       </header>
       <div className="catalog-hero__tile-ribbon" aria-hidden="true" />
@@ -394,7 +401,7 @@ function formatPhotoHeroDate(startsAt: string, timezone: string) {
 
 function PhotoEditorialHero({
   content,
-  heroDate,
+  heroDate: _heroDate,
   preview,
 }: {
   content: InvitationContent;
@@ -563,6 +570,59 @@ function AccountCardCarousel({
   );
 }
 
+function AmbientGuestbook({
+  entry,
+  count,
+  docked,
+  onLetterClick,
+  onDockClick,
+}: {
+  entry: GuestbookEntry | null;
+  count: number;
+  docked: boolean;
+  onLetterClick: () => void;
+  onDockClick: () => void;
+}) {
+  return (
+    <>
+      {entry ? (
+        <button
+          className="ambient-guestbook-letter"
+          type="button"
+          aria-label={`${entry.name}님의 축하 편지 보기`}
+          onClick={onLetterClick}
+        >
+          <span className="ambient-guestbook-letter__postmark" aria-hidden="true">POSTA</span>
+          <strong>{entry.message}</strong>
+          <span>
+            {entry.name}
+            <time dateTime={entry.createdAt}>
+              {new Date(entry.createdAt).toLocaleDateString("ko-KR", {
+                month: "2-digit",
+                day: "2-digit",
+              })}
+            </time>
+          </span>
+        </button>
+      ) : null}
+      {docked ? (
+        <button
+          className="ambient-guestbook-dock"
+          type="button"
+          aria-label={`축하 편지 ${count}개 보기`}
+          onClick={onDockClick}
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M3.5 6.5h17v11h-17z" />
+            <path d="m4 7 8 6 8-6" />
+          </svg>
+          <strong>{count}</strong>
+        </button>
+      ) : null}
+    </>
+  );
+}
+
 export function App() {
   const previewInvitationId = new URLSearchParams(window.location.search).get("invitationId");
   const isPreview = window.location.pathname.startsWith("/preview/")
@@ -574,6 +634,9 @@ export function App() {
   const [rsvpWelcomeOpen, setRsvpWelcomeOpen] = useState(false);
   const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
   const [guestbookDeleteTarget, setGuestbookDeleteTarget] = useState<GuestbookEntry | null>(null);
+  const [ambientGuestbookEntry, setAmbientGuestbookEntry] = useState<GuestbookEntry | null>(null);
+  const [ambientGuestbookDocked, setAmbientGuestbookDocked] = useState(false);
+  const [ambientGuestbookShownIds, setAmbientGuestbookShownIds] = useState<string[]>([]);
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [accountIndex, setAccountIndex] = useState(0);
   const [accountItemIndex, setAccountItemIndex] = useState(0);
@@ -584,6 +647,8 @@ export function App() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const previewPositionedRef = useRef(false);
   const rsvpWelcomeCheckedRef = useRef(false);
+  const ambientGuestbookLastRevealYRef = useRef<number | null>(null);
+  const ambientGuestbookIdleTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isPreview) return;
@@ -669,10 +734,89 @@ export function App() {
   }, [content]);
 
   useEffect(() => {
+    if (!content || isPreview || !content.guestbook.enabled) return;
+    let cancelled = false;
+    void loadGuestbook(slug).then((entries) => {
+      if (!cancelled) setGuestbook(entries);
+    }).catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [content, isPreview, slug]);
+
+  useEffect(() => {
     if (dialog === "guestbook" && !isPreview) {
       void loadGuestbook(slug).then(setGuestbook).catch(() => setNotice("방명록을 불러오지 못했습니다."));
     }
   }, [dialog, isPreview, slug]);
+
+  useEffect(() => {
+    if (
+      !content
+      || isPreview
+      || !content.guestbook.enabled
+      || guestbook.length === 0
+      || ambientGuestbookEntry
+    ) {
+      return;
+    }
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const scheduleLetter = () => {
+      if (ambientGuestbookIdleTimerRef.current !== null) {
+        window.clearTimeout(ambientGuestbookIdleTimerRef.current);
+      }
+      ambientGuestbookIdleTimerRef.current = window.setTimeout(() => {
+        ambientGuestbookIdleTimerRef.current = null;
+        const shownIds = new Set(ambientGuestbookShownIds);
+        if (!shouldRevealAmbientGuestbook({
+          entryCount: guestbook.length,
+          shownCount: shownIds.size,
+          scrollY: window.scrollY,
+          viewportHeight: window.innerHeight,
+          lastRevealY: ambientGuestbookLastRevealYRef.current,
+          blocked: dialog !== null || rsvpWelcomeOpen,
+          reducedMotion,
+        })) {
+          return;
+        }
+
+        const nextEntry = chooseAmbientGuestbookEntry(guestbook, shownIds);
+        if (!nextEntry) return;
+        ambientGuestbookLastRevealYRef.current = window.scrollY;
+        setAmbientGuestbookShownIds((ids) => [...ids, nextEntry.id]);
+        setAmbientGuestbookDocked(false);
+        setAmbientGuestbookEntry(nextEntry);
+      }, 650);
+    };
+
+    window.addEventListener("scroll", scheduleLetter, { passive: true });
+    scheduleLetter();
+    return () => {
+      window.removeEventListener("scroll", scheduleLetter);
+      if (ambientGuestbookIdleTimerRef.current !== null) {
+        window.clearTimeout(ambientGuestbookIdleTimerRef.current);
+        ambientGuestbookIdleTimerRef.current = null;
+      }
+    };
+  }, [
+    ambientGuestbookEntry,
+    ambientGuestbookShownIds,
+    content,
+    dialog,
+    guestbook,
+    isPreview,
+    rsvpWelcomeOpen,
+  ]);
+
+  useEffect(() => {
+    if (!ambientGuestbookEntry) return;
+    const timer = window.setTimeout(() => {
+      setAmbientGuestbookEntry(null);
+      setAmbientGuestbookDocked(true);
+    }, 6_500);
+    return () => window.clearTimeout(timer);
+  }, [ambientGuestbookEntry]);
 
   useEffect(() => {
     if (!content || isPreview || !content.rsvp.enabled || rsvpWelcomeCheckedRef.current) return;
@@ -705,6 +849,9 @@ export function App() {
   }
 
   const resolvedDesign = resolveInvitationThemeDesign(design);
+  const channelTalkEnabled = !isPreview
+    && content.sharing.channelTalk.enabled
+    && Boolean(content.sharing.channelTalk.pluginKey.trim());
   const style = {
     "--paper": resolvedDesign.colors.paper,
     "--ink": resolvedDesign.colors.ink,
@@ -760,6 +907,26 @@ export function App() {
         )),
     }))
     .filter((group) => group.contacts.length > 0);
+
+  const openAmbientGuestbook = () => {
+    setAmbientGuestbookEntry(null);
+    setAmbientGuestbookDocked(true);
+    setDialog("guestbook");
+  };
+
+  const openAmbientGuestbookDock = () => {
+    const nextEntry = chooseAmbientGuestbookEntry(
+      guestbook,
+      new Set(ambientGuestbookShownIds),
+    );
+    if (!nextEntry) {
+      setDialog("guestbook");
+      return;
+    }
+    setAmbientGuestbookShownIds((ids) => [...ids, nextEntry.id]);
+    setAmbientGuestbookDocked(false);
+    setAmbientGuestbookEntry(nextEntry);
+  };
 
   const share = async () => {
     if (isPreview) {
@@ -976,7 +1143,12 @@ export function App() {
   };
 
   return (
-    <div className={`page-shell ${resolvedDesign.themeId === "sicilian-noir" || resolvedDesign.themeId === "photo-editorial" ? "page-shell--catalog" : ""}`} style={style} {...invitationThemeAttributes(resolvedDesign.themeId)}>
+    <div
+      className={`page-shell ${resolvedDesign.themeId === "sicilian-noir" || resolvedDesign.themeId === "photo-editorial" ? "page-shell--catalog" : ""}`}
+      data-channel-talk={channelTalkEnabled ? "enabled" : "disabled"}
+      style={style}
+      {...invitationThemeAttributes(resolvedDesign.themeId)}
+    >
       <main className="invitation">
         {enabledSections.has("hero") ? (
           resolvedDesign.themeId === "sicilian-noir" ? (
@@ -1125,12 +1297,12 @@ export function App() {
         {enabledSections.has("rsvp") && content.rsvp.enabled ? (
           <section className="section cta-section" id={sectionAnchorId("rsvp")} data-reveal>
             <SectionHeading
-              eyebrow={content.rsvp.actions.eyebrow}
+              eyebrow="R.S.V.P."
               title={content.rsvp.title}
               description={content.rsvp.description}
             />
             <button className="primary-button" type="button" onClick={() => setDialog("rsvp")}>
-              {content.rsvp.actions.triggerLabel}
+              참석 의사 전달하기
             </button>
           </section>
         ) : null}
@@ -1344,6 +1516,16 @@ export function App() {
           </section>
         ) : null}
       </main>
+
+      {!isPreview && content.guestbook.enabled && dialog === null && !rsvpWelcomeOpen ? (
+        <AmbientGuestbook
+          entry={ambientGuestbookEntry}
+          count={guestbook.length}
+          docked={ambientGuestbookDocked}
+          onLetterClick={openAmbientGuestbook}
+          onDockClick={openAmbientGuestbookDock}
+        />
+      ) : null}
 
       {content.music.enabled && content.music.assetId ? (
         <>
