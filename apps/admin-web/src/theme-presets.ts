@@ -57,6 +57,29 @@ export const themePresets: ThemePreset[] = [
       motion: { reveal: "fade", durationMs: 700 },
     },
   },
+  {
+    id: "photo-editorial",
+    name: "Photo Editorial",
+    description: "첫 화면을 웨딩 사진과 절제된 타이포그래피로 채우는 몰입형 테마",
+    signature: "사진 중심의 첫 화면과 간결한 흑백 편집 레이아웃",
+    tokens: {
+      colors: {
+        paper: "#ffffff",
+        ink: "#161412",
+        muted: "#746d67",
+        line: "#e1ddd8",
+        accent: "#c3a88d",
+        surface: "#f5f3f0",
+      },
+      typography: {
+        display: "\"Cormorant Garamond\", \"Times New Roman\", Pretendard, \"Noto Sans KR\", serif",
+        body: "\"Pretendard\", \"Noto Sans KR\", sans-serif",
+      },
+      radius: 0,
+      spacing: { section: 96, content: 24 },
+      motion: { reveal: "fade", durationMs: 700 },
+    },
+  },
 ];
 
 export function applyThemePreset(

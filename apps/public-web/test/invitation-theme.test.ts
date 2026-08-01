@@ -12,6 +12,9 @@ test("public invitation exposes the selected theme as a stable DOM attribute", a
   assert.deepEqual(themeModule.invitationThemeAttributes("botanic-garden"), {
     "data-theme": "botanic-garden",
   });
+  assert.deepEqual(themeModule.invitationThemeAttributes("photo-editorial"), {
+    "data-theme": "photo-editorial",
+  });
 });
 
 test("legacy Sicilian Noir drafts render with the current black and white token set", async () => {
@@ -179,7 +182,7 @@ test("Sicilian Noir removes wireframe rules from sections and hero placeholders"
 
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.section\s*\{[^}]*border-bottom:\s*0;/s,
+    /\.page-shell--catalog \.section\s*\{[^}]*border-bottom:\s*0;/s,
   );
   assert.match(
     styles,
@@ -192,7 +195,7 @@ test("Sicilian Noir photo slots stay neutral and never reuse the transition artw
 
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.media--placeholder,\s*[\s\S]*?\.portrait-placeholder\s*\{[^}]*background:\s*#f4f4f4;/s,
+    /\.page-shell--catalog \.media--placeholder,\s*[\s\S]*?\.portrait-placeholder\s*\{[^}]*background:\s*#f4f4f4;/s,
     "empty photo slots should use a neutral grayscale surface",
   );
   for (const selector of [
@@ -213,4 +216,20 @@ test("Sicilian Noir photo slots stay neutral and never reuse the transition artw
       `${selector} must not use Sicilian decorative artwork as a photo`,
     );
   }
+});
+
+test("Photo Editorial uses an uploaded hero image and retains the catalog layout without Sicilian graphics", async () => {
+  const [app, styles] = await Promise.all([
+    readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(app, /function PhotoEditorialHero/);
+  assert.match(app, /media=\{content\.hero\.image\}/);
+  assert.match(app, /loading="eager"/);
+  assert.match(app, /resolvedDesign\.themeId === "photo-editorial"/);
+  assert.match(styles, /\.photo-hero\s*\{[^}]*min-height:\s*100svh;/s);
+  assert.match(styles, /\.photo-hero__image\s*\{[^}]*object-fit:\s*cover;/s);
+  assert.match(styles, /\.page-shell\[data-theme="photo-editorial"\] \.section-heading \.eyebrow::before[\s\S]*?content:\s*none;/);
+  assert.match(styles, /\.page-shell\[data-theme="photo-editorial"\] \.closing::before[\s\S]*?background:\s*none;/);
 });

@@ -24,15 +24,16 @@ const gardenDesign = {
   activeCustomProfileId: null,
 } satisfies InvitationDesign;
 
-test("theme catalog offers Botanic Garden and Sicilian Noir", async () => {
+test("theme catalog offers Botanic Garden, Sicilian Noir, and Photo Editorial", async () => {
   const themeModule = await import("../src/theme-presets.ts").catch(() => null);
 
   assert.ok(themeModule, "theme preset module should exist");
   assert.deepEqual(
     themeModule.themePresets.map((theme) => theme.id),
-    ["botanic-garden", "sicilian-noir"],
+    ["botanic-garden", "sicilian-noir", "photo-editorial"],
   );
   assert.equal(themeModule.themePresets[0]?.name, "Botanic Garden");
+  assert.equal(themeModule.themePresets[2]?.name, "Photo Editorial");
 });
 
 test("applying Sicilian Noir replaces the complete design token set without mutating the draft", async () => {

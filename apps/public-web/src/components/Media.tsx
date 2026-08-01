@@ -7,11 +7,13 @@ export function Media({
   className = "",
   preview = false,
   revealDirection,
+  loading = "lazy",
 }: {
   media: MediaReference;
   className?: string;
   preview?: boolean;
   revealDirection?: RevealDirection;
+  loading?: "eager" | "lazy";
 }) {
   if (media.assetId) {
     const contentPath = preview
@@ -23,7 +25,7 @@ export function Media({
         src={contentPath}
         alt={media.alt}
         data-reveal={revealDirection}
-        loading="lazy"
+        loading={loading}
       />
     );
   }

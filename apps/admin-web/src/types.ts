@@ -42,6 +42,7 @@ export interface InvitationContent {
     eyebrow: string;
     title: string;
     subtitle: string;
+    image: MediaReference;
     nameOrder: Array<"partnerOne" | "partnerTwo">;
   };
   greeting: { title: string; body: string; image: MediaReference };
@@ -158,7 +159,7 @@ export interface SectionHeadingCopy {
 }
 
 export interface InvitationDesign {
-  themeId: "botanic-garden" | "sicilian-noir";
+  themeId: "botanic-garden" | "sicilian-noir" | "photo-editorial";
   colors: Record<"paper" | "ink" | "muted" | "line" | "accent" | "surface", string>;
   typography: { display: string; body: string };
   radius: number;

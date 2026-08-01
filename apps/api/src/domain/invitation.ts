@@ -135,6 +135,11 @@ export const invitationContentSchema = z.object({
     eyebrow: z.string().max(100),
     title: z.string().min(1).max(160),
     subtitle: z.string().max(240),
+    image: mediaReferenceSchema.default({
+      assetId: null,
+      alt: "첫 화면 웨딩 사진",
+      placeholder: "hero-photo",
+    }),
     nameOrder: z.array(z.enum(["partnerOne", "partnerTwo"]))
       .length(2)
       .refine((order) => new Set(order).size === 2, "Each partner must appear once in the hero.")
@@ -320,7 +325,7 @@ export const invitationContentSchema = z.object({
 });
 
 const invitationThemeIdSchema = z
-  .enum(["garden-editorial", "botanic-garden", "sicilian-noir"])
+  .enum(["garden-editorial", "botanic-garden", "sicilian-noir", "photo-editorial"])
   .default("botanic-garden")
   .transform((themeId) => (
     themeId === "garden-editorial" ? "botanic-garden" as const : themeId
@@ -352,7 +357,7 @@ export const invitationDesignSchema = z.object({
   customProfiles: z.array(z.object({
     id: z.string().min(1).max(80),
     name: z.string().trim().min(1).max(80),
-    baseThemeId: z.enum(["botanic-garden", "sicilian-noir"]),
+    baseThemeId: z.enum(["botanic-garden", "sicilian-noir", "photo-editorial"]),
     tokens: z.object({
       colors: z.object({
         paper: colorSchema,
@@ -462,6 +467,7 @@ export const sampleInvitationContent: InvitationContent = {
     eyebrow: "",
     title: "INVITÉ",
     subtitle: "",
+    image: { assetId: null, alt: "첫 화면 웨딩 사진", placeholder: "hero-photo" },
     nameOrder: ["partnerTwo", "partnerOne"],
   },
   greeting: {

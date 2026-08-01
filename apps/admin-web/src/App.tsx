@@ -891,7 +891,7 @@ export function App() {
                         </span>
                         <span className="theme-card__copy">
                           <span><strong>{profile.name}</strong>{selected ? <i>선택됨</i> : null}</span>
-                          <small>{profile.baseThemeId === "sicilian-noir" ? "Sicilian Noir 기반" : "Botanic Garden 기반"}</small>
+                          <small>{profile.baseThemeId === "sicilian-noir" ? "Sicilian Noir 기반" : profile.baseThemeId === "photo-editorial" ? "Photo Editorial 기반" : "Botanic Garden 기반"}</small>
                           <em>이 초대장에만 저장됨</em>
                         </span>
                       </button>
@@ -946,6 +946,7 @@ export function App() {
                 </Panel>
                 <Panel title="미디어 슬롯 연결" description="업로드한 파일을 공개 페이지의 실제 이미지·음악 슬롯에 연결합니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "연결 저장"}</button>}>
                   <div className="media-slot-grid">
+                    <MediaSlotField label="첫 화면 사진" value={invitation.draftContent.hero.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.hero.image = connectMedia(draft.hero.image, asset); })} />
                     <MediaSlotField label="초대 인사 사진" value={invitation.draftContent.greeting.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.greeting.image = connectMedia(draft.greeting.image, asset); })} />
                     <MediaSlotField label="예식장 약도" value={invitation.draftContent.event.sketchMap.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.event.sketchMap = connectMedia(draft.event.sketchMap, asset); })} />
                     <MediaSlotField label="중간 이미지" value={invitation.draftContent.middleImage.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.middleImage = connectMedia(draft.middleImage, asset); })} />
