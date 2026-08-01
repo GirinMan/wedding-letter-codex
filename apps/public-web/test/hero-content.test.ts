@@ -19,6 +19,6 @@ test("family relationship labels remain visible when parent names are configured
 
   assert.match(
     source,
-    /<div className="family-relation"[\s\S]*?\{partner\.label\}[\s\S]*?parents\.map[\s\S]*?\{partner\.familyRelation\}/,
+    /<div className="family-relation"[\s\S]*?family-relation__label[\s\S]*?family-relation__details[\s\S]*?parents\.map[\s\S]*?\{partner\.familyRelation\}/,
   );
 });

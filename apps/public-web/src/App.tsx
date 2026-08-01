@@ -195,11 +195,12 @@ function FamilyRelationshipLine({ content }: { content: InvitationContent }) {
         return (
           <div className="family-relation" key={key}>
             <span className="family-relation__label">{partner.label}</span>
-            <em>·</em>
-            <span>{parents.map((contact) => contact.name).join(" · ")}</span>
-            <em>의</em>
-            <span>{partner.familyRelation}</span>
-            <strong>{partner.name}</strong>
+            <div className="family-relation__details">
+              <span>{parents.map((contact) => contact.name).join(" · ")}</span>
+              <em>의</em>
+              <span>{partner.familyRelation}</span>
+              <strong>{partner.name}</strong>
+            </div>
           </div>
         );
       })}
