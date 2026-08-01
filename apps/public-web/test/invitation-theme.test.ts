@@ -325,3 +325,20 @@ test("Photo Editorial uses an uploaded hero image and retains the catalog layout
   assert.match(styles, /\.page-shell\[data-theme="photo-editorial"\] \.section-heading \.eyebrow::before[\s\S]*?content:\s*none;/);
   assert.match(styles, /\.page-shell\[data-theme="photo-editorial"\] \.closing::before[\s\S]*?background:\s*none;/);
 });
+
+test("Photo Editorial centers the invitation heading and greeting copy", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="photo-editorial"\] \.invitation-section\s*\{[^}]*text-align:\s*center;/s,
+  );
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="photo-editorial"\] \.invitation-section \.section-heading\s*\{[^}]*text-align:\s*center;/s,
+  );
+  assert.match(
+    styles,
+    /\.page-shell\[data-theme="photo-editorial"\] \.invitation-section > \.multiline\s*\{[^}]*text-align:\s*center;/s,
+  );
+});
