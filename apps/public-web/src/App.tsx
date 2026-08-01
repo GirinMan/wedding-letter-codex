@@ -252,6 +252,63 @@ function GuestUploadPolaroid({
   );
 }
 
+function GalleryCarousel({
+  items,
+  preview,
+}: {
+  items: Array<MediaReference & { id: string }>;
+  preview: boolean;
+}) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const canLoop = items.length > 1;
+  const displayedItems = canLoop ? [...items, ...items, ...items] : items;
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || !canLoop) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      viewport.scrollLeft = viewport.scrollWidth / 3;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [canLoop, items.length]);
+
+  const keepLooping = () => {
+    const viewport = viewportRef.current;
+    if (!viewport || !canLoop) return;
+
+    const segmentWidth = viewport.scrollWidth / 3;
+    if (viewport.scrollLeft < segmentWidth * 0.35) {
+      viewport.scrollLeft += segmentWidth;
+    } else if (viewport.scrollLeft > segmentWidth * 1.65) {
+      viewport.scrollLeft -= segmentWidth;
+    }
+  };
+
+  return (
+    <div className="gallery-carousel" aria-label="웨딩 사진을 좌우로 밀어 볼 수 있습니다.">
+      <div className="gallery-carousel__viewport" ref={viewportRef} onScroll={keepLooping}>
+        <div className="gallery-carousel__track">
+          {displayedItems.map((item, index) => (
+            <Media
+              media={item}
+              key={`${Math.floor(index / items.length)}-${item.id}`}
+              preview={preview}
+            />
+          ))}
+        </div>
+      </div>
+      {canLoop ? (
+        <span className="gallery-carousel__hint" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="m9 7-5 5 5 5M15 7l5 5-5 5M4 12h16" />
+          </svg>
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 function useCountdown(startsAt: string) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -1459,9 +1516,7 @@ export function App() {
               description={content.sectionCopy.gallery.description}
             />
             {content.gallery.layout === "carousel" || content.gallery.layout === "both" ? (
-              <div className="gallery-carousel" aria-label="웨딩 사진을 좌우로 밀어 볼 수 있습니다.">
-                {content.gallery.items.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
-              </div>
+              <GalleryCarousel items={content.gallery.items} preview={isPreview} />
             ) : null}
             {content.gallery.layout === "grid" || content.gallery.layout === "both" ? (
               <div className="gallery-grid">
