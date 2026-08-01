@@ -976,6 +976,7 @@ textarea:focus-visible {
   height: 195px;
   border: 8px solid white;
   border-bottom-width: 34px;
+  overflow: hidden;
   box-shadow: 0 8px 30px rgb(40 35 30 / 10%);
   place-items: center;
   background: #d8d1c9;
