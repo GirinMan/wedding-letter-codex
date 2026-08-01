@@ -20,6 +20,8 @@ const gardenDesign = {
   radius: 10,
   spacing: { section: 104, content: 24 },
   motion: { reveal: "fade-up", durationMs: 650 },
+  customProfiles: [],
+  activeCustomProfileId: null,
 } satisfies InvitationDesign;
 
 test("theme catalog offers Botanic Garden and Sicilian Noir", async () => {
@@ -56,4 +58,25 @@ test("applying Sicilian Noir replaces the complete design token set without muta
   assert.equal(themed.motion.reveal, "fade");
   assert.equal(gardenDesign.themeId, "botanic-garden");
   assert.equal(gardenDesign.colors.paper, "#fbfaf7");
+});
+
+test("a custom profile stores its base theme and keeps token edits with that profile", async () => {
+  const themeModule = await import("../src/theme-presets.ts");
+  const profile = themeModule.createCustomThemeProfile(gardenDesign, "custom-summer");
+  profile.name = "여름의 식물원";
+  profile.tokens.colors.accent = "#b76e79";
+
+  const selected = themeModule.applyCustomThemeProfile(
+    { ...gardenDesign, customProfiles: [profile] },
+    profile,
+  );
+  const synced = themeModule.syncActiveCustomThemeProfile({
+    ...selected,
+    colors: { ...selected.colors, paper: "#fffdf8" },
+  });
+
+  assert.equal(selected.themeId, "botanic-garden");
+  assert.equal(selected.activeCustomProfileId, "custom-summer");
+  assert.equal(synced.customProfiles[0]?.name, "여름의 식물원");
+  assert.equal(synced.customProfiles[0]?.tokens.colors.paper, "#fffdf8");
 });

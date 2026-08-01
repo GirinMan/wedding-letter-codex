@@ -269,6 +269,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .theme-card__copy i { padding: 3px 6px; border-radius: 999px; background: #211f1d; color: #fff; font-size: .5rem; font-style: normal; }
 .theme-card__copy small { margin-top: 8px; color: #817870; font-size: .6rem; line-height: 1.55; }
 .theme-card__copy em { margin-top: 11px; color: #a6262f; font-size: .55rem; font-style: normal; }
+.design-profile-heading { margin-top: 0; padding-top: 0; }
+.design-profile-heading > div { display: grid; gap: 5px; }
+.design-profile-heading p { margin: 0; color: #817870; font-size: .61rem; line-height: 1.55; }
+.theme-card--custom { border-style: dashed; }
+.theme-card--custom .theme-card__copy em { color: #70665e; }
+.custom-profile-controls { display: flex; margin: 0 0 14px; padding: 12px; border: 1px solid #e2ddd7; border-radius: 9px; align-items: end; gap: 12px; background: #faf8f5; }
+.custom-profile-controls .field { flex: 1; }
+.custom-profile-controls .remove-button { flex: none; min-height: 38px; }
 .theme-note { margin: 0 0 22px; color: #817870; font-size: .61rem; line-height: 1.6; }
 .color-token { display: flex; padding: 12px; border: 1px solid #e2ddd7; border-radius: 9px; align-items: center; gap: 10px; }
 .color-token input { width: 36px; height: 36px; padding: 0; border: 0; background: transparent; }

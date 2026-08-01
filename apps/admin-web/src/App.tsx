@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { api } from "./api";
-import { applyThemePreset, themePresets } from "./theme-presets";
+import {
+  applyCustomThemeProfile,
+  applyThemePreset,
+  createCustomThemeProfile,
+  syncActiveCustomThemeProfile,
+  themePresets,
+} from "./theme-presets";
 import type {
   AdminUser,
   GuestbookEntry,
@@ -304,7 +310,7 @@ export function App() {
       if (!current) return current;
       const draftDesign = structuredClone(current.draftDesign);
       mutate(draftDesign);
-      return { ...current, draftDesign };
+      return { ...current, draftDesign: syncActiveCustomThemeProfile(draftDesign) };
     });
   };
 
@@ -314,6 +320,55 @@ export function App() {
       return {
         ...current,
         draftDesign: applyThemePreset(current.draftDesign, themeId),
+      };
+    });
+  };
+
+  const createCustomProfile = () => {
+    setInvitation((current) => {
+      if (!current) return current;
+      const profile = createCustomThemeProfile(
+        current.draftDesign,
+        createId("custom-theme"),
+      );
+      return {
+        ...current,
+        draftDesign: applyCustomThemeProfile({
+          ...current.draftDesign,
+          customProfiles: [...current.draftDesign.customProfiles, profile],
+        }, profile),
+      };
+    });
+  };
+
+  const selectCustomProfile = (profileId: string) => {
+    setInvitation((current) => {
+      if (!current) return current;
+      const profile = current.draftDesign.customProfiles.find((item) => item.id === profileId);
+      if (!profile) return current;
+      return { ...current, draftDesign: applyCustomThemeProfile(current.draftDesign, profile) };
+    });
+  };
+
+  const renameActiveCustomProfile = (name: string) => {
+    updateDesign((draft) => {
+      draft.customProfiles = draft.customProfiles.map((profile) => (
+        profile.id === draft.activeCustomProfileId ? { ...profile, name } : profile
+      ));
+    });
+  };
+
+  const deleteActiveCustomProfile = () => {
+    setInvitation((current) => {
+      if (!current?.draftDesign.activeCustomProfileId) return current;
+      const activeCustomProfileId = current.draftDesign.activeCustomProfileId;
+      return {
+        ...current,
+        draftDesign: {
+          ...current.draftDesign,
+          customProfiles: current.draftDesign.customProfiles.filter((profile) => profile.id !== activeCustomProfileId),
+          activeCustomProfileId: null,
+        },
       };
     });
   };
@@ -772,9 +827,16 @@ export function App() {
 
             {view === "design" ? (
               <Panel title="테마와 디자인 토큰" description="테마를 고른 뒤 색, 글꼴과 간격을 청첩장에 맞게 세밀하게 조정할 수 있습니다." actions={<button className="button button--primary" onClick={() => void saveDesign()}>{saving ? "저장 중…" : "디자인 저장"}</button>}>
+                <div className="subheading-row design-profile-heading">
+                  <div>
+                    <h3 className="subheading">디자인 프로필</h3>
+                    <p>기본 테마를 복제해 이 초대장 전용 프로필로 저장하고, 다시 선택해 사용할 수 있습니다.</p>
+                  </div>
+                  <button className="add-button" type="button" disabled={invitation.draftDesign.customProfiles.length >= 8} onClick={createCustomProfile}>+ 커스텀 프로필 추가</button>
+                </div>
                 <div className="theme-grid" role="radiogroup" aria-label="청첩장 테마 선택">
                   {themePresets.map((theme) => {
-                    const selected = invitation.draftDesign.themeId === theme.id;
+                    const selected = invitation.draftDesign.activeCustomProfileId === null && invitation.draftDesign.themeId === theme.id;
                     return (
                       <button
                         className={`theme-card ${selected ? "is-selected" : ""}`}
@@ -807,8 +869,42 @@ export function App() {
                       </button>
                     );
                   })}
+                  {invitation.draftDesign.customProfiles.map((profile) => {
+                    const selected = invitation.draftDesign.activeCustomProfileId === profile.id;
+                    return (
+                      <button
+                        className={`theme-card theme-card--custom ${selected ? "is-selected" : ""}`}
+                        key={profile.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => selectCustomProfile(profile.id)}
+                      >
+                        <span className="theme-card__preview" style={{
+                          "--theme-paper": profile.tokens.colors.paper,
+                          "--theme-ink": profile.tokens.colors.ink,
+                          "--theme-muted": profile.tokens.colors.muted,
+                          "--theme-accent": profile.tokens.colors.accent,
+                          "--theme-surface": profile.tokens.colors.surface,
+                        } as React.CSSProperties} aria-hidden="true">
+                          <i>CUSTOM</i><strong>A &amp; B</strong><span />
+                        </span>
+                        <span className="theme-card__copy">
+                          <span><strong>{profile.name}</strong>{selected ? <i>선택됨</i> : null}</span>
+                          <small>{profile.baseThemeId === "sicilian-noir" ? "Sicilian Noir 기반" : "Botanic Garden 기반"}</small>
+                          <em>이 초대장에만 저장됨</em>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-                <p className="theme-note">테마를 선택하면 아래 토큰 전체가 프리셋 값으로 바뀝니다. 저장하기 전까지는 실시간 미리보기에서만 확인됩니다.</p>
+                {invitation.draftDesign.activeCustomProfileId ? (
+                  <div className="custom-profile-controls">
+                    <Field label="커스텀 프로필 이름"><input value={invitation.draftDesign.customProfiles.find((profile) => profile.id === invitation.draftDesign.activeCustomProfileId)?.name ?? ""} onChange={(event) => renameActiveCustomProfile(event.target.value)} /></Field>
+                    <button className="remove-button" type="button" onClick={deleteActiveCustomProfile}>현재 프로필 삭제</button>
+                  </div>
+                ) : null}
+                <p className="theme-note">기본 테마를 선택하면 아래 토큰 전체가 프리셋 값으로 바뀝니다. 커스텀 프로필을 선택한 상태에서 토큰을 수정하면 해당 프로필에도 함께 저장됩니다.</p>
                 <div className="token-grid">
                   {Object.entries(invitation.draftDesign.colors).map(([name, value]) => (
                     <label className="color-token" key={name}>

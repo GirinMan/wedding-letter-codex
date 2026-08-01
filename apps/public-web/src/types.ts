@@ -155,6 +155,15 @@ export interface InvitationDesign {
   radius: number;
   spacing: { section: number; content: number };
   motion: { reveal: "fade" | "fade-up" | "slide"; durationMs: number };
+  customProfiles: CustomDesignProfile[];
+  activeCustomProfileId: string | null;
+}
+
+export interface CustomDesignProfile {
+  id: string;
+  name: string;
+  baseThemeId: InvitationDesign["themeId"];
+  tokens: Omit<InvitationDesign, "themeId" | "customProfiles" | "activeCustomProfileId">;
 }
 
 export interface InvitationResponse {

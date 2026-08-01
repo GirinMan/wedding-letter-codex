@@ -33,6 +33,8 @@ test("legacy Sicilian Noir drafts render with the current black and white token 
     radius: 0,
     spacing: { section: 136, content: 28 },
     motion: { reveal: "fade" as const, durationMs: 900 },
+    customProfiles: [],
+    activeCustomProfileId: null,
   };
 
   assert.ok(themeModule, "public invitation theme module should exist");
@@ -53,7 +55,41 @@ test("legacy Sicilian Noir drafts render with the current black and white token 
     radius: 0,
     spacing: { section: 96, content: 24 },
     motion: { reveal: "fade", durationMs: 700 },
+    customProfiles: [],
+    activeCustomProfileId: null,
   });
+});
+
+test("an active custom profile preserves its tokens while retaining its base theme layout", async () => {
+  const themeModule = await import("../src/invitation-theme.ts");
+  const customDesign = {
+    themeId: "sicilian-noir" as const,
+    colors: { paper: "#ffffff", ink: "#0a0a0a", muted: "#6f6f6f", line: "#dedede", accent: "#0a0a0a", surface: "#f4f4f4" },
+    typography: { display: "sans-serif", body: "sans-serif" },
+    radius: 0,
+    spacing: { section: 96, content: 24 },
+    motion: { reveal: "fade" as const, durationMs: 700 },
+    customProfiles: [{
+      id: "custom-noir",
+      name: "Noir with rose",
+      baseThemeId: "sicilian-noir" as const,
+      tokens: {
+        colors: { paper: "#fff8f5", ink: "#21120f", muted: "#806c65", line: "#e4d3cd", accent: "#b76e79", surface: "#f9eeea" },
+        typography: { display: "Georgia, serif", body: "Arial, sans-serif" },
+        radius: 12,
+        spacing: { section: 112, content: 28 },
+        motion: { reveal: "fade-up" as const, durationMs: 500 },
+      },
+    }],
+    activeCustomProfileId: "custom-noir",
+  };
+
+  assert.ok(themeModule, "public invitation theme module should exist");
+  const resolved = themeModule.resolveInvitationThemeDesign(customDesign);
+  assert.equal(resolved.themeId, "sicilian-noir");
+  assert.equal(resolved.colors.accent, "#b76e79");
+  assert.equal(resolved.typography.display, "Georgia, serif");
+  assert.equal(resolved.radius, 12);
 });
 
 test("Sicilian Noir uses generated Sicilian architecture only as the middle background", async () => {

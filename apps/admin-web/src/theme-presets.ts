@@ -1,11 +1,13 @@
-import type { InvitationDesign } from "./types";
+import type { CustomDesignProfile, InvitationDesign } from "./types";
+
+type DesignTokens = Omit<InvitationDesign, "themeId" | "customProfiles" | "activeCustomProfileId">;
 
 export interface ThemePreset {
   id: InvitationDesign["themeId"];
   name: string;
   description: string;
   signature: string;
-  tokens: Omit<InvitationDesign, "themeId">;
+  tokens: DesignTokens;
 }
 
 export const themePresets: ThemePreset[] = [
@@ -64,7 +66,62 @@ export function applyThemePreset(
   const preset = themePresets.find((theme) => theme.id === themeId);
   if (!preset) return current;
   return structuredClone({
+    customProfiles: current.customProfiles,
+    activeCustomProfileId: null,
     themeId: preset.id,
     ...preset.tokens,
   });
+}
+
+export function createCustomThemeProfile(
+  current: InvitationDesign,
+  id: string,
+): CustomDesignProfile {
+  return {
+    id,
+    name: "새 커스텀 프로필",
+    baseThemeId: current.themeId,
+    tokens: designTokens(current),
+  };
+}
+
+export function applyCustomThemeProfile(
+  current: InvitationDesign,
+  profile: CustomDesignProfile,
+): InvitationDesign {
+  return structuredClone({
+    ...current,
+    themeId: profile.baseThemeId,
+    ...profile.tokens,
+    activeCustomProfileId: profile.id,
+  });
+}
+
+export function syncActiveCustomThemeProfile(
+  current: InvitationDesign,
+): InvitationDesign {
+  if (!current.activeCustomProfileId) return current;
+
+  return {
+    ...current,
+    customProfiles: current.customProfiles.map((profile) => (
+      profile.id === current.activeCustomProfileId
+        ? {
+          ...profile,
+          baseThemeId: current.themeId,
+          tokens: designTokens(current),
+        }
+        : profile
+    )),
+  };
+}
+
+function designTokens(current: InvitationDesign): DesignTokens {
+  return {
+    colors: structuredClone(current.colors),
+    typography: structuredClone(current.typography),
+    radius: current.radius,
+    spacing: structuredClone(current.spacing),
+    motion: structuredClone(current.motion),
+  };
 }

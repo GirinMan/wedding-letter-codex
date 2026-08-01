@@ -349,7 +349,41 @@ export const invitationDesignSchema = z.object({
     reveal: z.enum(["fade", "fade-up", "slide"]),
     durationMs: z.number().int().min(0).max(2_000),
   }),
-});
+  customProfiles: z.array(z.object({
+    id: z.string().min(1).max(80),
+    name: z.string().trim().min(1).max(80),
+    baseThemeId: z.enum(["botanic-garden", "sicilian-noir"]),
+    tokens: z.object({
+      colors: z.object({
+        paper: colorSchema,
+        ink: colorSchema,
+        muted: colorSchema,
+        line: colorSchema,
+        accent: colorSchema,
+        surface: colorSchema,
+      }),
+      typography: z.object({
+        display: z.string().min(1).max(200),
+        body: z.string().min(1).max(200),
+      }),
+      radius: z.number().int().min(0).max(40),
+      spacing: z.object({
+        section: z.number().int().min(48).max(240),
+        content: z.number().int().min(12).max(48),
+      }),
+      motion: z.object({
+        reveal: z.enum(["fade", "fade-up", "slide"]),
+        durationMs: z.number().int().min(0).max(2_000),
+      }),
+    }),
+  })).max(8).default([]),
+  activeCustomProfileId: z.string().min(1).max(80).nullable().default(null),
+}).transform((design) => ({
+  ...design,
+  activeCustomProfileId: design.customProfiles.some(
+    (profile) => profile.id === design.activeCustomProfileId,
+  ) ? design.activeCustomProfileId : null,
+}));
 
 export type InvitationContent = z.infer<typeof invitationContentSchema>;
 export type InvitationDesign = z.infer<typeof invitationDesignSchema>;
@@ -595,4 +629,6 @@ export const sampleInvitationDesign: InvitationDesign = {
   radius: 10,
   spacing: { section: 104, content: 24 },
   motion: { reveal: "fade-up", durationMs: 650 },
+  customProfiles: [],
+  activeCustomProfileId: null,
 };
