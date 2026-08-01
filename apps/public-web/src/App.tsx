@@ -12,6 +12,7 @@ import {
   createGuestbookEntry,
   deleteGuestbookEntry,
   loadGuestbook,
+  loadGuestUploadPhotos,
   loadInvitation,
   loadInvitationPreview,
   submitRsvp,
@@ -41,6 +42,11 @@ import {
   sendKakaoShare,
 } from "./kakao-share";
 import { moveCarouselIndex } from "./carousel";
+import {
+  selectGuestUploadGallery,
+  type GuestUploadGallery,
+  type GuestUploadPhoto,
+} from "./guest-upload-gallery";
 import { bootChannelTalk } from "./channel-talk";
 import {
   buildOpenStreetMapEmbedUrl,
@@ -126,9 +132,13 @@ function FamilyRelationshipLine({ content }: { content: InvitationContent }) {
     return (
       <div className="couple-line">
         <span>{content.couple.partnerOne.label}</span>
+        <em>·</em>
+        <span>{content.couple.partnerOne.familyRelation}</span>
         <strong>{content.couple.partnerOne.name}</strong>
         <i aria-hidden="true" />
         <span>{content.couple.partnerTwo.label}</span>
+        <em>·</em>
+        <span>{content.couple.partnerTwo.familyRelation}</span>
         <strong>{content.couple.partnerTwo.name}</strong>
       </div>
     );
@@ -164,6 +174,29 @@ function FamilyRelationshipLine({ content }: { content: InvitationContent }) {
         );
       })}
     </div>
+  );
+}
+
+function GuestUploadShowcase({
+  gallery,
+  preview,
+  section = false,
+}: {
+  gallery: GuestUploadGallery;
+  preview: boolean;
+  section?: boolean;
+}) {
+  if (gallery.items.length === 0) return null;
+
+  return (
+    <section className={`guest-upload-showcase${section ? " guest-upload-showcase--section" : ""}`} aria-label="축하 사진">
+      <p>{gallery.source === "guest" ? "함께 나눈 축하 사진" : "두 사람의 미리 보기"}</p>
+      <div className="guest-upload-showcase__grid">
+        {gallery.source === "guest"
+          ? gallery.items.map((photo) => <img key={photo.id} src={photo.url} alt={photo.alt} />)
+          : gallery.items.map((item, index) => <Media key={`${item.assetId}-${index}`} media={item} preview={preview} />)}
+      </div>
+    </section>
   );
 }
 
@@ -433,6 +466,7 @@ function PhotoEditorialHero({
         <time dateTime={content.event.startsAt}>
           {formatPhotoHeroDate(content.event.startsAt, content.event.timezone)}
         </time>
+        {content.hero.subtitle ? <p className="photo-hero__subtitle">{content.hero.subtitle}</p> : null}
       </div>
       <span className="photo-hero__scroll" aria-hidden="true" />
     </section>
@@ -633,6 +667,7 @@ export function App() {
   const [dialog, setDialog] = useState<DialogName>(null);
   const [rsvpWelcomeOpen, setRsvpWelcomeOpen] = useState(false);
   const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
+  const [guestUploadPhotos, setGuestUploadPhotos] = useState<GuestUploadPhoto[]>([]);
   const [guestbookDeleteTarget, setGuestbookDeleteTarget] = useState<GuestbookEntry | null>(null);
   const [ambientGuestbookEntry, setAmbientGuestbookEntry] = useState<GuestbookEntry | null>(null);
   const [ambientGuestbookDocked, setAmbientGuestbookDocked] = useState(false);
@@ -739,6 +774,19 @@ export function App() {
     void loadGuestbook(slug).then((entries) => {
       if (!cancelled) setGuestbook(entries);
     }).catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [content, isPreview, slug]);
+
+  useEffect(() => {
+    if (!content || isPreview || !content.guestUploads.enabled) return;
+    let cancelled = false;
+    void loadGuestUploadPhotos(slug).then((photos) => {
+      if (!cancelled) setGuestUploadPhotos(photos);
+    }).catch(() => {
+      if (!cancelled) setGuestUploadPhotos([]);
+    });
     return () => {
       cancelled = true;
     };
@@ -876,6 +924,10 @@ export function App() {
   const timeline = content.timeline[timelineIndex] ?? content.timeline[0]!;
   const accountGroup = content.accounts[accountIndex] ?? content.accounts[0];
   const guestUploadsAvailable = Date.now() >= Date.parse(content.guestUploads.opensAt);
+  const guestUploadGallery = selectGuestUploadGallery(
+    guestUploadPhotos,
+    content.guestUploads.fallbackItems,
+  );
   const visibleGallery = galleryExpanded
     ? content.gallery.items
     : content.gallery.items.slice(0, content.gallery.initialCount);
@@ -1447,9 +1499,9 @@ export function App() {
               title={content.guestUploads.title}
               description={content.guestUploads.description}
             />
-            <div className="polaroid-stack" aria-hidden="true">
-              <span>01</span><span>02</span><span>03</span>
-            </div>
+            {guestUploadGallery.items.length > 0
+              ? <GuestUploadShowcase gallery={guestUploadGallery} preview={isPreview} section />
+              : <div className="polaroid-stack" aria-hidden="true"><span>01</span><span>02</span><span>03</span></div>}
             <p className="upload-date">
               업로드 시작 · {formatEventDate(content.guestUploads.opensAt)}
             </p>
@@ -1746,6 +1798,7 @@ export function App() {
       </Dialog>
 
       <Dialog open={dialog === "upload"} title="사진 올리기" onClose={() => setDialog(null)}>
+        <GuestUploadShowcase gallery={guestUploadGallery} preview={isPreview} />
         <form className="form-stack" onSubmit={(event) => void handleGuestUpload(event)}>
           <label>사진<input name="file" type="file" accept="image/jpeg,image/png,image/webp,image/heic" required /></label>
           <label>이름<input name="uploaderName" maxLength={80} /></label>

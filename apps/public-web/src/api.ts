@@ -1,4 +1,5 @@
 import type { GuestbookEntry, InvitationResponse } from "./types";
+import type { GuestUploadPhoto } from "./guest-upload-gallery";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -32,6 +33,13 @@ export async function loadGuestbook(slug: string): Promise<GuestbookEntry[]> {
     `/api/public/invitations/${slug}/guestbook?limit=20`,
   );
   return response.entries;
+}
+
+export async function loadGuestUploadPhotos(slug: string): Promise<GuestUploadPhoto[]> {
+  const response = await request<{ photos: GuestUploadPhoto[] }>(
+    `/api/public/invitations/${slug}/guest-uploads`,
+  );
+  return response.photos;
 }
 
 export function createGuestbookEntry(
