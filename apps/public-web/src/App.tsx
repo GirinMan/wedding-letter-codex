@@ -110,11 +110,15 @@ function MessageIcon() {
   );
 }
 
-function CelebrationIcon() {
+function PetalShowerIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M12 20.5c-2.2-3.6-6.6-4.3-7.8-7.2-1-2.5.8-4.8 3-4.5 1.5.2 2.5 1.5 2.7 3.2.1-3 1.9-5.2 4.2-5.2 2.1 0 3.6 2 2.9 4.3-.7 2.1-2.9 3.2-4.1 4.7-.9 1.1-1.1 2.9-.9 4.7Z" />
-      <path d="M9.8 12.2c.2 1.7.8 3.4 2.2 4.5" />
+      <path d="M5 5.1c1.7-.2 3 1.1 2.8 2.6-.2 1.2-1.4 2.1-2.9 2-.8-1.5-.5-3.3.1-4.6Z" />
+      <path d="M12.4 3.2c1.6.6 2.2 2.2 1.5 3.5-.6 1-2.1 1.4-3.3.8.1-1.7.7-3 1.8-4.3Z" />
+      <path d="M16.8 8.3c1.6.6 2.3 2.1 1.6 3.5-.6 1-2.1 1.4-3.3.8.1-1.7.7-3.1 1.7-4.3Z" />
+      <path d="M8.3 12.5c1.7.1 2.8 1.6 2.4 3.1-.3 1.2-1.7 1.9-3.1 1.5-.6-1.6-.3-3.4.7-4.6Z" />
+      <path d="M14.5 16.1c1.5.4 2.2 1.8 1.7 3.1-.4 1-1.7 1.5-2.9 1.1-.2-1.5.2-2.9 1.2-4.2Z" />
+      <path d="M3.2 13.5h1.7M20.2 5.4l.7-1.2M19.7 17.8h1.5" />
     </svg>
   );
 }
@@ -1652,7 +1656,7 @@ export function App() {
           aria-label={content.celebration.triggerLabel}
           onClick={() => setDialog("celebration")}
         >
-          <CelebrationIcon />
+          <PetalShowerIcon />
         </button>
       ) : null}
 
