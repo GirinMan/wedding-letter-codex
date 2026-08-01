@@ -631,7 +631,9 @@ export function App() {
                     </div>
                     <div className="field-grid">
                       <Field label="제목"><input value={invitation.draftContent.rsvp.title} onChange={(event) => updateContent((draft) => { draft.rsvp.title = event.target.value; })} /></Field>
+                      <Field label="상단 문구"><input value={invitation.draftContent.rsvp.actions.eyebrow} onChange={(event) => updateContent((draft) => { draft.rsvp.actions.eyebrow = event.target.value; })} /></Field>
                       <Field label="설명" wide><input value={invitation.draftContent.rsvp.description} onChange={(event) => updateContent((draft) => { draft.rsvp.description = event.target.value; })} /></Field>
+                      <Field label="버튼 문구" wide><input value={invitation.draftContent.rsvp.actions.triggerLabel} onChange={(event) => updateContent((draft) => { draft.rsvp.actions.triggerLabel = event.target.value; })} /></Field>
                     </div>
                     <div className="inline-toggles">
                       <label><input type="checkbox" checked={invitation.draftContent.rsvp.collectMeal} onChange={(event) => updateContent((draft) => { draft.rsvp.collectMeal = event.target.checked; })} /> 식사 여부 수집</label>

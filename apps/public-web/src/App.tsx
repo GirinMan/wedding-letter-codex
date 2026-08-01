@@ -1070,12 +1070,12 @@ export function App() {
         {enabledSections.has("rsvp") && content.rsvp.enabled ? (
           <section className="section cta-section" id={sectionAnchorId("rsvp")} data-reveal>
             <SectionHeading
-              eyebrow="R.S.V.P."
+              eyebrow={content.rsvp.actions.eyebrow}
               title={content.rsvp.title}
               description={content.rsvp.description}
             />
             <button className="primary-button" type="button" onClick={() => setDialog("rsvp")}>
-              참석 의사 전달하기
+              {content.rsvp.actions.triggerLabel}
             </button>
           </section>
         ) : null}

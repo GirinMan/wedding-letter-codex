@@ -90,6 +90,7 @@ export interface InvitationContent {
     enabled: boolean;
     collectMeal: boolean;
     collectShuttle: boolean;
+    actions: { eyebrow: string; triggerLabel: string };
   };
   celebration: {
     enabled: boolean;

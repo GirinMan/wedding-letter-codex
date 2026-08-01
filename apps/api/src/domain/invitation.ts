@@ -229,6 +229,13 @@ export const invitationContentSchema = z.object({
     enabled: z.boolean(),
     collectMeal: z.boolean(),
     collectShuttle: z.boolean(),
+    actions: z.object({
+      eyebrow: z.string().max(80).default("R.S.V.P."),
+      triggerLabel: z.string().min(1).max(80).default("참석 의사 전달하기"),
+    }).default({
+      eyebrow: "R.S.V.P.",
+      triggerLabel: "참석 의사 전달하기",
+    }),
   }),
   celebration: z.object({
     enabled: z.boolean().default(false),
@@ -506,6 +513,10 @@ export const sampleInvitationContent: InvitationContent = {
     enabled: true,
     collectMeal: true,
     collectShuttle: true,
+    actions: {
+      eyebrow: "R.S.V.P.",
+      triggerLabel: "참석 의사 전달하기",
+    },
   },
   celebration: {
     enabled: false,
