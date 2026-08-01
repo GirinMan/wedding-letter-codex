@@ -26,8 +26,8 @@ export function createMediaUploadForms(files: readonly File[]): FormData[] {
     const plan = planMediaUploads([file])[0];
     if (!plan) return [];
     const form = new FormData();
-    form.append("file", file);
     form.append("purpose", plan.purpose);
+    form.append("file", file);
     return [form];
   });
 }
