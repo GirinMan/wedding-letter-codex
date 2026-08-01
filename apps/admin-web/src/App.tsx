@@ -8,6 +8,7 @@ import {
   syncActiveCustomThemeProfile,
   themePresets,
 } from "./theme-presets";
+import { createMediaUploadForms, planMediaUploads } from "./media-upload";
 import type {
   AdminUser,
   GuestbookEntry,
@@ -235,6 +236,7 @@ export function App() {
   const [uploads, setUploads] = useState<GuestUpload[]>([]);
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const [previewSession] = useState(() => crypto.randomUUID());
   const previewFrameRef = useRef<HTMLIFrameElement>(null);
 
@@ -399,6 +401,20 @@ export function App() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const assignMedia = (asset: MediaAsset, target: "hero" | "greeting" | "gallery") => {
+    updateContent((draft) => {
+      if (target === "hero") draft.hero.image = connectMedia(draft.hero.image, asset);
+      if (target === "greeting") draft.greeting.image = connectMedia(draft.greeting.image, asset);
+      if (target === "gallery") {
+        draft.gallery.items.push({
+          id: createId("gallery"),
+          ...connectMedia({ assetId: null, alt: "웨딩 갤러리 사진", placeholder: "gallery" }, asset),
+        });
+      }
+    });
+    setNotice(`${target === "hero" ? "첫 화면" : target === "greeting" ? "초대 인사" : "갤러리"}에 배정했습니다. 연결 저장을 눌러 반영하세요.`);
   };
 
   if (!invitation) {
@@ -925,26 +941,36 @@ export function App() {
 
             {view === "media" ? (
               <>
-                <Panel title="미디어 업로드" description="이미지는 MinIO에 비공개 객체로 저장되고 발행할 때 공개됩니다.">
+                <Panel title="미디어 보관함" description="사진을 한 번에 올린 다음, 각 사진 카드에서 첫 화면·초대 인사·갤러리로 바로 배정할 수 있습니다.">
                   <form className="upload-form" onSubmit={(event) => {
                     event.preventDefault();
                     const formElement = event.currentTarget;
-                    const form = new FormData(formElement);
-                    void api.uploadMedia(invitation.id, form).then(async () => {
-                      setMedia((await api.media(invitation.id)).assets);
-                      setNotice("미디어를 업로드했습니다.");
-                      formElement.reset();
-                    }).catch(() => setNotice("업로드하지 못했습니다."));
+                    const fileInput = formElement.elements.namedItem("files") as HTMLInputElement | null;
+                    const files = Array.from(fileInput?.files ?? []);
+                    const plans = planMediaUploads(files);
+                    if (plans.length === 0) {
+                      setNotice("JPG, PNG, WebP, AVIF 또는 MP3 파일을 선택해 주세요.");
+                      return;
+                    }
+                    setUploadingMedia(true);
+                    void Promise.allSettled(createMediaUploadForms(files).map((form) => api.uploadMedia(invitation.id, form)))
+                      .then(async (results) => {
+                        const succeeded = results.filter((result) => result.status === "fulfilled").length;
+                        setMedia((await api.media(invitation.id)).assets);
+                        setNotice(succeeded === plans.length
+                          ? `${succeeded}개 미디어를 업로드했습니다. 사진 카드에서 위치를 배정하세요.`
+                          : `${succeeded}/${plans.length}개 업로드했습니다. 실패한 파일의 형식과 크기를 확인해 주세요.`);
+                        formElement.reset();
+                      })
+                      .catch(() => setNotice("미디어를 업로드하지 못했습니다."))
+                      .finally(() => setUploadingMedia(false));
                   }}>
-                    <select name="purpose" required defaultValue="gallery">
-                      <option value="hero">히어로</option><option value="greeting">인사말</option><option value="profile">프로필</option><option value="interview">인터뷰</option><option value="timeline">연혁</option><option value="map">약도</option><option value="gallery">갤러리</option><option value="middle">중간 이미지</option><option value="closing">마무리</option><option value="music">음악</option>
-                    </select>
-                    <input name="altText" placeholder="대체 텍스트" />
-                    <input name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,audio/mpeg" required />
-                    <button className="button button--primary">업로드</button>
+                    <input name="files" type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,audio/mpeg" required />
+                    <button className="button button--primary" disabled={uploadingMedia}>{uploadingMedia ? "업로드 중…" : "선택한 파일 업로드"}</button>
+                    <small>이미지는 보관함에 먼저 저장됩니다. MP3는 배경 음악으로, 사진은 이후 원하는 위치에 배정할 수 있습니다.</small>
                   </form>
                 </Panel>
-                <Panel title="미디어 슬롯 연결" description="업로드한 파일을 공개 페이지의 실제 이미지·음악 슬롯에 연결합니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "연결 저장"}</button>}>
+                <Panel title="세부 미디어 슬롯" description="사진 카드의 빠른 배정 외에 프로필·인터뷰·연혁·약도 등 세부 위치를 연결합니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "연결 저장"}</button>}>
                   <div className="media-slot-grid">
                     <MediaSlotField label="첫 화면 사진" value={invitation.draftContent.hero.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.hero.image = connectMedia(draft.hero.image, asset); })} />
                     <MediaSlotField label="초대 인사 사진" value={invitation.draftContent.greeting.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.greeting.image = connectMedia(draft.greeting.image, asset); })} />
@@ -1031,6 +1057,25 @@ export function App() {
                         <article key={asset.id}>
                           {asset.contentType.startsWith("image/") ? <img src={asset.previewUrl} alt={asset.altText} /> : <div className="audio-tile">♪</div>}
                           <div><strong>{asset.originalName}</strong><span>{asset.purpose} · {Math.round(asset.sizeBytes / 1024)}KB</span><small>{connectionLabel}</small></div>
+                          {asset.contentType.startsWith("image/") ? (
+                            <div className="media-assign">
+                              <label htmlFor={`media-target-${asset.id}`}>빠른 배정</label>
+                              <select
+                                id={`media-target-${asset.id}`}
+                                defaultValue=""
+                                onChange={(event) => {
+                                  const target = event.target.value as "hero" | "greeting" | "gallery" | "";
+                                  if (target) assignMedia(asset, target);
+                                  event.currentTarget.value = "";
+                                }}
+                              >
+                                <option value="">위치 선택…</option>
+                                <option value="hero">첫 화면 사진으로</option>
+                                <option value="greeting">초대 인사 사진으로</option>
+                                <option value="gallery">갤러리에 추가</option>
+                              </select>
+                            </div>
+                          ) : null}
                           <button
                             type="button"
                             aria-label="미디어 삭제"

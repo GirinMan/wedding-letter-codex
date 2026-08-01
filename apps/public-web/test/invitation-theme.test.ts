@@ -210,11 +210,11 @@ test("Sicilian Noir keeps only the star medallion in the RSVP welcome dialog", a
 
   assert.match(
     styles,
-    /\.page-shell--catalog \.dialog--rsvp-welcome\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*#fff;[^}]*font-family:\s*var\(--body-font\);/s,
+    /\.page-shell--catalog \.dialog--rsvp-welcome\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*var\(--paper\);[^}]*font-family:\s*var\(--body-font\);/s,
   );
   assert.match(
     styles,
-    /\.page-shell--catalog \.dialog--rsvp-welcome \.dialog__header\s*\{[^}]*background:\s*var\(--sicilian-noir\);[^}]*color:\s*#fff;/s,
+    /\.page-shell--catalog \.dialog--rsvp-welcome \.dialog__header\s*\{[^}]*background:\s*var\(--ink\);[^}]*color:\s*var\(--paper\);/s,
   );
   assert.doesNotMatch(
     styles,

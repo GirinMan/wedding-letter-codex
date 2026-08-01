@@ -283,14 +283,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .color-token span { display: flex; flex-direction: column; color: #5b554f; font-size: .67rem; text-transform: capitalize; }
 .color-token code { margin-top: 4px; color: #9b928a; font-size: .58rem; }
 
-.upload-form { display: grid; grid-template-columns: 130px 1fr 1fr auto; gap: 8px; }
+.upload-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .upload-form input, .upload-form select { min-height: 40px; padding: 8px 10px; border: 1px solid #ded9d2; border-radius: 8px; background: #fff; font-size: .68rem; }
+.upload-form small { grid-column: 1 / -1; color: #817870; font-size: .58rem; line-height: 1.5; }
 .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .media-grid article { position: relative; overflow: hidden; border: 1px solid #e2ddd7; border-radius: 9px; background: #fff; }
 .media-grid img, .audio-tile { display: grid; width: 100%; aspect-ratio: 1.2; place-items: center; object-fit: cover; background: #e9e4de; color: #817870; font-size: 1.5rem; }
 .media-grid article > div:not(.audio-tile) { display: flex; padding: 10px; flex-direction: column; gap: 3px; }
 .media-grid strong { overflow: hidden; font-size: .64rem; text-overflow: ellipsis; white-space: nowrap; }
 .media-grid span, .media-grid small { color: #8d857e; font-size: .56rem; }
+.media-grid article > div.media-assign { display: grid; padding: 0 10px 10px; gap: 5px; }
+.media-grid .media-assign label { color: #746c65; font-size: .56rem; }
+.media-grid .media-assign select { width: 100%; min-height: 32px; padding: 5px 7px; border: 1px solid #ded9d2; border-radius: 6px; background: #fff; color: #4d4843; font-size: .58rem; }
 .media-grid article > button { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border: 0; border-radius: 50%; background: rgb(26 24 22 / 75%); color: white; }
 .media-grid article > button:disabled { cursor: not-allowed; opacity: .35; }
 .media-slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
