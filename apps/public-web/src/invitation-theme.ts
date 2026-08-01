@@ -21,6 +21,11 @@ const sicilianNoirDesign: InvitationDesign = {
   activeCustomProfileId: null,
 };
 
+const photoEditorialDesign: InvitationDesign = {
+  ...sicilianNoirDesign,
+  themeId: "photo-editorial",
+};
+
 export function invitationThemeAttributes(
   themeId: InvitationDesign["themeId"],
 ): { "data-theme": InvitationDesign["themeId"] } {
@@ -41,7 +46,7 @@ export function resolveInvitationThemeDesign(
     };
   }
 
-  return design.themeId === "sicilian-noir"
-    ? structuredClone(sicilianNoirDesign)
-    : design;
+  if (design.themeId === "sicilian-noir") return structuredClone(sicilianNoirDesign);
+  if (design.themeId === "photo-editorial") return structuredClone(photoEditorialDesign);
+  return design;
 }

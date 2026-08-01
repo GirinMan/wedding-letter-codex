@@ -159,6 +159,26 @@ test("stored Garden Editorial designs migrate to Botanic Garden", () => {
   assert.equal(parsed.themeId, "botanic-garden");
 });
 
+test("Photo Editorial drafts inherit Sicilian Noir colors and typography unless a custom profile is active", () => {
+  const photoEditorial = structuredClone(sampleInvitationDesign);
+  photoEditorial.themeId = "photo-editorial";
+  photoEditorial.colors = { paper: "#ffffff", ink: "#161412", muted: "#746d67", line: "#e1ddd8", accent: "#c3a88d", surface: "#f5f3f0" };
+  photoEditorial.typography = { display: "Cormorant Garamond, serif", body: "Pretendard, sans-serif" };
+
+  const parsed = invitationDesignSchema.parse(photoEditorial);
+
+  assert.deepEqual(parsed.colors, {
+    paper: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#6f6f6f",
+    line: "#dedede",
+    accent: "#0a0a0a",
+    surface: "#f4f4f4",
+  });
+  assert.match(parsed.typography.display, /Avenir Next/);
+  assert.match(parsed.typography.body, /Avenir Next/);
+});
+
 test("an invalid public account is rejected", () => {
   const invalid = structuredClone(sampleInvitationContent);
   invalid.accounts[0]!.items[0]!.accountNumber = "";
