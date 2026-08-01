@@ -12,6 +12,9 @@ test("public invitation exposes the selected theme as a stable DOM attribute", a
   assert.deepEqual(themeModule.invitationThemeAttributes("botanic-garden"), {
     "data-theme": "botanic-garden",
   });
+  assert.deepEqual(themeModule.invitationThemeAttributes("photo-editorial"), {
+    "data-theme": "photo-editorial",
+  });
 });
 
 test("legacy Sicilian Noir drafts render with the current black and white token set", async () => {
@@ -33,6 +36,8 @@ test("legacy Sicilian Noir drafts render with the current black and white token 
     radius: 0,
     spacing: { section: 136, content: 28 },
     motion: { reveal: "fade" as const, durationMs: 900 },
+    customProfiles: [],
+    activeCustomProfileId: null,
   };
 
   assert.ok(themeModule, "public invitation theme module should exist");
@@ -53,7 +58,41 @@ test("legacy Sicilian Noir drafts render with the current black and white token 
     radius: 0,
     spacing: { section: 96, content: 24 },
     motion: { reveal: "fade", durationMs: 700 },
+    customProfiles: [],
+    activeCustomProfileId: null,
   });
+});
+
+test("an active custom profile preserves its tokens while retaining its base theme layout", async () => {
+  const themeModule = await import("../src/invitation-theme.ts");
+  const customDesign = {
+    themeId: "sicilian-noir" as const,
+    colors: { paper: "#ffffff", ink: "#0a0a0a", muted: "#6f6f6f", line: "#dedede", accent: "#0a0a0a", surface: "#f4f4f4" },
+    typography: { display: "sans-serif", body: "sans-serif" },
+    radius: 0,
+    spacing: { section: 96, content: 24 },
+    motion: { reveal: "fade" as const, durationMs: 700 },
+    customProfiles: [{
+      id: "custom-noir",
+      name: "Noir with rose",
+      baseThemeId: "sicilian-noir" as const,
+      tokens: {
+        colors: { paper: "#fff8f5", ink: "#21120f", muted: "#806c65", line: "#e4d3cd", accent: "#b76e79", surface: "#f9eeea" },
+        typography: { display: "Georgia, serif", body: "Arial, sans-serif" },
+        radius: 12,
+        spacing: { section: 112, content: 28 },
+        motion: { reveal: "fade-up" as const, durationMs: 500 },
+      },
+    }],
+    activeCustomProfileId: "custom-noir",
+  };
+
+  assert.ok(themeModule, "public invitation theme module should exist");
+  const resolved = themeModule.resolveInvitationThemeDesign(customDesign);
+  assert.equal(resolved.themeId, "sicilian-noir");
+  assert.equal(resolved.colors.accent, "#b76e79");
+  assert.equal(resolved.typography.display, "Georgia, serif");
+  assert.equal(resolved.radius, 12);
 });
 
 test("Sicilian Noir uses generated Sicilian architecture only as the middle background", async () => {
@@ -118,7 +157,7 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.calendar::after\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*width:\s*42px;[^}]*var\(--sicilian-calendar-rail-art\) center top\s*\/\s*100% auto repeat-y;/s,
+    /\.page-shell--catalog \.calendar::after\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*width:\s*42px;[^}]*var\(--sicilian-calendar-rail-art\) center top\s*\/\s*100% auto repeat-y;/s,
   );
   assert.doesNotMatch(
     styles,
@@ -140,20 +179,20 @@ test("Sicilian Noir keeps only the star medallion in the RSVP welcome dialog", a
 
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*#fff;[^}]*font-family:\s*var\(--body-font\);/s,
+    /\.page-shell--catalog \.dialog--rsvp-welcome\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*#fff;[^}]*font-family:\s*var\(--body-font\);/s,
   );
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome \.dialog__header\s*\{[^}]*background:\s*var\(--sicilian-noir\);[^}]*color:\s*#fff;/s,
+    /\.page-shell--catalog \.dialog--rsvp-welcome \.dialog__header\s*\{[^}]*background:\s*var\(--sicilian-noir\);[^}]*color:\s*#fff;/s,
   );
   assert.doesNotMatch(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.dialog--rsvp-welcome \.dialog__header::after/,
+    /\.page-shell--catalog \.dialog--rsvp-welcome \.dialog__header::after/,
   );
   assert.match(app, /className="rsvp-welcome__icon"/);
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.rsvp-welcome__icon\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
+    /\.page-shell--catalog \.rsvp-welcome__icon\s*\{[^}]*var\(--sicilian-medallion-art\)/s,
   );
 });
 
@@ -162,7 +201,7 @@ test("Sicilian Noir keeps the secondary closing share action visible on black", 
 
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.closing \.share-button--secondary\s*\{[^}]*border-color:\s*#fff;[^}]*color:\s*#fff;/s,
+    /\.page-shell--catalog \.closing \.share-button--secondary\s*\{[^}]*border-color:\s*#fff;[^}]*color:\s*#fff;/s,
   );
 });
 
@@ -204,7 +243,7 @@ test("Sicilian Noir removes wireframe rules from sections and hero placeholders"
 
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.section\s*\{[^}]*border-bottom:\s*0;/s,
+    /\.page-shell--catalog \.section\s*\{[^}]*border-bottom:\s*0;/s,
   );
   assert.match(
     styles,
@@ -217,7 +256,7 @@ test("Sicilian Noir photo slots stay neutral and never reuse the transition artw
 
   assert.match(
     styles,
-    /\.page-shell\[data-theme="sicilian-noir"\] \.media--placeholder,\s*[\s\S]*?\.portrait-placeholder\s*\{[^}]*background:\s*#f4f4f4;/s,
+    /\.page-shell--catalog \.media--placeholder,\s*[\s\S]*?\.portrait-placeholder\s*\{[^}]*background:\s*#f4f4f4;/s,
     "empty photo slots should use a neutral grayscale surface",
   );
   for (const selector of [
@@ -238,4 +277,20 @@ test("Sicilian Noir photo slots stay neutral and never reuse the transition artw
       `${selector} must not use Sicilian decorative artwork as a photo`,
     );
   }
+});
+
+test("Photo Editorial uses an uploaded hero image and retains the catalog layout without Sicilian graphics", async () => {
+  const [app, styles] = await Promise.all([
+    readFile(new URL("../src/App.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(app, /function PhotoEditorialHero/);
+  assert.match(app, /media=\{content\.hero\.image\}/);
+  assert.match(app, /loading="eager"/);
+  assert.match(app, /resolvedDesign\.themeId === "photo-editorial"/);
+  assert.match(styles, /\.photo-hero\s*\{[^}]*min-height:\s*100svh;/s);
+  assert.match(styles, /\.photo-hero__image\s*\{[^}]*object-fit:\s*cover;/s);
+  assert.match(styles, /\.page-shell\[data-theme="photo-editorial"\] \.section-heading \.eyebrow::before[\s\S]*?content:\s*none;/);
+  assert.match(styles, /\.page-shell\[data-theme="photo-editorial"\] \.closing::before[\s\S]*?background:\s*none;/);
 });

@@ -386,6 +386,59 @@ function SicilianCatalogHero({
   );
 }
 
+function formatPhotoHeroDate(startsAt: string, timezone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(startsAt));
+  const value = (type: Intl.DateTimeFormatPartTypes) => (
+    parts.find((part) => part.type === type)?.value ?? ""
+  );
+  return `${value("year")}.${value("month")}.${value("day")}`;
+}
+
+function PhotoEditorialHero({
+  content,
+  heroDate: _heroDate,
+  preview,
+}: {
+  content: InvitationContent;
+  heroDate: ReturnType<typeof formatHeroDate>;
+  preview: boolean;
+}) {
+  const partnersByKey = {
+    partnerOne: content.couple.partnerOne,
+    partnerTwo: content.couple.partnerTwo,
+  };
+
+  return (
+    <section className="photo-hero" id={sectionAnchorId("hero")} data-reveal>
+      <Media
+        media={content.hero.image}
+        className="photo-hero__image"
+        preview={preview}
+        loading="eager"
+      />
+      <div className="photo-hero__scrim" aria-hidden="true" />
+      <div className="photo-hero__copy">
+        <p>{content.hero.eyebrow || "OUR WEDDING"}</p>
+        <h1>{content.hero.title}</h1>
+        <div className="photo-hero__names">
+          {content.hero.nameOrder.map((partnerKey) => (
+            <strong key={partnerKey}>{partnersByKey[partnerKey].name}</strong>
+          ))}
+        </div>
+        <time dateTime={content.event.startsAt}>
+          {formatPhotoHeroDate(content.event.startsAt, content.event.timezone)}
+        </time>
+      </div>
+      <span className="photo-hero__scroll" aria-hidden="true" />
+    </section>
+  );
+}
+
 function Calendar({ startsAt }: { startsAt: string }) {
   const date = new Date(startsAt);
   const year = date.getFullYear();
@@ -1091,7 +1144,7 @@ export function App() {
 
   return (
     <div
-      className="page-shell"
+      className={`page-shell ${resolvedDesign.themeId === "sicilian-noir" || resolvedDesign.themeId === "photo-editorial" ? "page-shell--catalog" : ""}`}
       data-channel-talk={channelTalkEnabled ? "enabled" : "disabled"}
       style={style}
       {...invitationThemeAttributes(resolvedDesign.themeId)}
@@ -1100,6 +1153,8 @@ export function App() {
         {enabledSections.has("hero") ? (
           resolvedDesign.themeId === "sicilian-noir" ? (
             <SicilianCatalogHero content={content} heroDate={heroDate} preview={isPreview} />
+          ) : resolvedDesign.themeId === "photo-editorial" ? (
+            <PhotoEditorialHero content={content} heroDate={heroDate} preview={isPreview} />
           ) : (
             <section className="hero" id={sectionAnchorId("hero")} data-reveal>
               {content.hero.eyebrow ? <p className="hero__eyebrow">{content.hero.eyebrow}</p> : null}

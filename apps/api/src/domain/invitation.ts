@@ -135,6 +135,11 @@ export const invitationContentSchema = z.object({
     eyebrow: z.string().max(100),
     title: z.string().min(1).max(160),
     subtitle: z.string().max(240),
+    image: mediaReferenceSchema.default({
+      assetId: null,
+      alt: "첫 화면 웨딩 사진",
+      placeholder: "hero-photo",
+    }),
     nameOrder: z.array(z.enum(["partnerOne", "partnerTwo"]))
       .length(2)
       .refine((order) => new Set(order).size === 2, "Each partner must appear once in the hero.")
@@ -229,6 +234,13 @@ export const invitationContentSchema = z.object({
     enabled: z.boolean(),
     collectMeal: z.boolean(),
     collectShuttle: z.boolean(),
+    actions: z.object({
+      eyebrow: z.string().max(80).default("R.S.V.P."),
+      triggerLabel: z.string().min(1).max(80).default("참석 의사 전달하기"),
+    }).default({
+      eyebrow: "R.S.V.P.",
+      triggerLabel: "참석 의사 전달하기",
+    }),
   }),
   celebration: z.object({
     enabled: z.boolean().default(false),
@@ -313,7 +325,7 @@ export const invitationContentSchema = z.object({
 });
 
 const invitationThemeIdSchema = z
-  .enum(["garden-editorial", "botanic-garden", "sicilian-noir"])
+  .enum(["garden-editorial", "botanic-garden", "sicilian-noir", "photo-editorial"])
   .default("botanic-garden")
   .transform((themeId) => (
     themeId === "garden-editorial" ? "botanic-garden" as const : themeId
@@ -342,7 +354,41 @@ export const invitationDesignSchema = z.object({
     reveal: z.enum(["fade", "fade-up", "slide"]),
     durationMs: z.number().int().min(0).max(2_000),
   }),
-});
+  customProfiles: z.array(z.object({
+    id: z.string().min(1).max(80),
+    name: z.string().trim().min(1).max(80),
+    baseThemeId: z.enum(["botanic-garden", "sicilian-noir", "photo-editorial"]),
+    tokens: z.object({
+      colors: z.object({
+        paper: colorSchema,
+        ink: colorSchema,
+        muted: colorSchema,
+        line: colorSchema,
+        accent: colorSchema,
+        surface: colorSchema,
+      }),
+      typography: z.object({
+        display: z.string().min(1).max(200),
+        body: z.string().min(1).max(200),
+      }),
+      radius: z.number().int().min(0).max(40),
+      spacing: z.object({
+        section: z.number().int().min(48).max(240),
+        content: z.number().int().min(12).max(48),
+      }),
+      motion: z.object({
+        reveal: z.enum(["fade", "fade-up", "slide"]),
+        durationMs: z.number().int().min(0).max(2_000),
+      }),
+    }),
+  })).max(8).default([]),
+  activeCustomProfileId: z.string().min(1).max(80).nullable().default(null),
+}).transform((design) => ({
+  ...design,
+  activeCustomProfileId: design.customProfiles.some(
+    (profile) => profile.id === design.activeCustomProfileId,
+  ) ? design.activeCustomProfileId : null,
+}));
 
 export type InvitationContent = z.infer<typeof invitationContentSchema>;
 export type InvitationDesign = z.infer<typeof invitationDesignSchema>;
@@ -421,6 +467,7 @@ export const sampleInvitationContent: InvitationContent = {
     eyebrow: "",
     title: "CELEBRATE L’AMORE",
     subtitle: "",
+    image: { assetId: null, alt: "첫 화면 웨딩 사진", placeholder: "hero-photo" },
     nameOrder: ["partnerTwo", "partnerOne"],
   },
   greeting: {
@@ -506,6 +553,10 @@ export const sampleInvitationContent: InvitationContent = {
     enabled: true,
     collectMeal: true,
     collectShuttle: true,
+    actions: {
+      eyebrow: "R.S.V.P.",
+      triggerLabel: "참석 의사 전달하기",
+    },
   },
   celebration: {
     enabled: false,
@@ -584,4 +635,6 @@ export const sampleInvitationDesign: InvitationDesign = {
   radius: 10,
   spacing: { section: 104, content: 24 },
   motion: { reveal: "fade-up", durationMs: 650 },
+  customProfiles: [],
+  activeCustomProfileId: null,
 };

@@ -26,6 +26,7 @@ export interface InvitationContent {
     eyebrow: string;
     title: string;
     subtitle: string;
+    image: MediaReference;
     nameOrder: Array<"partnerOne" | "partnerTwo">;
   };
   greeting: { title: string; body: string; image: MediaReference };
@@ -90,6 +91,7 @@ export interface InvitationContent {
     enabled: boolean;
     collectMeal: boolean;
     collectShuttle: boolean;
+    actions: { eyebrow: string; triggerLabel: string };
   };
   celebration: {
     enabled: boolean;
@@ -141,7 +143,7 @@ export interface SectionHeadingCopy {
 }
 
 export interface InvitationDesign {
-  themeId: "botanic-garden" | "sicilian-noir";
+  themeId: "botanic-garden" | "sicilian-noir" | "photo-editorial";
   colors: {
     paper: string;
     ink: string;
@@ -154,6 +156,15 @@ export interface InvitationDesign {
   radius: number;
   spacing: { section: number; content: number };
   motion: { reveal: "fade" | "fade-up" | "slide"; durationMs: number };
+  customProfiles: CustomDesignProfile[];
+  activeCustomProfileId: string | null;
+}
+
+export interface CustomDesignProfile {
+  id: string;
+  name: string;
+  baseThemeId: InvitationDesign["themeId"];
+  tokens: Omit<InvitationDesign, "themeId" | "customProfiles" | "activeCustomProfileId">;
 }
 
 export interface InvitationResponse {

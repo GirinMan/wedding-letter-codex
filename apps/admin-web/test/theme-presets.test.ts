@@ -20,17 +20,20 @@ const gardenDesign = {
   radius: 10,
   spacing: { section: 104, content: 24 },
   motion: { reveal: "fade-up", durationMs: 650 },
+  customProfiles: [],
+  activeCustomProfileId: null,
 } satisfies InvitationDesign;
 
-test("theme catalog offers Botanic Garden and Sicilian Noir", async () => {
+test("theme catalog offers Botanic Garden, Sicilian Noir, and Photo Editorial", async () => {
   const themeModule = await import("../src/theme-presets.ts").catch(() => null);
 
   assert.ok(themeModule, "theme preset module should exist");
   assert.deepEqual(
     themeModule.themePresets.map((theme) => theme.id),
-    ["botanic-garden", "sicilian-noir"],
+    ["botanic-garden", "sicilian-noir", "photo-editorial"],
   );
   assert.equal(themeModule.themePresets[0]?.name, "Botanic Garden");
+  assert.equal(themeModule.themePresets[2]?.name, "Photo Editorial");
 });
 
 test("applying Sicilian Noir replaces the complete design token set without mutating the draft", async () => {
@@ -56,4 +59,25 @@ test("applying Sicilian Noir replaces the complete design token set without muta
   assert.equal(themed.motion.reveal, "fade");
   assert.equal(gardenDesign.themeId, "botanic-garden");
   assert.equal(gardenDesign.colors.paper, "#fbfaf7");
+});
+
+test("a custom profile stores its base theme and keeps token edits with that profile", async () => {
+  const themeModule = await import("../src/theme-presets.ts");
+  const profile = themeModule.createCustomThemeProfile(gardenDesign, "custom-summer");
+  profile.name = "여름의 식물원";
+  profile.tokens.colors.accent = "#b76e79";
+
+  const selected = themeModule.applyCustomThemeProfile(
+    { ...gardenDesign, customProfiles: [profile] },
+    profile,
+  );
+  const synced = themeModule.syncActiveCustomThemeProfile({
+    ...selected,
+    colors: { ...selected.colors, paper: "#fffdf8" },
+  });
+
+  assert.equal(selected.themeId, "botanic-garden");
+  assert.equal(selected.activeCustomProfileId, "custom-summer");
+  assert.equal(synced.customProfiles[0]?.name, "여름의 식물원");
+  assert.equal(synced.customProfiles[0]?.tokens.colors.paper, "#fffdf8");
 });

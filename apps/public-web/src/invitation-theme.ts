@@ -17,6 +17,8 @@ const sicilianNoirDesign: InvitationDesign = {
   radius: 0,
   spacing: { section: 96, content: 24 },
   motion: { reveal: "fade", durationMs: 700 },
+  customProfiles: [],
+  activeCustomProfileId: null,
 };
 
 export function invitationThemeAttributes(
@@ -28,6 +30,17 @@ export function invitationThemeAttributes(
 export function resolveInvitationThemeDesign(
   design: InvitationDesign,
 ): InvitationDesign {
+  const activeCustomProfile = design.customProfiles.find(
+    (profile) => profile.id === design.activeCustomProfileId,
+  );
+  if (activeCustomProfile) {
+    return {
+      ...design,
+      themeId: activeCustomProfile.baseThemeId,
+      ...structuredClone(activeCustomProfile.tokens),
+    };
+  }
+
   return design.themeId === "sicilian-noir"
     ? structuredClone(sicilianNoirDesign)
     : design;

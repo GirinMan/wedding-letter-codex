@@ -1,11 +1,13 @@
-import type { InvitationDesign } from "./types";
+import type { CustomDesignProfile, InvitationDesign } from "./types";
+
+type DesignTokens = Omit<InvitationDesign, "themeId" | "customProfiles" | "activeCustomProfileId">;
 
 export interface ThemePreset {
   id: InvitationDesign["themeId"];
   name: string;
   description: string;
   signature: string;
-  tokens: Omit<InvitationDesign, "themeId">;
+  tokens: DesignTokens;
 }
 
 export const themePresets: ThemePreset[] = [
@@ -55,6 +57,29 @@ export const themePresets: ThemePreset[] = [
       motion: { reveal: "fade", durationMs: 700 },
     },
   },
+  {
+    id: "photo-editorial",
+    name: "Photo Editorial",
+    description: "첫 화면을 웨딩 사진과 절제된 타이포그래피로 채우는 몰입형 테마",
+    signature: "사진 중심의 첫 화면과 간결한 흑백 편집 레이아웃",
+    tokens: {
+      colors: {
+        paper: "#ffffff",
+        ink: "#161412",
+        muted: "#746d67",
+        line: "#e1ddd8",
+        accent: "#c3a88d",
+        surface: "#f5f3f0",
+      },
+      typography: {
+        display: "\"Cormorant Garamond\", \"Times New Roman\", Pretendard, \"Noto Sans KR\", serif",
+        body: "\"Pretendard\", \"Noto Sans KR\", sans-serif",
+      },
+      radius: 0,
+      spacing: { section: 96, content: 24 },
+      motion: { reveal: "fade", durationMs: 700 },
+    },
+  },
 ];
 
 export function applyThemePreset(
@@ -64,7 +89,62 @@ export function applyThemePreset(
   const preset = themePresets.find((theme) => theme.id === themeId);
   if (!preset) return current;
   return structuredClone({
+    customProfiles: current.customProfiles,
+    activeCustomProfileId: null,
     themeId: preset.id,
     ...preset.tokens,
   });
+}
+
+export function createCustomThemeProfile(
+  current: InvitationDesign,
+  id: string,
+): CustomDesignProfile {
+  return {
+    id,
+    name: "새 커스텀 프로필",
+    baseThemeId: current.themeId,
+    tokens: designTokens(current),
+  };
+}
+
+export function applyCustomThemeProfile(
+  current: InvitationDesign,
+  profile: CustomDesignProfile,
+): InvitationDesign {
+  return structuredClone({
+    ...current,
+    themeId: profile.baseThemeId,
+    ...profile.tokens,
+    activeCustomProfileId: profile.id,
+  });
+}
+
+export function syncActiveCustomThemeProfile(
+  current: InvitationDesign,
+): InvitationDesign {
+  if (!current.activeCustomProfileId) return current;
+
+  return {
+    ...current,
+    customProfiles: current.customProfiles.map((profile) => (
+      profile.id === current.activeCustomProfileId
+        ? {
+          ...profile,
+          baseThemeId: current.themeId,
+          tokens: designTokens(current),
+        }
+        : profile
+    )),
+  };
+}
+
+function designTokens(current: InvitationDesign): DesignTokens {
+  return {
+    colors: structuredClone(current.colors),
+    typography: structuredClone(current.typography),
+    radius: current.radius,
+    spacing: structuredClone(current.spacing),
+    motion: structuredClone(current.motion),
+  };
 }
