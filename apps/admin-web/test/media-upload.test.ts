@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { File } from "node:buffer";
 import test from "node:test";
 
 test("bulk media upload infers a gallery purpose for images and music purpose for audio", async () => {
@@ -29,4 +30,14 @@ test("bulk media upload excludes unsupported files before starting requests", as
     ]),
     [{ name: "photo.png", purpose: "gallery" }],
   );
+});
+
+test("bulk media upload sends purpose before the multipart file", async () => {
+  const mediaUpload = await import("../src/media-upload.ts");
+  const [form] = mediaUpload.createMediaUploadForms([
+    new File(["image"], "hero.jpg", { type: "image/jpeg" }),
+  ]);
+
+  assert.deepEqual([...form.keys()], ["purpose", "file"]);
+  assert.equal(form.get("purpose"), "gallery");
 });
