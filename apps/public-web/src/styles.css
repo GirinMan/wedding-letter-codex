@@ -731,15 +731,23 @@ textarea:focus-visible {
 }
 
 .navigation-links a {
-  display: grid;
+  display: flex;
   min-height: 52px;
   padding: 12px 4px;
   border: 1px solid var(--line);
   border-radius: calc(var(--radius) - 2px);
-  place-items: center;
+  align-items: center;
+  justify-content: center;
   color: var(--ink);
   font-size: .68rem;
+  gap: 6px;
   text-decoration: none;
+}
+
+.navigation-service-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .navigation-block .navigation-links {
