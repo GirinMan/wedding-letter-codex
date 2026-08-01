@@ -808,17 +808,25 @@ textarea:focus-visible {
 }
 
 .gallery-carousel {
-  display: flex;
-  overflow-x: auto;
+  position: relative;
   margin: 0 calc(var(--content-space) * -1) 30px;
+}
+
+.gallery-carousel__viewport {
+  overflow-x: auto;
   padding: 0 var(--content-space) 6px;
-  gap: 10px;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 
-.gallery-carousel::-webkit-scrollbar {
+.gallery-carousel__viewport::-webkit-scrollbar {
   display: none;
+}
+
+.gallery-carousel__track {
+  display: flex;
+  width: max-content;
+  gap: 10px;
 }
 
 .gallery-carousel .media {
@@ -827,6 +835,33 @@ textarea:focus-visible {
   aspect-ratio: 4 / 5;
   border-radius: var(--radius);
   scroll-snap-align: start;
+}
+
+.gallery-carousel__hint {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: calc(var(--content-space) + 10px);
+  display: grid;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgb(255 255 255 / 38%);
+  border-radius: 50%;
+  place-items: center;
+  background: rgb(20 18 16 / 38%);
+  color: #fff;
+  opacity: .72;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.gallery-carousel__hint svg {
+  width: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
 .gallery-section > .text-button {
@@ -2612,6 +2647,13 @@ textarea:focus-visible {
 
 .page-shell[data-theme="photo-editorial"] .invitation-section > .multiline {
   text-align: center;
+}
+
+.page-shell[data-theme="photo-editorial"] .photo-hero__copy h1 {
+  font-family: "Great Vibes", var(--display-font);
+  font-size: clamp(4.1rem, 20vw, 6.2rem);
+  letter-spacing: 0;
+  line-height: .72;
 }
 
 @keyframes equalizer {
