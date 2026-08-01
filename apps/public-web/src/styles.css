@@ -2541,6 +2541,22 @@ textarea:focus-visible {
   content: none;
 }
 
+.page-shell[data-theme="photo-editorial"] .invitation-section {
+  text-align: center;
+}
+
+.page-shell[data-theme="photo-editorial"] .invitation-section .section-heading {
+  text-align: center;
+}
+
+.page-shell[data-theme="photo-editorial"] .invitation-section .section-heading .eyebrow {
+  justify-content: center;
+}
+
+.page-shell[data-theme="photo-editorial"] .invitation-section > .multiline {
+  text-align: center;
+}
+
 @keyframes equalizer {
   to { height: 18px; }
 }
