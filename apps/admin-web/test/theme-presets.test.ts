@@ -61,6 +61,19 @@ test("applying Sicilian Noir replaces the complete design token set without muta
   assert.equal(gardenDesign.colors.paper, "#fbfaf7");
 });
 
+test("Photo Editorial retains Sicilian Noir's complete color and typography token system", async () => {
+  const themeModule = await import("../src/theme-presets.ts").catch(() => null);
+
+  assert.ok(themeModule, "theme preset module should exist");
+  const sicilian = themeModule.themePresets.find((theme) => theme.id === "sicilian-noir");
+  const photoEditorial = themeModule.themePresets.find((theme) => theme.id === "photo-editorial");
+
+  assert.ok(sicilian, "Sicilian Noir preset should exist");
+  assert.ok(photoEditorial, "Photo Editorial preset should exist");
+  assert.deepEqual(photoEditorial.tokens.colors, sicilian.tokens.colors);
+  assert.deepEqual(photoEditorial.tokens.typography, sicilian.tokens.typography);
+});
+
 test("a custom profile stores its base theme and keeps token edits with that profile", async () => {
   const themeModule = await import("../src/theme-presets.ts");
   const profile = themeModule.createCustomThemeProfile(gardenDesign, "custom-summer");

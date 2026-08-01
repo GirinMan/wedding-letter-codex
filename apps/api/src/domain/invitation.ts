@@ -331,6 +331,21 @@ const invitationThemeIdSchema = z
     themeId === "garden-editorial" ? "botanic-garden" as const : themeId
   ));
 
+const sicilianNoirVisualTokens = {
+  colors: {
+    paper: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#6f6f6f",
+    line: "#dedede",
+    accent: "#0a0a0a",
+    surface: "#f4f4f4",
+  },
+  typography: {
+    display: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
+    body: "\"Avenir Next\", \"Helvetica Neue\", Arial, Pretendard, \"Noto Sans KR\", sans-serif",
+  },
+} as const;
+
 export const invitationDesignSchema = z.object({
   themeId: invitationThemeIdSchema,
   colors: z.object({
@@ -383,12 +398,19 @@ export const invitationDesignSchema = z.object({
     }),
   })).max(8).default([]),
   activeCustomProfileId: z.string().min(1).max(80).nullable().default(null),
-}).transform((design) => ({
-  ...design,
-  activeCustomProfileId: design.customProfiles.some(
+}).transform((design) => {
+  const activeCustomProfileId = design.customProfiles.some(
     (profile) => profile.id === design.activeCustomProfileId,
-  ) ? design.activeCustomProfileId : null,
-}));
+  ) ? design.activeCustomProfileId : null;
+
+  return {
+    ...design,
+    ...(design.themeId === "photo-editorial" && activeCustomProfileId === null
+      ? sicilianNoirVisualTokens
+      : {}),
+    activeCustomProfileId,
+  };
+});
 
 export type InvitationContent = z.infer<typeof invitationContentSchema>;
 export type InvitationDesign = z.infer<typeof invitationDesignSchema>;

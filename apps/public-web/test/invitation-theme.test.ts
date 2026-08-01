@@ -63,6 +63,37 @@ test("legacy Sicilian Noir drafts render with the current black and white token 
   });
 });
 
+test("Photo Editorial drafts retain their photo layout while resolving to Sicilian Noir tokens", async () => {
+  const themeModule = await import("../src/invitation-theme.ts").catch(() => null);
+  const legacyPhotoEditorial = {
+    themeId: "photo-editorial" as const,
+    colors: { paper: "#ffffff", ink: "#161412", muted: "#746d67", line: "#e1ddd8", accent: "#c3a88d", surface: "#f5f3f0" },
+    typography: {
+      display: "\"Cormorant Garamond\", \"Times New Roman\", Pretendard, \"Noto Sans KR\", serif",
+      body: "\"Pretendard\", \"Noto Sans KR\", sans-serif",
+    },
+    radius: 0,
+    spacing: { section: 96, content: 24 },
+    motion: { reveal: "fade" as const, durationMs: 700 },
+    customProfiles: [],
+    activeCustomProfileId: null,
+  };
+
+  assert.ok(themeModule, "public invitation theme module should exist");
+  const resolved = themeModule.resolveInvitationThemeDesign(legacyPhotoEditorial);
+  assert.equal(resolved.themeId, "photo-editorial");
+  assert.deepEqual(resolved.colors, {
+    paper: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#6f6f6f",
+    line: "#dedede",
+    accent: "#0a0a0a",
+    surface: "#f4f4f4",
+  });
+  assert.match(resolved.typography.display, /Avenir Next/);
+  assert.match(resolved.typography.body, /Avenir Next/);
+});
+
 test("an active custom profile preserves its tokens while retaining its base theme layout", async () => {
   const themeModule = await import("../src/invitation-theme.ts");
   const customDesign = {
