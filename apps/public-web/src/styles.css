@@ -1736,9 +1736,10 @@ textarea:focus-visible {
 .celebration-sheet__message {
   margin: 0 auto 24px;
   color: #5d5751;
-  font-family: serif;
+  font-family: var(--body-font);
   font-size: .88rem;
   line-height: 1.8;
+  white-space: pre-wrap;
 }
 
 .celebration-sheet__details {
