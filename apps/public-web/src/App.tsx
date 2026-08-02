@@ -5,7 +5,6 @@ import {
   useState,
   type CSSProperties,
   type FormEvent,
-  type PointerEvent,
 } from "react";
 
 import {
@@ -23,6 +22,7 @@ import {
   shouldRevealAmbientGuestbook,
 } from "./ambient-guestbook";
 import { Dialog } from "./components/Dialog";
+import { AccountGroups } from "./components/AccountGroups";
 import { Media, type RevealDirection } from "./components/Media";
 import {
   QuickMenu,
@@ -858,86 +858,6 @@ function PlaceholderBand({
   );
 }
 
-function AccountCardCarousel({
-  accounts,
-  activeIndex,
-  onActiveIndexChange,
-  onCopy,
-}: {
-  accounts: InvitationContent["accounts"][number]["items"];
-  activeIndex: number;
-  onActiveIndexChange: (index: number) => void;
-  onCopy: (accountNumber: string) => void | Promise<void>;
-}) {
-  const dragStartX = useRef<number | null>(null);
-  const activeAccount = accounts[activeIndex] ?? accounts[0];
-  if (!activeAccount) return null;
-
-  const move = (direction: -1 | 1) => {
-    onActiveIndexChange(moveCarouselIndex(activeIndex, direction, accounts.length));
-  };
-
-  const beginDrag = (event: PointerEvent<HTMLDivElement>) => {
-    dragStartX.current = event.clientX;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const finishDrag = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragStartX.current === null) return;
-    const delta = event.clientX - dragStartX.current;
-    dragStartX.current = null;
-    if (Math.abs(delta) < 48) return;
-    move(delta > 0 ? -1 : 1);
-  };
-
-  return (
-    <div className="account-carousel" aria-label="계좌 카드" onPointerDown={beginDrag} onPointerUp={finishDrag} onPointerCancel={() => { dragStartX.current = null; }}>
-      <div className="account-carousel__viewport">
-        <div
-          className="account-carousel__track"
-          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-        >
-          {accounts.map((account, index) => {
-            const isActive = index === activeIndex;
-            return (
-              <article
-                aria-hidden={!isActive}
-                className="account-card account-card--slide"
-                key={account.id}
-              >
-                <div>
-                  <span>{account.holder}</span>
-                  <strong>{account.bank} {account.accountNumber}</strong>
-                </div>
-                <button
-                  className="small-button"
-                  tabIndex={isActive ? 0 : -1}
-                  type="button"
-                  onClick={() => void onCopy(account.accountNumber)}
-                >
-                  복사
-                </button>
-                {account.paymentUrl ? (
-                  <a className="small-button" href={account.paymentUrl} rel="noreferrer" tabIndex={isActive ? 0 : -1} target="_blank">
-                    송금
-                  </a>
-                ) : null}
-              </article>
-            );
-          })}
-        </div>
-      </div>
-      {accounts.length > 1 ? (
-        <div className="carousel-controls account-carousel__controls">
-          <button className="icon-button" type="button" aria-label="이전 계좌" onClick={() => move(-1)}>←</button>
-          <span aria-live="polite">{activeIndex + 1} / {accounts.length}</span>
-          <button className="icon-button" type="button" aria-label="다음 계좌" onClick={() => move(1)}>→</button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function AmbientGuestbook({
   entry,
   count,
@@ -1008,8 +928,6 @@ export function App() {
   const [ambientGuestbookDocked, setAmbientGuestbookDocked] = useState(false);
   const [ambientGuestbookShownIds, setAmbientGuestbookShownIds] = useState<string[]>([]);
   const [timelineIndex, setTimelineIndex] = useState(0);
-  const [accountIndex, setAccountIndex] = useState(0);
-  const [accountItemIndex, setAccountItemIndex] = useState(0);
   const [galleryExpanded, setGalleryExpanded] = useState(false);
   const [galleryViewerIndex, setGalleryViewerIndex] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
@@ -1278,7 +1196,6 @@ export function App() {
 
   const eventDate = new Date(content.event.startsAt);
   const timeline = content.timeline[timelineIndex] ?? content.timeline[0]!;
-  const accountGroup = content.accounts[accountIndex] ?? content.accounts[0];
   const guestUploadsAvailable = Date.now() >= Date.parse(content.guestUploads.opensAt);
   const guestUploadGallery = selectGuestUploadGallery(
     guestUploadPhotos,
@@ -1292,7 +1209,7 @@ export function App() {
     if (section.id === "rsvp" && !content.rsvp.enabled) return [];
     if (section.id === "guestbook" && !content.guestbook.enabled) return [];
     if (section.id === "guestUploads" && !content.guestUploads.enabled) return [];
-    if (section.id === "accounts" && !accountGroup) return [];
+    if (section.id === "accounts" && content.accounts.length === 0) return [];
     const label = quickMenuSectionLabels[section.id];
     return label ? [{ id: section.id, label }] : [];
   });
@@ -1817,34 +1734,15 @@ export function App() {
           </section>
         ) : null}
 
-        {enabledSections.has("accounts") && accountGroup ? (
+        {enabledSections.has("accounts") && content.accounts.length > 0 ? (
           <section className="section account-section" id={sectionAnchorId("accounts")} data-reveal>
             <SectionHeading
               eyebrow={content.sectionCopy.accounts.eyebrow}
               title={content.sectionCopy.accounts.title}
               description={content.sectionCopy.accounts.description}
             />
-            <div className="tabs" role="tablist" aria-label="계좌 그룹">
-              {content.accounts.map((group, index) => (
-                <button
-                  className={index === accountIndex ? "is-active" : ""}
-                  type="button"
-                  role="tab"
-                  aria-selected={index === accountIndex}
-                  key={group.id}
-                  onClick={() => {
-                    setAccountIndex(index);
-                    setAccountItemIndex(0);
-                  }}
-                >
-                  {group.label}
-                </button>
-              ))}
-            </div>
-            <AccountCardCarousel
-              accounts={accountGroup.items}
-              activeIndex={Math.min(accountItemIndex, Math.max(accountGroup.items.length - 1, 0))}
-              onActiveIndexChange={setAccountItemIndex}
+            <AccountGroups
+              groups={content.accounts}
               onCopy={async (accountNumber) => {
                 try {
                   await navigator.clipboard.writeText(accountNumber);
