@@ -1972,6 +1972,7 @@ textarea:focus-visible {
   --accent: #0a0a0a;
   --surface: #f4f4f4;
   --sicilian-noir: #0a0a0a;
+  --sicilian-frieze-height: 44px;
   --sicilian-transition-art: url("/assets/sicilian-courtyard-transition.webp");
   --sicilian-frieze-art: url("/assets/sicilian-ornamental-frieze.webp");
   --sicilian-medallion-art: url("/assets/sicilian-star-medallion.png");
@@ -2066,7 +2067,7 @@ textarea:focus-visible {
 }
 
 .catalog-hero__tile-ribbon {
-  height: 44px;
+  height: var(--sicilian-frieze-height);
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
 }
 
@@ -2478,7 +2479,7 @@ textarea:focus-visible {
 
 .page-shell--catalog .closing::before {
   display: block;
-  height: 20px;
+  height: var(--sicilian-frieze-height);
   background: var(--sicilian-frieze-art) center / auto 100% repeat-x;
   content: "";
 }

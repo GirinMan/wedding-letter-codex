@@ -196,9 +196,14 @@ test("Sicilian Noir distributes generated ceramic details through decorative lay
   );
   assert.doesNotMatch(styles, /#invitation-section-accounts::after/);
   assert.doesNotMatch(styles, /sicilian-margin-inlay\.webp/);
+  assert.match(styles, /--sicilian-frieze-height:\s*44px;/);
   assert.match(
     styles,
-    /\.closing::before\s*\{[^}]*var\(--sicilian-frieze-art\)/s,
+    /\.catalog-hero__tile-ribbon\s*\{[^}]*height:\s*var\(--sicilian-frieze-height\);/s,
+  );
+  assert.match(
+    styles,
+    /\.closing::before\s*\{[^}]*height:\s*var\(--sicilian-frieze-height\);[^}]*var\(--sicilian-frieze-art\)/s,
   );
 });
 
@@ -255,7 +260,7 @@ test("Sicilian Noir keeps the interface monochrome and sans serif", async () => 
   assert.match(styles, /\.catalog-hero__visual/);
   assert.match(
     styles,
-    /\.catalog-hero__tile-ribbon\s*\{[^}]*height:\s*44px;/s,
+    /\.catalog-hero__tile-ribbon\s*\{[^}]*height:\s*var\(--sicilian-frieze-height\);/s,
   );
   assert.match(
     styles,
