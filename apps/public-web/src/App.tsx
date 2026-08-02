@@ -41,7 +41,7 @@ import {
   isKakaoShareAvailable,
   sendKakaoShare,
 } from "./kakao-share";
-import { moveCarouselIndex } from "./carousel";
+import { getCarouselPreloadIndices, moveCarouselIndex } from "./carousel";
 import {
   selectGuestUploadGallery,
   type GuestUploadGallery,
@@ -106,6 +106,14 @@ function MessageIcon() {
     <svg aria-hidden="true" viewBox="0 0 24 24">
       <path d="M4 5.5h16v11H8l-4 3v-14Z" />
       <path d="m7 9 5 3.5L17 9" />
+    </svg>
+  );
+}
+
+function MusicNoteIcon() {
+  return (
+    <svg className="music-note-icon" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M9.5 17.2a3.2 3.2 0 1 1-2.1-3V6.7l10-2.2v10.4a3.2 3.2 0 1 1-2.1-3V8.2L9.5 9.5v7.7Z" />
     </svg>
   );
 }
@@ -255,34 +263,83 @@ function GuestUploadPolaroid({
 function GalleryCarousel({
   items,
   preview,
+  onOpen,
 }: {
   items: Array<MediaReference & { id: string }>;
   preview: boolean;
+  onOpen: (index: number) => void;
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const loopTimerRef = useRef<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [decodedSources, setDecodedSources] = useState(
+    () => new Set(decodedGallerySources),
+  );
   const canLoop = items.length > 1;
-  const displayedItems = canLoop ? [...items, ...items, ...items] : items;
+  const displayedItems = canLoop
+    ? [items.at(-1)!, ...items, items[0]!]
+    : items;
+  const preloadIndices = getCarouselPreloadIndices(activeIndex, items.length);
+
+  useEffect(() => {
+    let cancelled = false;
+    const preloadItems = preloadIndices.map((index) => items[index]!);
+    void preloadGalleryItems(preloadItems, preview).then((sources) => {
+      if (cancelled || sources.length === 0) return;
+      setDecodedSources(new Set(decodedGallerySources));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeIndex, items, preview]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport || !canLoop) return;
 
     const frame = window.requestAnimationFrame(() => {
-      viewport.scrollLeft = viewport.scrollWidth / 3;
+      const firstCanonicalSlide = viewport.querySelector<HTMLElement>(
+        '[data-gallery-slide="canonical"]',
+      );
+      if (firstCanonicalSlide) viewport.scrollLeft = firstCanonicalSlide.offsetLeft;
     });
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      if (loopTimerRef.current !== null) window.clearTimeout(loopTimerRef.current);
+    };
   }, [canLoop, items.length]);
 
   const keepLooping = () => {
     const viewport = viewportRef.current;
     if (!viewport || !canLoop) return;
-
-    const segmentWidth = viewport.scrollWidth / 3;
-    if (viewport.scrollLeft < segmentWidth * 0.35) {
-      viewport.scrollLeft += segmentWidth;
-    } else if (viewport.scrollLeft > segmentWidth * 1.65) {
-      viewport.scrollLeft -= segmentWidth;
+    const slides = Array.from(
+      viewport.querySelectorAll<HTMLElement>("[data-gallery-index]"),
+    );
+    const closestSlide = slides.reduce((closest, slide) => (
+      Math.abs(slide.offsetLeft - viewport.scrollLeft)
+        < Math.abs(closest.offsetLeft - viewport.scrollLeft)
+        ? slide
+        : closest
+    ));
+    const closestIndex = Number(closestSlide.dataset.galleryIndex);
+    if (Number.isInteger(closestIndex)) {
+      setActiveIndex((current) => current === closestIndex ? current : closestIndex);
     }
+
+    if (loopTimerRef.current !== null) window.clearTimeout(loopTimerRef.current);
+    loopTimerRef.current = window.setTimeout(() => {
+      const firstClone = slides[0];
+      const firstCanonical = slides[1];
+      const lastCanonical = slides.at(-2);
+      const lastClone = slides.at(-1);
+      if (!firstClone || !firstCanonical || !lastCanonical || !lastClone) return;
+      const tolerance = Math.max(2, firstCanonical.offsetLeft - firstClone.offsetLeft) / 3;
+      if (Math.abs(viewport.scrollLeft - firstClone.offsetLeft) < tolerance) {
+        viewport.scrollLeft = lastCanonical.offsetLeft;
+      } else if (Math.abs(viewport.scrollLeft - lastClone.offsetLeft) < tolerance) {
+        viewport.scrollLeft = firstCanonical.offsetLeft;
+      }
+    }, 80);
   };
 
   return (
@@ -290,11 +347,35 @@ function GalleryCarousel({
       <div className="gallery-carousel__viewport" ref={viewportRef} onScroll={keepLooping}>
         <div className="gallery-carousel__track">
           {displayedItems.map((item, index) => (
-            <Media
-              media={item}
-              key={`${Math.floor(index / items.length)}-${item.id}`}
-              preview={preview}
-            />
+            (() => {
+              const isClone = canLoop && (index === 0 || index === displayedItems.length - 1);
+              const logicalIndex = !canLoop
+                ? index
+                : index === 0
+                  ? items.length - 1
+                  : index === displayedItems.length - 1
+                    ? 0
+                    : index - 1;
+              const source = galleryMediaPath(item, preview);
+              return (
+                <div
+                  className="gallery-carousel__slide"
+                  data-gallery-index={logicalIndex}
+                  data-gallery-slide={isClone ? "clone" : "canonical"}
+                  key={isClone ? `clone-${index}-${item.id}` : item.id}
+                >
+                  <GalleryPhotoButton
+                    decoded={source === null || decodedSources.has(source)}
+                    inert={isClone ? true : undefined}
+                    isClone={isClone}
+                    item={item}
+                    loading={preloadIndices.includes(logicalIndex) ? "eager" : "lazy"}
+                    onOpen={() => onOpen(logicalIndex)}
+                    preview={preview}
+                  />
+                </div>
+              );
+            })()
           ))}
         </div>
       </div>
@@ -306,6 +387,149 @@ function GalleryCarousel({
         </span>
       ) : null}
     </div>
+  );
+}
+
+const decodedGallerySources = new Set<string>();
+const galleryDecodePromises = new Map<string, Promise<void>>();
+
+function galleryMediaPath(item: MediaReference, preview: boolean) {
+  if (!item.assetId) return null;
+  return preview
+    ? `/api/admin/media/${item.assetId}/content`
+    : `/api/media/${item.assetId}/content`;
+}
+
+async function preloadGalleryItems(items: MediaReference[], preview: boolean) {
+  return Promise.all(items.flatMap((item) => {
+    const source = galleryMediaPath(item, preview);
+    if (!source) return [];
+    if (decodedGallerySources.has(source)) return [Promise.resolve(source)];
+    const existing = galleryDecodePromises.get(source);
+    if (existing) return [existing.then(() => source)];
+
+    const pending = new Promise<void>((resolve) => {
+      const image = new Image();
+      image.src = source;
+      void (async () => {
+        try {
+          await image.decode();
+        } catch {
+          // The visible image keeps its own error and retry behavior.
+        }
+        decodedGallerySources.add(source);
+        galleryDecodePromises.delete(source);
+        resolve();
+      })();
+    });
+    galleryDecodePromises.set(source, pending);
+    return [pending.then(() => source)];
+  }));
+}
+
+function GalleryPhotoButton({
+  item,
+  preview,
+  loading = "lazy",
+  decoded = true,
+  inert,
+  isClone = false,
+  onOpen,
+}: {
+  item: MediaReference;
+  preview: boolean;
+  loading?: "eager" | "lazy";
+  decoded?: boolean;
+  inert?: boolean;
+  isClone?: boolean;
+  onOpen: () => void;
+}) {
+  return (
+    <button
+      className={`gallery-photo-button ${decoded ? "is-decoded" : ""}`}
+      type="button"
+      aria-label={`${item.alt || "웨딩 사진"} 크게 보기`}
+      aria-hidden={isClone || undefined}
+      inert={inert}
+      onClick={onOpen}
+      tabIndex={isClone ? -1 : 0}
+    >
+      <Media media={item} preview={preview} loading={loading} />
+      <span className="gallery-photo-button__zoom" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="5.5" />
+          <path d="m15 15 4 4M10.5 8v5M8 10.5h5" />
+        </svg>
+      </span>
+    </button>
+  );
+}
+
+function GalleryViewer({
+  items,
+  index,
+  preview,
+  onChange,
+  onClose,
+}: {
+  items: Array<MediaReference & { id: string }>;
+  index: number | null;
+  preview: boolean;
+  onChange: (index: number) => void;
+  onClose: () => void;
+}) {
+  const activeIndex = index ?? 0;
+  const item = items[activeIndex];
+
+  useEffect(() => {
+    if (index === null || items.length <= 1) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      onChange(moveCarouselIndex(
+        index,
+        event.key === "ArrowLeft" ? -1 : 1,
+        items.length,
+      ));
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [index, items.length, onChange]);
+
+  if (!item) return null;
+
+  return (
+    <Dialog
+      className="dialog--gallery-viewer"
+      open={index !== null}
+      title="웨딩 갤러리"
+      onClose={onClose}
+    >
+      <div className="gallery-viewer">
+        <div className="gallery-viewer__frame">
+          <Media media={item} preview={preview} loading="eager" />
+        </div>
+        <div className="gallery-viewer__controls">
+          <button
+            type="button"
+            aria-label="이전 사진"
+            disabled={items.length <= 1}
+            onClick={() => onChange(moveCarouselIndex(activeIndex, -1, items.length))}
+          >
+            ←
+          </button>
+          <span aria-live="polite">{activeIndex + 1} / {items.length}</span>
+          <button
+            type="button"
+            aria-label="다음 사진"
+            disabled={items.length <= 1}
+            onClick={() => onChange(moveCarouselIndex(activeIndex, 1, items.length))}
+          >
+            →
+          </button>
+        </div>
+      </div>
+    </Dialog>
   );
 }
 
@@ -785,6 +1009,7 @@ export function App() {
   const [accountIndex, setAccountIndex] = useState(0);
   const [accountItemIndex, setAccountItemIndex] = useState(0);
   const [galleryExpanded, setGalleryExpanded] = useState(false);
+  const [galleryViewerIndex, setGalleryViewerIndex] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
   const [loadingError, setLoadingError] = useState("");
   const [musicPlaying, setMusicPlaying] = useState(false);
@@ -1516,11 +1741,22 @@ export function App() {
               description={content.sectionCopy.gallery.description}
             />
             {content.gallery.layout === "carousel" || content.gallery.layout === "both" ? (
-              <GalleryCarousel items={content.gallery.items} preview={isPreview} />
+              <GalleryCarousel
+                items={content.gallery.items}
+                preview={isPreview}
+                onOpen={setGalleryViewerIndex}
+              />
             ) : null}
             {content.gallery.layout === "grid" || content.gallery.layout === "both" ? (
               <div className="gallery-grid">
-                {visibleGallery.map((item) => <Media media={item} key={item.id} preview={isPreview} />)}
+                {visibleGallery.map((item, index) => (
+                  <GalleryPhotoButton
+                    item={item}
+                    key={item.id}
+                    onOpen={() => setGalleryViewerIndex(index)}
+                    preview={isPreview}
+                  />
+                ))}
               </div>
             ) : null}
             {(content.gallery.layout === "grid" || content.gallery.layout === "both") && content.gallery.items.length > content.gallery.initialCount ? (
@@ -1699,7 +1935,7 @@ export function App() {
             aria-label={musicPlaying ? "음악 끄기" : "음악 재생"}
             onClick={() => void toggleMusic()}
           >
-            <span /><span /><span />
+            <MusicNoteIcon />
           </button>
         </>
       ) : null}
@@ -1712,6 +1948,7 @@ export function App() {
           onClick={() => setDialog("celebration")}
         >
           <PetalShowerIcon />
+          <span className="floating-action__label">화환</span>
         </button>
       ) : null}
 
@@ -1730,6 +1967,14 @@ export function App() {
         kakaoShareEnabled={kakaoShareEnabled}
         onKakaoShare={() => void shareWithKakao()}
         onShare={() => void share()}
+      />
+
+      <GalleryViewer
+        items={content.gallery.items}
+        index={galleryViewerIndex}
+        preview={isPreview}
+        onChange={setGalleryViewerIndex}
+        onClose={() => setGalleryViewerIndex(null)}
       />
 
       <Dialog

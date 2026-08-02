@@ -25,6 +25,7 @@ export function Media({
         src={contentPath}
         alt={media.alt}
         data-reveal={revealDirection}
+        decoding="async"
         loading={loading}
       />
     );

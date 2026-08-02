@@ -82,6 +82,7 @@ export function QuickMenu({
         onClick={onOpen}
       >
         <MenuIcon />
+        <span className="floating-action__label">메뉴</span>
       </button>
 
       <Dialog open={open} title="빠른 메뉴" onClose={onClose}>
