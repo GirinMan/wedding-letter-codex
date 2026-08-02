@@ -293,7 +293,7 @@ textarea:focus-visible {
 .family-relation {
   display: grid;
   align-items: center;
-  grid-template-columns: 56px auto;
+  grid-template-columns: max-content auto;
   column-gap: 14px;
   font-size: .74rem;
 }
@@ -324,11 +324,6 @@ textarea:focus-visible {
 
 .family-relation__details strong {
   font-weight: 500;
-}
-
-.family-relation--simple {
-  grid-template-columns: 56px auto;
-  column-gap: 14px;
 }
 
 .family-relation--simple > span:first-child {
@@ -2581,6 +2576,12 @@ textarea:focus-visible {
 .page-shell--catalog .navigation-links a,
 .page-shell--catalog .account-card {
   background: var(--paper);
+}
+
+.page-shell--catalog .guestbook-section .button-row button {
+  font-size: .67rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
 
 .page-shell--catalog .gallery-grid {

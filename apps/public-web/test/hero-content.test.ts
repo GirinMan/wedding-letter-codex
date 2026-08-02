@@ -22,3 +22,16 @@ test("family relationship labels remain visible when parent names are configured
     /<div className="family-relation"[\s\S]*?family-relation__label[\s\S]*?family-relation__details[\s\S]*?parents\.map[\s\S]*?\{partner\.familyRelation\}/,
   );
 });
+
+test("family relationship rows center their visible content without a fixed label gutter", async () => {
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  assert.match(
+    styles,
+    /\.family-relation\s*\{[^}]*grid-template-columns:\s*max-content auto;/s,
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.family-relation(?:--simple)?\s*\{[^}]*grid-template-columns:\s*56px auto;/s,
+  );
+});
