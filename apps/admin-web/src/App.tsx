@@ -989,6 +989,53 @@ export function App() {
                     <small>이미지는 보관함에 먼저 저장됩니다. MP3는 배경 음악으로, 사진은 이후 원하는 위치에 배정할 수 있습니다.</small>
                   </form>
                 </Panel>
+                <Panel
+                  title="브라우저 아이콘"
+                  description="브라우저 탭과 북마크에 표시되는 작은 아이콘입니다. 이모지 또는 보관함의 이미지를 사용할 수 있습니다."
+                  actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "아이콘 저장"}</button>}
+                >
+                  <div className="favicon-editor">
+                    <div className="field-grid">
+                      <Field label="표시 방식">
+                        <select value={invitation.draftContent.favicon.mode} onChange={(event) => updateContent((draft) => {
+                          draft.favicon.mode = event.target.value as typeof draft.favicon.mode;
+                        })}>
+                          <option value="none">사용 안 함</option>
+                          <option value="emoji">이모지</option>
+                          <option value="image">업로드 이미지</option>
+                        </select>
+                      </Field>
+                      {invitation.draftContent.favicon.mode === "emoji" ? (
+                        <Field label="이모지">
+                          <input
+                            value={invitation.draftContent.favicon.emoji}
+                            maxLength={32}
+                            inputMode="text"
+                            onChange={(event) => updateContent((draft) => { draft.favicon.emoji = event.target.value; })}
+                          />
+                        </Field>
+                      ) : null}
+                      {invitation.draftContent.favicon.mode === "image" ? (
+                        <MediaSlotField
+                          label="아이콘 이미지"
+                          value={invitation.draftContent.favicon.assetId}
+                          assets={media}
+                          onChange={(asset) => updateContent((draft) => { draft.favicon.assetId = asset?.id ?? null; })}
+                        />
+                      ) : null}
+                    </div>
+                    <div className="favicon-preview" aria-label="브라우저 아이콘 미리보기">
+                      {invitation.draftContent.favicon.mode === "emoji" ? (
+                        <span>{invitation.draftContent.favicon.emoji || "—"}</span>
+                      ) : invitation.draftContent.favicon.mode === "image" ? (
+                        media.find((asset) => asset.id === invitation.draftContent.favicon.assetId)?.previewUrl
+                          ? <img src={media.find((asset) => asset.id === invitation.draftContent.favicon.assetId)!.previewUrl} alt="" />
+                          : <span>—</span>
+                      ) : <span>—</span>}
+                      <small>탭 미리보기</small>
+                    </div>
+                  </div>
+                </Panel>
                 <Panel title="세부 미디어 슬롯" description="사진 카드의 빠른 배정 외에 프로필·인터뷰·연혁·약도 등 세부 위치를 연결합니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "연결 저장"}</button>}>
                   <div className="media-slot-grid">
                     <MediaSlotField label="첫 화면 사진" value={invitation.draftContent.hero.image.assetId} assets={media} onChange={(asset) => updateContent((draft) => { draft.hero.image = connectMedia(draft.hero.image, asset); })} />

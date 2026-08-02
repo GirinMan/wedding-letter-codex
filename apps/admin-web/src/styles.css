@@ -301,6 +301,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .media-slot { display: grid; gap: 7px; color: #6c645e; font-size: .64rem; }
 .media-slot span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-slot select { width: 100%; }
+.favicon-editor { display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+.favicon-editor > .field-grid { flex: 1; }
+.favicon-preview { display: grid; min-width: 88px; justify-items: center; gap: 7px; color: #827a73; font-size: .58rem; }
+.favicon-preview span, .favicon-preview img { width: 40px; height: 40px; border: 1px solid #ded9d2; border-radius: 8px; background: #fff; }
+.favicon-preview span { display: grid; place-items: center; font-size: 1.45rem; }
+.favicon-preview img { object-fit: cover; }
 .subheading-row { display: flex; margin-top: 28px; align-items: end; justify-content: space-between; gap: 16px; }
 .subheading-row .subheading { margin: 0; padding-top: 24px; flex: 1; }
 .subheading-row label { display: flex; align-items: center; gap: 7px; color: #6c645e; font-size: .62rem; }

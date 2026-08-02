@@ -34,6 +34,11 @@ export interface InvitationContact {
 
 export interface InvitationContent {
   locale: "ko-KR" | "en-US";
+  favicon: {
+    mode: "none" | "emoji" | "image";
+    emoji: string;
+    assetId: string | null;
+  };
   couple: {
     partnerOne: { name: string; label: string; familyRelation: string };
     partnerTwo: { name: string; label: string; familyRelation: string };

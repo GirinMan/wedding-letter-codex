@@ -31,6 +31,7 @@ import {
 } from "./components/QuickMenu";
 import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
 import { formatHeroDate } from "./hero-date";
+import { resolveInvitationFavicon } from "./favicon";
 import {
   invitationThemeAttributes,
   resolveInvitationThemeDesign,
@@ -996,6 +997,7 @@ export function App() {
     && Boolean(previewInvitationId);
   const [content, setContent] = useState<InvitationContent | null>(null);
   const [design, setDesign] = useState<InvitationDesign | null>(null);
+  const [revision, setRevision] = useState(0);
   const [slug, setSlug] = useState(defaultSlug);
   const [dialog, setDialog] = useState<DialogName>(null);
   const [rsvpWelcomeOpen, setRsvpWelcomeOpen] = useState(false);
@@ -1054,10 +1056,30 @@ export function App() {
       .then((result) => {
         setContent(result.content);
         setDesign(result.design);
+        setRevision(result.revision);
         document.title = `${result.content.couple.partnerOne.name} · ${result.content.couple.partnerTwo.name} 결혼합니다`;
       })
       .catch(() => setLoadingError("초대장을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."));
   }, [isPreview, previewInvitationId, slug]);
+
+  useEffect(() => {
+    if (!content) return;
+    const descriptor = resolveInvitationFavicon(content.favicon, isPreview, revision);
+    const existing = document.head.querySelector<HTMLLinkElement>(
+      'link[data-invitation-favicon="true"]',
+    );
+    if (!descriptor) {
+      existing?.remove();
+      return;
+    }
+    const link = existing ?? document.createElement("link");
+    link.rel = "icon";
+    link.dataset.invitationFavicon = "true";
+    link.href = descriptor.href;
+    if (descriptor.type) link.type = descriptor.type;
+    else link.removeAttribute("type");
+    if (!existing) document.head.append(link);
+  }, [content?.favicon, isPreview, revision]);
 
   useEffect(() => {
     if (!isPreview || !previewInvitationId) return;

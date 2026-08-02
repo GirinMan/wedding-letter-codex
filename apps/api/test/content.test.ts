@@ -24,6 +24,7 @@ test("sample invitation content satisfies the public contract", () => {
 
 test("legacy invitation documents receive defaults for new media slots", () => {
   const legacy = structuredClone(sampleInvitationContent) as unknown as Record<string, unknown>;
+  delete legacy.favicon;
   delete legacy.middleImage;
   const hero = legacy.hero as Record<string, unknown>;
   delete hero.nameOrder;
@@ -48,6 +49,11 @@ test("legacy invitation documents receive defaults for new media slots", () => {
 
   const parsed = invitationContentSchema.parse(legacy);
 
+  assert.deepEqual(parsed.favicon, {
+    mode: "none",
+    emoji: "💍",
+    assetId: null,
+  });
   assert.equal(parsed.middleImage.placeholder, "middle");
   assert.deepEqual(parsed.hero.nameOrder, ["partnerTwo", "partnerOne"]);
   assert.deepEqual(parsed.guestbook.actions, {
@@ -214,11 +220,13 @@ test("publishing exposes only media referenced by the validated invitation", () 
   const profileId = "55555555-5555-4555-8555-555555555555";
   const sketchMapId = "66666666-6666-4666-8666-666666666666";
   const kakaoShareImageId = "77777777-7777-4777-8777-777777777777";
+  const faviconId = "88888888-8888-4888-8888-888888888888";
   content.greeting.image.assetId = greetingId;
   content.gallery.items[0]!.assetId = galleryId;
   content.event.sketchMap.assetId = sketchMapId;
   content.profiles.items[0]!.image.assetId = profileId;
   content.sharing.kakaoShareImage.assetId = kakaoShareImageId;
+  content.favicon = { mode: "image", emoji: "💍", assetId: faviconId };
   content.music.assetId = greetingId;
 
   const plan = createMediaPublicationPlan(content, [
@@ -227,6 +235,7 @@ test("publishing exposes only media referenced by the validated invitation", () 
     { id: sketchMapId, state: "draft" },
     { id: profileId, state: "draft" },
     { id: kakaoShareImageId, state: "draft" },
+    { id: faviconId, state: "draft" },
     { id: stalePublishedId, state: "published" },
     { id: archivedId, state: "archived" },
   ]);
@@ -237,6 +246,7 @@ test("publishing exposes only media referenced by the validated invitation", () 
     profileId,
     sketchMapId,
     kakaoShareImageId,
+    faviconId,
   ]);
   assert.deepEqual(plan.publishedIds, [
     greetingId,
@@ -244,6 +254,7 @@ test("publishing exposes only media referenced by the validated invitation", () 
     profileId,
     sketchMapId,
     kakaoShareImageId,
+    faviconId,
   ]);
   assert.deepEqual(plan.draftIds, [stalePublishedId]);
   assert.deepEqual(plan.missingIds, []);

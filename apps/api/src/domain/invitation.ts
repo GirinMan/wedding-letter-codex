@@ -119,6 +119,11 @@ const profileSchema = z.object({
 
 export const invitationContentSchema = z.object({
   locale: z.enum(["ko-KR", "en-US"]).default("ko-KR"),
+  favicon: z.object({
+    mode: z.enum(["none", "emoji", "image"]).default("none"),
+    emoji: z.string().trim().min(1).max(32).default("💍"),
+    assetId: z.string().uuid().nullable().default(null),
+  }).default({ mode: "none", emoji: "💍", assetId: null }),
   couple: z.object({
     partnerOne: z.object({
       name: z.string().min(1).max(80),
@@ -482,6 +487,7 @@ export function createInvitationPreview(input: {
 
 export const sampleInvitationContent: InvitationContent = {
   locale: "ko-KR",
+  favicon: { mode: "none", emoji: "💍", assetId: null },
   couple: {
     partnerOne: { name: "신랑 이름", label: "신랑", familyRelation: "아들" },
     partnerTwo: { name: "신부 이름", label: "신부", familyRelation: "딸" },
