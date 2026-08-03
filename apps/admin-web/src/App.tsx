@@ -9,6 +9,7 @@ import {
   themePresets,
 } from "./theme-presets";
 import { createMediaUploadForms, planMediaUploads } from "./media-upload";
+import { partitionGuestUploads, toggleGuestUploadSelection } from "./guest-upload-moderation";
 import type {
   AdminUser,
   GuestbookEntry,
@@ -234,6 +235,7 @@ export function App() {
   const [rsvps, setRsvps] = useState<Rsvp[]>([]);
   const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
   const [uploads, setUploads] = useState<GuestUpload[]>([]);
+  const [selectedUploadIds, setSelectedUploadIds] = useState<Set<string>>(() => new Set());
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
@@ -423,9 +425,31 @@ export function App() {
 
   const publicPreviewUrl = `${previewBase.replace(/\/$/, "")}/${invitation.slug}`;
   const draftPreviewUrl = `/preview/?invitationId=${encodeURIComponent(invitation.id)}&session=${previewSession}`;
-  const pendingUploads = uploads.filter((upload) => upload.state === "pending").length;
+  const { active: activeUploads, deleted: deletedUploads } = partitionGuestUploads(uploads);
+  const pendingUploads = activeUploads.filter((upload) => upload.state === "pending").length;
   const attending = rsvps.filter((rsvp) => rsvp.attending).length;
   const connectedAssetIds = collectConnectedAssetIds(invitation.draftContent);
+  const allActiveUploadsSelected = activeUploads.length > 0
+    && activeUploads.every((upload) => selectedUploadIds.has(upload.id));
+
+  const refreshGuestUploads = async () => {
+    setUploads((await api.guestUploads(invitation.id)).uploads);
+  };
+
+  const deleteGuestUploads = async (uploadIds: string[]) => {
+    const confirmed = window.confirm(`${uploadIds.length}장의 사진을 삭제할까요? 삭제된 사진에서 복구할 수 있습니다.`);
+    if (!confirmed) return;
+    await api.deleteGuestUploads(invitation.id, uploadIds);
+    setSelectedUploadIds(new Set());
+    await refreshGuestUploads();
+    setNotice(`${uploadIds.length}장의 사진을 삭제했습니다.`);
+  };
+
+  const restoreGuestUploads = async (uploadIds: string[]) => {
+    await api.restoreGuestUploads(invitation.id, uploadIds);
+    await refreshGuestUploads();
+    setNotice(`${uploadIds.length}장의 사진을 복구했습니다.`);
+  };
 
   return (
     <div className="admin-shell">
@@ -470,7 +494,7 @@ export function App() {
                 <div className="metric-grid">
                   <article><span>전체 RSVP</span><strong>{rsvps.length}</strong><small>참석 {attending}명</small></article>
                   <article><span>방명록</span><strong>{guestbook.length}</strong><small>공개 {guestbook.filter((entry) => entry.state === "visible").length}개</small></article>
-                  <article><span>사진 업로드</span><strong>{uploads.length}</strong><small>검토 대기 {pendingUploads}개</small></article>
+                  <article><span>사진 업로드</span><strong>{activeUploads.length}</strong><small>검토 대기 {pendingUploads}개</small></article>
                   <article><span>현재 리비전</span><strong>v{invitation.revision}</strong><small>발행 v{invitation.publishedRevision ?? "—"}</small></article>
                 </div>
                 <Panel title="빠른 편집" description="가장 자주 바꾸는 제목과 예식 정보를 바로 수정합니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>{saving ? "저장 중…" : "저장"}</button>}>
@@ -1190,10 +1214,54 @@ export function App() {
             ) : null}
 
             {view === "uploads" ? (
-              <Panel title={`방문객 사진 ${uploads.length}개`} description={`검토 대기 ${pendingUploads}개 · 승인 전에는 외부에 노출되지 않습니다.`}>
-                <div className="upload-review-grid">
-                  {uploads.map((upload) => <article key={upload.id}><a href={upload.downloadUrl} target="_blank" rel="noreferrer"><div className="upload-preview">사진 보기 ↗</div></a><div><strong>{upload.originalName}</strong><span>{upload.uploaderName || "이름 없음"}</span><p>{upload.note}</p></div><div className="review-actions"><button onClick={() => void api.reviewGuestUpload(invitation.id, upload.id, "approved").then(async () => setUploads((await api.guestUploads(invitation.id)).uploads))}>승인</button><button onClick={() => void api.reviewGuestUpload(invitation.id, upload.id, "rejected").then(async () => setUploads((await api.guestUploads(invitation.id)).uploads))}>거절</button></div></article>)}
+              <Panel title={`방문객 사진 ${activeUploads.length}개`} description={`검토 대기 ${pendingUploads}개 · 승인 전에는 외부에 노출되지 않습니다.`}>
+                <div className="upload-toolbar">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={allActiveUploadsSelected}
+                      onChange={() => setSelectedUploadIds(allActiveUploadsSelected
+                        ? new Set()
+                        : new Set(activeUploads.map((upload) => upload.id)))}
+                    />
+                    전체 선택
+                  </label>
+                  <span>{selectedUploadIds.size}장 선택됨</span>
+                  <button
+                    className="button button--danger"
+                    type="button"
+                    disabled={selectedUploadIds.size === 0}
+                    onClick={() => void deleteGuestUploads([...selectedUploadIds])}
+                  >
+                    선택 사진 삭제
+                  </button>
                 </div>
+                <div className="upload-review-grid">
+                  {activeUploads.map((upload) => <article key={upload.id}>
+                    <label className="upload-select">
+                      <input
+                        type="checkbox"
+                        aria-label={`${upload.originalName} 선택`}
+                        checked={selectedUploadIds.has(upload.id)}
+                        onChange={() => setSelectedUploadIds((selected) => toggleGuestUploadSelection(selected, upload.id))}
+                      />
+                    </label>
+                    <a href={upload.downloadUrl} target="_blank" rel="noreferrer"><img className="upload-preview" src={upload.downloadUrl} alt={`${upload.uploaderName || "방문객"}이 올린 ${upload.originalName}`} loading="lazy" /></a>
+                    <div className="upload-details"><strong>{upload.originalName}</strong><span>{upload.uploaderName || "이름 없음"}</span><p>{upload.note}</p></div>
+                    <div className="review-actions"><button type="button" onClick={() => void api.reviewGuestUpload(invitation.id, upload.id, "approved").then(refreshGuestUploads)}>승인</button><button type="button" onClick={() => void api.reviewGuestUpload(invitation.id, upload.id, "rejected").then(refreshGuestUploads)}>거절</button><button className="danger-action" type="button" onClick={() => void deleteGuestUploads([upload.id])}>삭제</button></div>
+                  </article>)}
+                </div>
+                {activeUploads.length === 0 ? <p className="empty-state">관리할 방문객 사진이 없습니다.</p> : null}
+                <details className="deleted-uploads">
+                  <summary>삭제된 사진 {deletedUploads.length}장</summary>
+                  <div className="deleted-upload-list">
+                    {deletedUploads.map((upload) => <div key={upload.id}>
+                      <span><strong>{upload.originalName}</strong><small>{upload.uploaderName || "이름 없음"}</small></span>
+                      <button type="button" onClick={() => void restoreGuestUploads([upload.id])}>복구</button>
+                    </div>)}
+                    {deletedUploads.length === 0 ? <p>삭제된 사진이 없습니다.</p> : null}
+                  </div>
+                </details>
               </Panel>
             ) : null}
 

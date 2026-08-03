@@ -66,4 +66,12 @@ export const api = {
     `/api/admin/invitations/${id}/guest-uploads/${uploadId}`,
     { method: "PATCH", body: JSON.stringify({ state }) },
   ),
+  deleteGuestUploads: (id: string, uploadIds: string[]) => request<{ deletedIds: string[] }>(
+    `/api/admin/invitations/${id}/guest-uploads/delete`,
+    { method: "POST", body: JSON.stringify({ uploadIds }) },
+  ),
+  restoreGuestUploads: (id: string, uploadIds: string[]) => request<{ restoredIds: string[] }>(
+    `/api/admin/invitations/${id}/guest-uploads/restore`,
+    { method: "POST", body: JSON.stringify({ uploadIds }) },
+  ),
 };

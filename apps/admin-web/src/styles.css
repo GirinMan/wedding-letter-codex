@@ -330,14 +330,29 @@ td { padding: 12px 10px; border-bottom: 1px solid #ebe7e1; }
 .moderation-list select { min-height: 34px; border: 1px solid #ded9d2; border-radius: 7px; background: white; font-size: .62rem; }
 
 .upload-review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.upload-review-grid article { display: grid; overflow: hidden; border: 1px solid #e2ddd7; border-radius: 9px; background: #fff; }
+.upload-review-grid article { position: relative; display: grid; overflow: hidden; border: 1px solid #e2ddd7; border-radius: 9px; background: #fff; }
 .upload-review-grid a { color: inherit; text-decoration: none; }
-.upload-preview { display: grid; aspect-ratio: 1.8; place-items: center; background: #e9e4de; color: #746c65; font-size: .66rem; }
-.upload-review-grid article > div:nth-child(2) { display: flex; padding: 12px; flex-direction: column; gap: 4px; }
+.upload-preview { display: block; width: 100%; aspect-ratio: 1.8; object-fit: cover; background: #e9e4de; color: #746c65; font-size: .66rem; }
+.upload-details { display: flex; padding: 12px; flex-direction: column; gap: 4px; }
 .upload-review-grid strong { font-size: .67rem; }
 .upload-review-grid span, .upload-review-grid p { margin: 0; color: #817870; font-size: .6rem; }
-.review-actions { display: grid; border-top: 1px solid #e2ddd7; grid-template-columns: 1fr 1fr; }
+.upload-select { position: absolute; z-index: 1; top: 8px; left: 8px; display: grid; width: 26px; height: 26px; border-radius: 7px; place-items: center; background: rgb(255 255 255 / 92%); box-shadow: 0 1px 6px rgb(0 0 0 / 18%); }
+.upload-select input { width: 15px; height: 15px; accent-color: #514841; }
+.upload-toolbar { display: flex; margin-bottom: 12px; padding: 10px 12px; border: 1px solid #e2ddd7; border-radius: 9px; align-items: center; gap: 12px; background: #fbfaf7; color: #665f59; font-size: .62rem; }
+.upload-toolbar label { display: flex; align-items: center; gap: 6px; }
+.upload-toolbar span { margin-right: auto; color: #817870; }
+.button--danger { background: #8b3933; color: #fff; }
+.review-actions { display: grid; border-top: 1px solid #e2ddd7; grid-template-columns: repeat(3, 1fr); }
 .review-actions button { min-height: 34px; border: 0; border-right: 1px solid #e2ddd7; background: #fbfaf7; color: #59534e; font-size: .62rem; }
+.review-actions .danger-action { color: #9b3832; }
+.deleted-uploads { margin-top: 16px; border-top: 1px solid #e2ddd7; color: #665f59; font-size: .64rem; }
+.deleted-uploads summary { padding: 14px 2px; cursor: pointer; font-weight: 600; }
+.deleted-upload-list { display: grid; gap: 7px; }
+.deleted-upload-list > div { display: flex; padding: 9px 11px; border: 1px solid #e2ddd7; border-radius: 8px; align-items: center; justify-content: space-between; background: #fbfaf7; }
+.deleted-upload-list span { display: grid; gap: 2px; }
+.deleted-upload-list small { color: #8d857e; }
+.deleted-upload-list button { min-height: 30px; padding: 0 12px; border: 1px solid #cfc7bf; border-radius: 7px; background: #fff; color: #59534e; }
+.empty-state { padding: 24px; color: #817870; font-size: .66rem; text-align: center; }
 
 .publish-card { max-width: 500px; margin: 22px auto; padding: 30px; border: 1px solid #ded9d2; border-radius: 12px; text-align: center; }
 .publish-status { display: inline-block; padding: 5px 9px; border-radius: 20px; background: #e1eee2; color: #497150; font-size: .58rem; text-transform: uppercase; }

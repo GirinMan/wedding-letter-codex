@@ -230,5 +230,6 @@ export interface GuestUpload {
   note: string;
   state: "pending" | "approved" | "rejected";
   createdAt: string;
+  deletedAt: string | null;
   downloadUrl: string;
 }
