@@ -22,11 +22,11 @@ URL도 저장소에 넣지 않는다. 아래 문서용 스크린샷만 운영자
 
 | 공개 청첩장 | RSVP |
 |---|---|
-| ![식별 가능한 얼굴과 예식 정보를 제외한 모바일 청첩장 첫 화면](docs/screenshots/public-hero.jpg) | ![방문객이 참석 의사를 전달하는 공개 RSVP 화면](docs/screenshots/public-rsvp.jpg) |
+| ![식별 가능한 얼굴과 예식 정보를 제외한 모바일 청첩장 첫 화면](docs/screenshots/public-hero.jpg?v=2) | ![방문객이 참석 의사를 전달하는 공개 RSVP 화면](docs/screenshots/public-rsvp.jpg?v=2) |
 
 | 관리자 대시보드 | 방문객 사진 관리 |
 |---|---|
-| ![발행 상태와 운영 지표를 확인하는 관리자 대시보드](docs/screenshots/admin-dashboard.jpg) | ![방문객 사진의 선택 삭제와 삭제 사진 보관 영역을 보여주는 관리자 화면](docs/screenshots/admin-guest-photos.jpg) |
+| ![발행 상태와 운영 지표를 확인하는 관리자 대시보드](docs/screenshots/admin-dashboard.jpg?v=2) | ![방문객 사진의 선택 삭제와 삭제 사진 보관 영역을 보여주는 관리자 화면](docs/screenshots/admin-guest-photos.jpg?v=2) |
 
 ## 포함된 기능
 
