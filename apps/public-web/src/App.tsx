@@ -1348,8 +1348,7 @@ export function App() {
           description: createKakaoShareDescription({
             startsAt: content.event.startsAt,
             timezone: content.event.timezone,
-            venueName: content.event.venueName,
-            hall: content.event.hall,
+            summary: content.hero.subtitle,
           }),
           imageUrl: kakaoShareImageAssetId
             ? new URL(`/api/media/${kakaoShareImageAssetId}/content`, window.location.origin).toString()

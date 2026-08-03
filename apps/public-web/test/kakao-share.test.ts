@@ -43,7 +43,7 @@ test("Kakao feed payload uses the bundled botanical image by default", () => {
   );
 });
 
-test("Kakao share description includes the wedding date, time, and venue", () => {
+test("Kakao share description adds the wedding date before the authored summary", () => {
   const createKakaoShareDescription = (
     kakaoShareModule as unknown as Record<string, unknown>
   ).createKakaoShareDescription;
@@ -55,10 +55,9 @@ test("Kakao share description includes the wedding date, time, and venue", () =>
     createKakaoShareDescription({
       startsAt: "2026-10-24T12:00:00+09:00",
       timezone: "Asia/Seoul",
-      venueName: "청계성당",
-      hall: "대성전",
+      summary: "오후 12시 청계성당 대성전",
     }),
-    "2026년 10월 24일 토요일 오후 12시\n청계성당 대성전",
+    "2026년 10월 24일 토요일\n오후 12시 청계성당 대성전",
   );
 });
 

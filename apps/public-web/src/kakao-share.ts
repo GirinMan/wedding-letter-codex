@@ -8,8 +8,7 @@ export interface KakaoSharePayloadInput {
 export interface KakaoShareDescriptionInput {
   startsAt: string;
   timezone: string;
-  venueName: string;
-  hall: string;
+  summary: string;
 }
 
 export interface KakaoSharePayload {
@@ -43,8 +42,7 @@ export const defaultKakaoShareImagePath = "/assets/botanical-kakao-share.jpg";
 export function createKakaoShareDescription({
   startsAt,
   timezone,
-  venueName,
-  hall,
+  summary,
 }: KakaoShareDescriptionInput) {
   const instant = new Date(startsAt);
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -53,15 +51,10 @@ export function createKakaoShareDescription({
     month: "numeric",
     day: "numeric",
     weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
   }).formatToParts(instant);
   const value = (type: Intl.DateTimeFormatPartTypes) => (
     parts.find((part) => part.type === type)?.value ?? ""
   );
-  const hour = Number(value("hour"));
-  const minute = value("minute");
   const weekday = ({
     Sun: "일요일",
     Mon: "월요일",
@@ -71,11 +64,9 @@ export function createKakaoShareDescription({
     Fri: "금요일",
     Sat: "토요일",
   } as Record<string, string>)[value("weekday")] ?? "";
-  const hour12 = hour % 12 || 12;
-  const dateAndTime = `${value("year")}년 ${value("month")}월 ${value("day")}일 ${weekday} ${hour < 12 ? "오전" : "오후"} ${hour12}시${minute === "00" ? "" : ` ${minute}분`}`;
-  const venue = [venueName, hall].map((part) => part.trim()).filter(Boolean).join(" ");
+  const date = `${value("year")}년 ${value("month")}월 ${value("day")}일 ${weekday}`;
 
-  return [dateAndTime, venue].filter(Boolean).join("\n");
+  return [date, summary.trim()].filter(Boolean).join("\n");
 }
 
 export function isKakaoShareAvailable(javascriptKey: string) {
