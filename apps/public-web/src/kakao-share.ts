@@ -47,26 +47,32 @@ export function createKakaoShareDescription({
   hall,
 }: KakaoShareDescriptionInput) {
   const instant = new Date(startsAt);
-  const datePart = (options: Intl.DateTimeFormatOptions) => (
-    new Intl.DateTimeFormat("ko-KR", { timeZone: timezone, ...options }).format(instant)
-  );
-  const parts = new Intl.DateTimeFormat("ko-KR", {
+  const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    hour: "numeric",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    weekday: "short",
+    hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
+    hourCycle: "h23",
   }).formatToParts(instant);
   const value = (type: Intl.DateTimeFormatPartTypes) => (
     parts.find((part) => part.type === type)?.value ?? ""
   );
+  const hour = Number(value("hour"));
   const minute = value("minute");
-  const dateAndTime = [
-    datePart({ year: "numeric" }),
-    datePart({ month: "long" }),
-    datePart({ day: "numeric" }),
-    datePart({ weekday: "long" }),
-    `${value("dayPeriod")} ${value("hour")}시${minute === "00" ? "" : ` ${minute}분`}`,
-  ].filter(Boolean).join(" ");
+  const weekday = ({
+    Sun: "일요일",
+    Mon: "월요일",
+    Tue: "화요일",
+    Wed: "수요일",
+    Thu: "목요일",
+    Fri: "금요일",
+    Sat: "토요일",
+  } as Record<string, string>)[value("weekday")] ?? "";
+  const hour12 = hour % 12 || 12;
+  const dateAndTime = `${value("year")}년 ${value("month")}월 ${value("day")}일 ${weekday} ${hour < 12 ? "오전" : "오후"} ${hour12}시${minute === "00" ? "" : ` ${minute}분`}`;
   const venue = [venueName, hall].map((part) => part.trim()).filter(Boolean).join(" ");
 
   return [dateAndTime, venue].filter(Boolean).join("\n");
