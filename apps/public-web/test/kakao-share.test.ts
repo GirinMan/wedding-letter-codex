@@ -43,6 +43,25 @@ test("Kakao feed payload uses the bundled botanical image by default", () => {
   );
 });
 
+test("Kakao share description includes the wedding date, time, and venue", () => {
+  const createKakaoShareDescription = (
+    kakaoShareModule as unknown as Record<string, unknown>
+  ).createKakaoShareDescription;
+
+  assert.equal(typeof createKakaoShareDescription, "function");
+  if (typeof createKakaoShareDescription !== "function") return;
+
+  assert.equal(
+    createKakaoShareDescription({
+      startsAt: "2026-10-24T12:00:00+09:00",
+      timezone: "Asia/Seoul",
+      venueName: "청계성당",
+      hall: "대성전",
+    }),
+    "2026년 10월 24일 토요일 오후 12시\n청계성당 대성전",
+  );
+});
+
 test("Kakao sharing is available with a JavaScript key before media is uploaded", () => {
   const isKakaoShareAvailable = (
     kakaoShareModule as unknown as Record<string, unknown>

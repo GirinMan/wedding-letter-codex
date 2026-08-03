@@ -37,6 +37,7 @@ import {
   resolveInvitationThemeDesign,
 } from "./invitation-theme";
 import {
+  createKakaoShareDescription,
   createKakaoSharePayload,
   getClosingSharePresentations,
   isKakaoShareAvailable,
@@ -1344,7 +1345,12 @@ export function App() {
         javascriptKey: content.sharing.kakaoJavaScriptKey,
         payload: createKakaoSharePayload({
           title: document.title,
-          description: content.hero.subtitle,
+          description: createKakaoShareDescription({
+            startsAt: content.event.startsAt,
+            timezone: content.event.timezone,
+            venueName: content.event.venueName,
+            hall: content.event.hall,
+          }),
           imageUrl: kakaoShareImageAssetId
             ? new URL(`/api/media/${kakaoShareImageAssetId}/content`, window.location.origin).toString()
             : "",

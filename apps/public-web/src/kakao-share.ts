@@ -5,6 +5,13 @@ export interface KakaoSharePayloadInput {
   pageUrl: string;
 }
 
+export interface KakaoShareDescriptionInput {
+  startsAt: string;
+  timezone: string;
+  venueName: string;
+  hall: string;
+}
+
 export interface KakaoSharePayload {
   objectType: "feed";
   content: {
@@ -32,6 +39,38 @@ declare global {
 }
 
 export const defaultKakaoShareImagePath = "/assets/botanical-kakao-share.jpg";
+
+export function createKakaoShareDescription({
+  startsAt,
+  timezone,
+  venueName,
+  hall,
+}: KakaoShareDescriptionInput) {
+  const instant = new Date(startsAt);
+  const datePart = (options: Intl.DateTimeFormatOptions) => (
+    new Intl.DateTimeFormat("ko-KR", { timeZone: timezone, ...options }).format(instant)
+  );
+  const parts = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: timezone,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).formatToParts(instant);
+  const value = (type: Intl.DateTimeFormatPartTypes) => (
+    parts.find((part) => part.type === type)?.value ?? ""
+  );
+  const minute = value("minute");
+  const dateAndTime = [
+    datePart({ year: "numeric" }),
+    datePart({ month: "long" }),
+    datePart({ day: "numeric" }),
+    datePart({ weekday: "long" }),
+    `${value("dayPeriod")} ${value("hour")}시${minute === "00" ? "" : ` ${minute}분`}`,
+  ].filter(Boolean).join(" ");
+  const venue = [venueName, hall].map((part) => part.trim()).filter(Boolean).join(" ");
+
+  return [dateAndTime, venue].filter(Boolean).join("\n");
+}
 
 export function isKakaoShareAvailable(javascriptKey: string) {
   return Boolean(javascriptKey.trim());
