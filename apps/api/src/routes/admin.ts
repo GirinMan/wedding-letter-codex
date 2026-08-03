@@ -16,6 +16,7 @@ import {
   invitationContentSchema,
   invitationDesignSchema,
 } from "../domain/invitation.js";
+import { guestUploadIdBatchSchema } from "../domain/guest-upload.js";
 import { createRsvpCsv, type RsvpCsvRow } from "../export/rsvp-csv.js";
 import {
   createPasswordVerifier,
@@ -662,7 +663,8 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
         note,
         state,
         created_at,
-        reviewed_at
+        reviewed_at,
+        deleted_at
       FROM guest_uploads
       WHERE invitation_id = ${id}
       ORDER BY created_at DESC
@@ -684,7 +686,9 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     const [upload] = await sql`
       UPDATE guest_uploads
       SET state = ${state}, reviewed_at = now()
-      WHERE id = ${uploadId} AND invitation_id = ${id}
+      WHERE id = ${uploadId}
+        AND invitation_id = ${id}
+        AND deleted_at IS NULL
       RETURNING id, state, reviewed_at
     `;
     if (!upload) {
@@ -692,6 +696,44 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     }
     await recordAudit(request, id, "guest_upload.reviewed", { uploadId, state });
     return upload;
+  });
+
+  app.post("/api/admin/invitations/:id/guest-uploads/delete", async (request, reply) => {
+    const { id } = invitationParams.parse(request.params);
+    const { uploadIds } = guestUploadIdBatchSchema.parse(request.body);
+    const sql = getDatabase();
+    const deleted = await sql<{ id: string }[]>`
+      UPDATE guest_uploads
+      SET deleted_at = now()
+      WHERE invitation_id = ${id}
+        AND id = ANY(${sql.array(uploadIds, 2950)})
+        AND deleted_at IS NULL
+      RETURNING id
+    `;
+    if (deleted.length === 0) {
+      return reply.code(404).send({ error: "guest_upload_not_found" });
+    }
+    await recordAudit(request, id, "guest_upload.deleted", { count: deleted.length });
+    return { deletedIds: deleted.map((upload) => upload.id) };
+  });
+
+  app.post("/api/admin/invitations/:id/guest-uploads/restore", async (request, reply) => {
+    const { id } = invitationParams.parse(request.params);
+    const { uploadIds } = guestUploadIdBatchSchema.parse(request.body);
+    const sql = getDatabase();
+    const restored = await sql<{ id: string }[]>`
+      UPDATE guest_uploads
+      SET deleted_at = NULL
+      WHERE invitation_id = ${id}
+        AND id = ANY(${sql.array(uploadIds, 2950)})
+        AND deleted_at IS NOT NULL
+      RETURNING id
+    `;
+    if (restored.length === 0) {
+      return reply.code(404).send({ error: "guest_upload_not_found" });
+    }
+    await recordAudit(request, id, "guest_upload.restored", { count: restored.length });
+    return { restoredIds: restored.map((upload) => upload.id) };
   });
 
   app.get("/api/admin/guest-uploads/:uploadId/content", async (request, reply) => {

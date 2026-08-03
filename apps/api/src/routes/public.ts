@@ -137,6 +137,7 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       FROM guest_uploads
       WHERE invitation_id = ${invitation.id}
         AND state = 'approved'
+        AND deleted_at IS NULL
       ORDER BY created_at DESC
       LIMIT 30
     `;
@@ -163,6 +164,7 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       WHERE id = ${uploadId}
         AND invitation_id = ${invitation.id}
         AND state = 'approved'
+        AND deleted_at IS NULL
       LIMIT 1
     `;
     if (!upload) {
