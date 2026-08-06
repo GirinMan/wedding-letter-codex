@@ -841,6 +841,14 @@ export function App() {
                     </div>
                     <p className="panel-note">채널톡 설정의 Plugin Key만 입력하세요. Access Secret 등 비밀 키는 이 청첩장에 저장하지 않습니다.</p>
                   </div>
+
+                  <div className="feature-block">
+                    <div className="feature-block__header">
+                      <h3>GitHub 버튼</h3>
+                      <label className="toggle-row"><span>사용</span><input type="checkbox" checked={invitation.draftContent.sharing.githubButton.enabled} onChange={(event) => updateContent((draft) => { draft.sharing.githubButton.enabled = event.target.checked; })} /></label>
+                    </div>
+                    <p className="panel-note">청첩장 상단 좌측에 GitHub 아이콘 버튼을 표시합니다. 버튼은 GirinMan/wedding-letter-codex 저장소로 연결됩니다.</p>
+                  </div>
                 </Panel>
 
                 <Panel title="계좌 정보" description="신랑·신부 측 그룹과 계좌를 추가하거나 삭제할 수 있습니다." actions={<button className="button button--primary" onClick={() => void saveContent()}>저장</button>}>

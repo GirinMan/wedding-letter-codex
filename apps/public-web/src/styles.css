@@ -1374,7 +1374,8 @@ textarea:focus-visible {
 }
 
 .music-button,
-.floating-menu-button {
+.floating-menu-button,
+.github-button {
   position: fixed;
   z-index: 20;
   right: max(20px, calc((100vw - 430px) / 2 + 18px));
@@ -1392,6 +1393,18 @@ textarea:focus-visible {
 
 .music-button {
   top: 20px;
+}
+
+.github-button {
+  top: 20px;
+  left: max(20px, calc((100vw - 430px) / 2 + 18px));
+  color: var(--ink);
+}
+
+.github-button svg {
+  width: 23px;
+  height: 23px;
+  fill: currentColor;
 }
 
 .music-button::before {
@@ -2657,6 +2670,7 @@ textarea:focus-visible {
 
 .page-shell--catalog .music-button,
 .page-shell--catalog .floating-menu-button,
+.page-shell--catalog .github-button,
 .page-shell--catalog .celebration-button {
   border: 0;
   border-radius: 999px;
@@ -2855,8 +2869,13 @@ textarea:focus-visible {
 
   .music-button,
   .floating-menu-button,
+  .github-button,
   .celebration-button {
     right: 16px;
+  }
+
+  .github-button {
+    left: 16px;
   }
 
   .ambient-guestbook-letter {

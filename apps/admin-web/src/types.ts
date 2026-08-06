@@ -144,6 +144,7 @@ export interface InvitationContent {
     kakaoJavaScriptKey: string;
     kakaoShareImage: { assetId: string | null };
     channelTalk: { enabled: boolean; pluginKey: string };
+    githubButton: { enabled: boolean };
   };
   sectionCopy: {
     interview: SectionHeadingCopy;

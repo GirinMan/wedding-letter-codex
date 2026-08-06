@@ -292,10 +292,14 @@ export const invitationContentSchema = z.object({
       enabled: z.boolean().default(false),
       pluginKey: z.string().trim().max(200).default(""),
     }).default({ enabled: false, pluginKey: "" }),
+    githubButton: z.object({
+      enabled: z.boolean().default(false),
+    }).default({ enabled: false }),
   }).default({
     kakaoJavaScriptKey: "",
     kakaoShareImage: { assetId: null },
     channelTalk: { enabled: false, pluginKey: "" },
+    githubButton: { enabled: false },
   }),
   sectionCopy: sectionCopySchema,
   middleImage: mediaReferenceSchema.default({
@@ -618,6 +622,7 @@ export const sampleInvitationContent: InvitationContent = {
     kakaoJavaScriptKey: "",
     kakaoShareImage: { assetId: null },
     channelTalk: { enabled: false, pluginKey: "" },
+    githubButton: { enabled: false },
   },
   sectionCopy: defaultSectionCopy,
   middleImage: {

@@ -42,6 +42,8 @@ test("legacy invitation documents receive defaults for new media slots", () => {
   delete legacy.sectionCopy;
   delete legacy.profiles;
   delete legacy.celebration;
+  const sharing = legacy.sharing as Record<string, unknown>;
+  delete sharing.githubButton;
   const guestUploads = legacy.guestUploads as Record<string, unknown>;
   delete guestUploads.fallbackItems;
   const sections = legacy.sections as Array<{ id: string }>;
@@ -74,6 +76,7 @@ test("legacy invitation documents receive defaults for new media slots", () => {
     kakaoJavaScriptKey: "",
     kakaoShareImage: { assetId: null },
     channelTalk: { enabled: false, pluginKey: "" },
+    githubButton: { enabled: false },
   });
   assert.equal(parsed.profiles.items.length, 2);
   assert.equal(parsed.profiles.items[0]?.side, "partnerOne");
