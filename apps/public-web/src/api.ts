@@ -63,7 +63,10 @@ export function deleteGuestbookEntry(
   });
 }
 
-export function submitRsvp(slug: string, body: Record<string, unknown>): Promise<void> {
+export function submitRsvp(
+  slug: string,
+  body: Record<string, unknown>,
+): Promise<{ id: string; createdAt: string; guestbookEntry: GuestbookEntry | null }> {
   return request(`/api/public/invitations/${slug}/rsvps`, {
     method: "POST",
     body: JSON.stringify(body),

@@ -235,6 +235,7 @@ export function App() {
   const [rsvps, setRsvps] = useState<Rsvp[]>([]);
   const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
   const [uploads, setUploads] = useState<GuestUpload[]>([]);
+  const [selectedRsvpNoteIds, setSelectedRsvpNoteIds] = useState<Set<string>>(() => new Set());
   const [selectedUploadIds, setSelectedUploadIds] = useState<Set<string>>(() => new Set());
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
@@ -428,6 +429,7 @@ export function App() {
   const { active: activeUploads, deleted: deletedUploads } = partitionGuestUploads(uploads);
   const pendingUploads = activeUploads.filter((upload) => upload.state === "pending").length;
   const attending = rsvps.filter((rsvp) => rsvp.attending).length;
+  const rsvpNoteCandidates = rsvps.filter((rsvp) => rsvp.note && !rsvp.guestbookEntryId);
   const connectedAssetIds = collectConnectedAssetIds(invitation.draftContent);
   const allActiveUploadsSelected = activeUploads.length > 0
     && activeUploads.every((upload) => selectedUploadIds.has(upload.id));
@@ -449,6 +451,28 @@ export function App() {
     await api.restoreGuestUploads(invitation.id, uploadIds);
     await refreshGuestUploads();
     setNotice(`${uploadIds.length}장의 사진을 복구했습니다.`);
+  };
+
+  const promoteSelectedRsvpNotes = async () => {
+    const rsvpIds = [...selectedRsvpNoteIds];
+    if (rsvpIds.length === 0) return;
+    const confirmed = window.confirm(
+      `선택한 ${rsvpIds.length}개의 메모를 이름과 함께 공개 방명록에 게시할까요?`,
+    );
+    if (!confirmed) return;
+    try {
+      const { promotedIds } = await api.promoteRsvpNotes(invitation.id, rsvpIds);
+      setSelectedRsvpNoteIds(new Set());
+      const [rsvpResponse, guestbookResponse] = await Promise.all([
+        api.rsvps(invitation.id),
+        api.guestbook(invitation.id),
+      ]);
+      setRsvps(rsvpResponse.rsvps);
+      setGuestbook(guestbookResponse.entries);
+      setNotice(`${promotedIds.length}개의 RSVP 메모를 방명록에 공개했습니다.`);
+    } catch {
+      setNotice("선택한 메모를 방명록에 공개하지 못했습니다.");
+    }
   };
 
   return (
@@ -1207,8 +1231,22 @@ export function App() {
                   </a>
                 )}
               >
-                <div className="table-wrap"><table><thead><tr><th>이름</th><th>참석</th><th>구분</th><th>인원</th><th>식사</th><th>셔틀</th><th>연락처</th><th>메모</th><th>접수일</th></tr></thead><tbody>
-                  {rsvps.map((rsvp) => <tr key={rsvp.id}><td>{rsvp.name}</td><td><span className={`pill ${rsvp.attending ? "pill--ok" : ""}`}>{rsvp.attending ? "참석" : "불참"}</span></td><td>{rsvp.party === "partnerOne" ? "신랑" : "신부"}</td><td>{rsvp.additionalGuests + 1}</td><td>{rsvp.meal ? mealLabels[rsvp.meal] : "—"}</td><td>{rsvp.shuttle ? shuttleLabels[rsvp.shuttle] : "—"}</td><td>{rsvp.phone}</td><td>{rsvp.note || "—"}</td><td>{new Date(rsvp.createdAt).toLocaleDateString("ko-KR")}</td></tr>)}
+                {rsvpNoteCandidates.length > 0 ? (
+                  <div className="upload-toolbar">
+                    <strong>방명록 후보</strong>
+                    <span>축하 글로 명확한 메모만 검토해 선택하세요. 선택 즉시 공개됩니다.</span>
+                    <button
+                      className="button button--primary"
+                      type="button"
+                      disabled={selectedRsvpNoteIds.size === 0}
+                      onClick={() => void promoteSelectedRsvpNotes()}
+                    >
+                      선택한 메모 공개 ({selectedRsvpNoteIds.size})
+                    </button>
+                  </div>
+                ) : null}
+                <div className="table-wrap"><table><thead><tr><th>후보</th><th>이름</th><th>참석</th><th>구분</th><th>인원</th><th>식사</th><th>셔틀</th><th>연락처</th><th>메모</th><th>접수일</th></tr></thead><tbody>
+                  {rsvps.map((rsvp) => <tr key={rsvp.id}><td>{rsvp.note && !rsvp.guestbookEntryId ? <input type="checkbox" aria-label={`${rsvp.name}님의 메모를 방명록 후보로 선택`} checked={selectedRsvpNoteIds.has(rsvp.id)} onChange={() => setSelectedRsvpNoteIds((current) => { const next = new Set(current); if (next.has(rsvp.id)) next.delete(rsvp.id); else next.add(rsvp.id); return next; })} /> : rsvp.guestbookEntryId ? <span className={`pill ${rsvp.guestbookEntryState === "visible" ? "pill--ok" : ""}`}>{rsvp.guestbookEntryState === "visible" ? "공개됨" : rsvp.guestbookEntryState === "hidden" ? "숨김" : "삭제됨"}</span> : "—"}</td><td>{rsvp.name}</td><td><span className={`pill ${rsvp.attending ? "pill--ok" : ""}`}>{rsvp.attending ? "참석" : "불참"}</span></td><td>{rsvp.party === "partnerOne" ? "신랑" : "신부"}</td><td>{rsvp.additionalGuests + 1}</td><td>{rsvp.meal ? mealLabels[rsvp.meal] : "—"}</td><td>{rsvp.shuttle ? shuttleLabels[rsvp.shuttle] : "—"}</td><td>{rsvp.phone || "—"}</td><td>{rsvp.note || "—"}</td><td>{new Date(rsvp.createdAt).toLocaleDateString("ko-KR")}</td></tr>)}
                 </tbody></table></div>
               </Panel>
             ) : null}

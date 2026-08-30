@@ -1395,7 +1395,7 @@ export function App() {
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     try {
-      await submitRsvp(slug, {
+      const result = await submitRsvp(slug, {
         attending: form.get("attending") === "true",
         name: form.get("name"),
         party: form.get("party"),
@@ -1403,11 +1403,20 @@ export function App() {
         additionalGuests: Number(form.get("additionalGuests") ?? 0),
         meal: form.get("meal") || null,
         shuttle: form.get("shuttle") || null,
-        note: form.get("note") ?? "",
+        guestbookMessage: form.get("guestbookMessage") ?? "",
         privacyConsent: form.get("privacyConsent") === "on",
       });
+      const guestbookEntry = result.guestbookEntry;
+      if (guestbookEntry) {
+        setGuestbook((entries) => [
+          guestbookEntry,
+          ...entries.filter((entry) => entry.id !== guestbookEntry.id),
+        ]);
+      }
       setDialog(null);
-      setNotice("참석 의사를 전달했습니다. 고맙습니다.");
+      setNotice(result.guestbookEntry
+        ? "참석 의사와 축하 메시지를 전달했습니다. 고맙습니다."
+        : "참석 의사를 전달했습니다. 고맙습니다.");
       formElement.reset();
     } catch {
       setNotice("전송하지 못했습니다. 입력 내용을 확인해 주세요.");
@@ -2017,22 +2026,31 @@ export function App() {
       <Dialog open={dialog === "rsvp"} title={content.rsvp.title} onClose={() => setDialog(null)}>
         <form className="form-stack" onSubmit={(event) => void handleRsvp(event)}>
           <fieldset className="choice-grid">
-            <legend>참석 여부</legend>
+            <legend>참석 여부 <span className="required-mark" aria-hidden="true">*</span></legend>
             <label><input type="radio" name="attending" value="true" required /> 참석합니다</label>
             <label><input type="radio" name="attending" value="false" required /> 참석이 어렵습니다</label>
           </fieldset>
-          <label>이름<input name="name" required maxLength={80} /></label>
-          <label>구분<select name="party" required><option value="partnerOne">신랑 측</option><option value="partnerTwo">신부 측</option></select></label>
-          <label>연락처<input name="phone" type="tel" required maxLength={30} /></label>
-          <label>추가 인원<input name="additionalGuests" type="number" min="0" max="20" defaultValue="0" /></label>
           {content.rsvp.collectMeal ? (
-            <label>식사 여부<select name="meal"><option value="undecided">미정</option><option value="yes">식사함</option><option value="no">식사 안 함</option></select></label>
+            <fieldset className="choice-grid">
+              <legend>식사 여부 <span className="required-mark" aria-hidden="true">*</span></legend>
+              <label><input type="radio" name="meal" value="yes" required /> 식사합니다</label>
+              <label><input type="radio" name="meal" value="no" required /> 식사하지 않습니다</label>
+            </fieldset>
           ) : null}
+          <label><span className="field-label">이름 <span className="required-mark" aria-hidden="true">*</span></span><input name="name" required maxLength={80} /></label>
+          <label><span className="field-label">구분 <span className="required-mark" aria-hidden="true">*</span></span><select name="party" required defaultValue=""><option value="" disabled>선택해 주세요</option><option value="partnerOne">신랑 측</option><option value="partnerTwo">신부 측</option></select></label>
+          <label>연락처 (선택)<input name="phone" type="tel" maxLength={30} /></label>
+          <label>추가 인원<input name="additionalGuests" type="number" min="0" max="20" defaultValue="0" /></label>
           {content.rsvp.collectShuttle ? (
             <label>셔틀버스<select name="shuttle"><option value="undecided">미정</option><option value="yes">이용함</option><option value="no">이용 안 함</option></select></label>
           ) : null}
-          <label>전할 말<textarea name="note" maxLength={300} rows={3} /></label>
-          <label className="check-line"><input name="privacyConsent" type="checkbox" required /> 참석 확인을 위한 개인정보 수집에 동의합니다.</label>
+          {content.guestbook.enabled ? (
+            <>
+              <label>축하 메시지 (선택)<textarea name="guestbookMessage" maxLength={500} rows={3} /></label>
+              <p className="form-help">입력한 축하 메시지는 이름과 함께 방명록에 공개됩니다.</p>
+            </>
+          ) : null}
+          <label className="check-line"><input name="privacyConsent" type="checkbox" required /> <span>개인정보 수집에 동의합니다. 수집한 정보는 당일 예식 참석자 규모를 확인하고 원활하게 대응하는 목적 외에는 사용하지 않으며, 결혼식 이후 폐기할 예정입니다.</span></label>
           <button className="primary-button" type="submit">전달하기</button>
         </form>
       </Dialog>
@@ -2045,15 +2063,17 @@ export function App() {
                 <strong>{entry.name}</strong>
                 <span className="guestbook-list__meta">
                   <time>{new Date(entry.createdAt).toLocaleDateString("ko-KR")}</time>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGuestbookDeleteTarget(entry);
-                      setDialog("guestbook-delete");
-                    }}
-                  >
-                    삭제
-                  </button>
+                  {entry.canDelete ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGuestbookDeleteTarget(entry);
+                        setDialog("guestbook-delete");
+                      }}
+                    >
+                      삭제
+                    </button>
+                  ) : null}
                 </span>
               </div>
               <p>{entry.message}</p>

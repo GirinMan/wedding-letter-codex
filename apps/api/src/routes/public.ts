@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getConfig } from "../config.js";
 import { getDatabase } from "../db.js";
 import { invitationContentSchema, invitationDesignSchema } from "../domain/invitation.js";
+import { parseRsvpSubmission } from "../domain/rsvp.js";
 import { createPasswordVerifier, verifyPassword } from "../security/credentials.js";
 import { getObject, putObject } from "../storage.js";
 
@@ -19,18 +20,6 @@ const guestbookBody = z.object({
 });
 
 const deleteGuestbookBody = z.object({ password: z.string().min(4).max(100) });
-
-const rsvpBody = z.object({
-  attending: z.boolean(),
-  name: z.string().trim().min(1).max(80),
-  party: z.enum(["partnerOne", "partnerTwo"]),
-  phone: z.string().trim().min(7).max(30),
-  additionalGuests: z.number().int().min(0).max(20).default(0),
-  meal: z.enum(["yes", "no", "undecided"]).nullable().default(null),
-  shuttle: z.enum(["yes", "no", "undecided"]).nullable().default(null),
-  note: z.string().trim().max(300).default(""),
-  privacyConsent: z.literal(true),
-});
 
 const allowedGuestUploadTypes = new Set([
   "image/jpeg",
@@ -96,7 +85,8 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
     const sql = getDatabase();
     const rows = query.cursor
       ? await sql`
-          SELECT id, name, message, created_at
+          SELECT id, name, message, created_at,
+            (password_verifier IS NOT NULL) AS can_delete
           FROM guestbook_entries
           WHERE invitation_id = ${invitation.id}
             AND state = 'visible'
@@ -105,7 +95,8 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
           LIMIT ${query.limit}
         `
       : await sql`
-          SELECT id, name, message, created_at
+          SELECT id, name, message, created_at,
+            (password_verifier IS NOT NULL) AS can_delete
           FROM guestbook_entries
           WHERE invitation_id = ${invitation.id}
             AND state = 'visible'
@@ -208,7 +199,7 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
         ${body.message},
         ${await createPasswordVerifier(body.password)}
       )
-      RETURNING id, name, message, created_at
+      RETURNING id, name, message, created_at, true AS can_delete
     `;
     return reply.code(201).send(entry);
   });
@@ -230,9 +221,10 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       WHERE id = ${entryId}
         AND invitation_id = ${invitation.id}
         AND state = 'visible'
+        AND source_rsvp_id IS NULL
       LIMIT 1
     `;
-    if (!entry || !(await verifyPassword(body.password, entry.passwordVerifier))) {
+    if (!entry?.passwordVerifier || !(await verifyPassword(body.password, entry.passwordVerifier))) {
       return reply.code(403).send({ error: "invalid_password" });
     }
 
@@ -248,7 +240,6 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
     config: { rateLimit: { max: 5, timeWindow: "10 minutes" } },
   }, async (request, reply) => {
     const { slug } = slugParams.parse(request.params);
-    const body = rsvpBody.parse(request.body);
     const invitation = await findPublishedInvitation(slug);
     if (!invitation) {
       return reply.code(404).send({ error: "invitation_not_found" });
@@ -258,34 +249,68 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
     if (!content.rsvp.enabled) {
       return reply.code(403).send({ error: "rsvp_disabled" });
     }
+    const body = parseRsvpSubmission(request.body, {
+      collectMeal: content.rsvp.collectMeal,
+    });
 
     const sql = getDatabase();
-    const [rsvp] = await sql`
-      INSERT INTO rsvps (
-        invitation_id,
-        attending,
-        name,
-        party,
-        phone,
-        additional_guests,
-        meal,
-        shuttle,
-        note
-      )
-      VALUES (
-        ${invitation.id},
-        ${body.attending},
-        ${body.name},
-        ${body.party},
-        ${body.phone},
-        ${body.additionalGuests},
-        ${body.meal},
-        ${body.shuttle},
-        ${body.note}
-      )
-      RETURNING id, created_at
-    `;
-    return reply.code(201).send(rsvp);
+    const result = await sql.begin(async (transaction) => {
+      const [rsvp] = await transaction<{ id: string; createdAt: Date }[]>`
+        INSERT INTO rsvps (
+          invitation_id,
+          attending,
+          name,
+          party,
+          phone,
+          additional_guests,
+          meal,
+          shuttle,
+          note
+        )
+        VALUES (
+          ${invitation.id},
+          ${body.attending},
+          ${body.name},
+          ${body.party},
+          ${body.phone},
+          ${body.additionalGuests},
+          ${body.meal},
+          ${body.shuttle},
+          ${body.privateNote || (content.guestbook.enabled ? "" : body.guestbookMessage)}
+        )
+        RETURNING id, created_at
+      `;
+      if (!rsvp) {
+        throw new Error("rsvp_insert_failed");
+      }
+
+      let guestbookEntry = null;
+      if (content.guestbook.enabled && body.guestbookMessage) {
+        [guestbookEntry] = await transaction`
+          INSERT INTO guestbook_entries (
+            invitation_id,
+            name,
+            message,
+            password_verifier,
+            source_rsvp_id,
+            created_at
+          )
+          SELECT
+            ${invitation.id},
+            ${body.name},
+            ${body.guestbookMessage},
+            NULL,
+            r.id,
+            r.created_at
+          FROM rsvps r
+          WHERE r.id = ${rsvp.id}
+          RETURNING id, name, message, created_at, false AS can_delete
+        `;
+      }
+
+      return { ...rsvp, guestbookEntry };
+    });
+    return reply.code(201).send(result);
   });
 
   app.post("/api/public/invitations/:slug/guest-uploads", {

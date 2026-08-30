@@ -213,6 +213,8 @@ export interface Rsvp {
   meal: string | null;
   shuttle: string | null;
   note: string;
+  guestbookEntryId: string | null;
+  guestbookEntryState: "visible" | "hidden" | "deleted" | null;
   createdAt: string;
 }
 

@@ -56,6 +56,10 @@ export const api = {
     method: "DELETE",
   }),
   rsvps: (id: string) => request<{ rsvps: Rsvp[] }>(`/api/admin/invitations/${id}/rsvps`),
+  promoteRsvpNotes: (id: string, rsvpIds: string[]) => request<{ promotedIds: string[] }>(
+    `/api/admin/invitations/${id}/rsvps/promote-notes`,
+    { method: "POST", body: JSON.stringify({ rsvpIds }) },
+  ),
   guestbook: (id: string) => request<{ entries: GuestbookEntry[] }>(`/api/admin/invitations/${id}/guestbook`),
   moderateGuestbook: (id: string, entryId: string, state: GuestbookEntry["state"]) => request(
     `/api/admin/invitations/${id}/guestbook/${entryId}`,

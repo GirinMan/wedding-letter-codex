@@ -2010,6 +2010,17 @@ textarea:focus-visible {
   font-size: .67rem;
 }
 
+.required-mark {
+  color: #a33e37;
+  font-weight: 700;
+}
+
+.field-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .2em;
+}
+
 .guestbook-list {
   display: grid;
   gap: 10px;

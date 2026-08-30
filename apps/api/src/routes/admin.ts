@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { Sql, TransactionSql } from "postgres";
 import { z } from "zod";
 
 import {
@@ -17,6 +18,7 @@ import {
   invitationDesignSchema,
 } from "../domain/invitation.js";
 import { guestUploadIdBatchSchema } from "../domain/guest-upload.js";
+import { rsvpPromotionBodySchema } from "../domain/rsvp.js";
 import { createRsvpCsv, type RsvpCsvRow } from "../export/rsvp-csv.js";
 import {
   createPasswordVerifier,
@@ -60,11 +62,11 @@ async function recordAudit(
   invitationId: string | null,
   action: string,
   details: Record<string, string | number | boolean | null | undefined> = {},
+  sql: Sql | TransactionSql = getDatabase(),
 ): Promise<void> {
   if (!request.admin) {
     return;
   }
-  const sql = getDatabase();
   await sql`
     INSERT INTO audit_events (invitation_id, admin_user_id, action, details)
     VALUES (
@@ -567,10 +569,23 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     const sql = getDatabase();
     return {
       rsvps: await sql`
-        SELECT *
-        FROM rsvps
-        WHERE invitation_id = ${id}
-        ORDER BY created_at DESC
+        SELECT
+          r.id,
+          r.attending,
+          r.name,
+          r.party,
+          r.phone,
+          r.additional_guests,
+          r.meal,
+          r.shuttle,
+          COALESCE(g.message, r.note) AS note,
+          g.id AS guestbook_entry_id,
+          g.state AS guestbook_entry_state,
+          r.created_at
+        FROM rsvps r
+        LEFT JOIN guestbook_entries g ON g.source_rsvp_id = r.id
+        WHERE r.invitation_id = ${id}
+        ORDER BY r.created_at DESC
       `,
     };
   });
@@ -589,18 +604,19 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     }
     const rows = await sql<RsvpCsvRow[]>`
       SELECT
-        created_at,
-        attending,
-        party,
-        name,
-        phone,
-        additional_guests,
-        meal,
-        shuttle,
-        note
-      FROM rsvps
-      WHERE invitation_id = ${id}
-      ORDER BY created_at DESC
+        r.created_at,
+        r.attending,
+        r.party,
+        r.name,
+        r.phone,
+        r.additional_guests,
+        r.meal,
+        r.shuttle,
+        COALESCE(g.message, r.note) AS note
+      FROM rsvps r
+      LEFT JOIN guestbook_entries g ON g.source_rsvp_id = r.id
+      WHERE r.invitation_id = ${id}
+      ORDER BY r.created_at DESC
     `;
 
     reply.header("Content-Type", "text/csv; charset=utf-8");
@@ -610,6 +626,59 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
     );
     reply.header("Cache-Control", "private, no-store");
     return reply.send(createRsvpCsv(rows));
+  });
+
+  app.post("/api/admin/invitations/:id/rsvps/promote-notes", async (request, reply) => {
+    const { id } = invitationParams.parse(request.params);
+    const { rsvpIds } = rsvpPromotionBodySchema.parse(request.body);
+    if (!(await invitationExists(id))) {
+      return reply.code(404).send({ error: "invitation_not_found" });
+    }
+
+    const sql = getDatabase();
+    const promotedIds = await sql.begin(async (transaction) => {
+      const promoted = await transaction<{ sourceRsvpId: string }[]>`
+        INSERT INTO guestbook_entries (
+          invitation_id,
+          name,
+          message,
+          password_verifier,
+          source_rsvp_id,
+          created_at
+        )
+        SELECT
+          r.invitation_id,
+          r.name,
+          btrim(r.note),
+          NULL,
+          r.id,
+          r.created_at
+        FROM rsvps r
+        WHERE r.invitation_id = ${id}
+          AND r.id = ANY(${transaction.array(rsvpIds, 2950)})
+          AND btrim(r.note) <> ''
+        ON CONFLICT (source_rsvp_id) DO NOTHING
+        RETURNING source_rsvp_id
+      `;
+      const ids = promoted.map((entry) => entry.sourceRsvpId);
+      if (ids.length > 0) {
+        await transaction`
+          UPDATE rsvps
+          SET note = ''
+          WHERE invitation_id = ${id}
+            AND id = ANY(${transaction.array(ids, 2950)})
+        `;
+        await recordAudit(
+          request,
+          id,
+          "rsvp.notes_promoted",
+          { count: ids.length },
+          transaction,
+        );
+      }
+      return ids;
+    });
+    return { promotedIds };
   });
 
   app.get("/api/admin/invitations/:id/guestbook", async (request, reply) => {
