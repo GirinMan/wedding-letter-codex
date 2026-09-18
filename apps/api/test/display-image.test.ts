@@ -62,7 +62,30 @@ test("unsupported HEIC and corrupt images fall back to original without writing 
   }
 });
 
-test("only one fixed rendition can be requested", () => {
+test("only fixed renditions can be requested", () => {
   assert.deepEqual(imageSizeQuery.parse({size: "display"}), {size: "display"});
   assert.equal(imageSizeQuery.safeParse({size: "99999"}).success, false);
+});
+
+test("thumbnail rendition is smaller and has a separate cache from the display image", async () => {
+  const original = await fixture();
+  const entries = new Map<string, {body: Buffer; contentType: string}>([["photo",{body:original,contentType:"image/jpeg"}]]);
+  const get = createDisplayImageStore({
+    async getObject(key) {
+      const object=entries.get(key);
+      if (!object) throw Object.assign(new Error('missing'),{name:'NoSuchKey'});
+      return {body:Readable.from(object.body),contentType:object.contentType,contentLength:object.body.length};
+    },
+    async putObject(input) {entries.set(input.key,input);},
+  });
+  const [small,large] = await Promise.all([get('photo','thumbnail'),get('photo','display')]);
+  const read = async (body: Readable) => {const chunks:Buffer[]=[];for await(const chunk of body) chunks.push(Buffer.from(chunk));return Buffer.concat(chunks);};
+  const smallBytes=await read(small.body), largeBytes=await read(large.body);
+  assert.equal((await sharp(smallBytes).metadata()).height,480);
+  assert.equal((await sharp(largeBytes).metadata()).height,1280);
+  assert.ok(smallBytes.length < largeBytes.length);
+  assert.equal(entries.size,3);
+  (await get('photo','thumbnail')).body.destroy();
+  assert.equal(entries.size,3);
+  assert.deepEqual(imageSizeQuery.parse({size:'thumbnail'}),{size:'thumbnail'});
 });

@@ -3,21 +3,22 @@ import sharp from "sharp";
 import { z } from "zod";
 import { getObject, putObject } from "./storage.js";
 
-// Only one versioned display rendition: callers cannot trigger arbitrary transforms.
-export const imageSizeQuery = z.object({ size: z.literal("display").optional() });
+// Fixed cached renditions only; callers cannot trigger arbitrary transforms.
+export const imageSizeQuery = z.object({ size: z.enum(["display", "thumbnail"]).optional() });
+type ImageSize = 'display' | 'thumbnail';
 const MAX_SOURCE_BYTES = 32 * 1024 * 1024;
 class UnsupportedDisplayImage extends Error {}
 const supportedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
 sharp.cache({ memory: 16, files: 0, items: 16 });
 sharp.concurrency(1);
 
-export async function createDisplayImage(input: Buffer): Promise<Buffer> {
+export async function createDisplayImage(input: Buffer, size: ImageSize = 'display'): Promise<Buffer> {
   if (input.length > MAX_SOURCE_BYTES) throw new Error("Image source too large");
   return sharp(input, { limitInputPixels: 64_000_000, animated: false })
     .timeout({ seconds: 15 })
     .rotate()
-    .resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true })
-    .webp({ quality: 82, effort: 3 })
+    .resize({ width: size === 'thumbnail' ? 480 : 1280, height: size === 'thumbnail' ? 480 : 1280, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: size === 'thumbnail' ? 72 : 82, effort: 3 })
     .toBuffer();
 }
 
@@ -28,8 +29,8 @@ export function createDisplayImageStore(storage: Storage) {
   const pending = new Map<string, Promise<void>>();
   const failures = new Map<string, number>();
   let tail = Promise.resolve();
-  return async function getDisplayObject(key: string): Promise<StoredObject> {
-    const cacheKey = `display-images/v1/${createHash("sha256").update(key).digest("hex")}.webp`;
+  return async function getDisplayObject(key: string, size: ImageSize = 'display'): Promise<StoredObject> {
+    const cacheKey = `${size === 'thumbnail' ? 'thumbnail-images' : 'display-images'}/v1/${createHash("sha256").update(key).digest("hex")}.webp`;
     try {
       return await storage.getObject(cacheKey);
     } catch (error) {
@@ -38,10 +39,10 @@ export function createDisplayImageStore(storage: Storage) {
         return storage.getObject(key);
       }
     }
-    if ((failures.get(key) ?? 0) > Date.now()) return storage.getObject(key);
+    if ((failures.get(cacheKey) ?? 0) > Date.now()) return storage.getObject(key);
     // Bound both CPU and queued work; originals remain available under a burst.
-    if (!pending.has(key) && pending.size >= 16) return storage.getObject(key);
-    let work = pending.get(key);
+    if (!pending.has(cacheKey) && pending.size >= 16) return storage.getObject(key);
+    let work = pending.get(cacheKey);
     if (!work) {
       work = tail.then(async () => {
         const original = await storage.getObject(key);
@@ -57,15 +58,15 @@ export function createDisplayImageStore(storage: Storage) {
             if (length > MAX_SOURCE_BYTES) throw new Error("Image source too large");
             chunks.push(bytes);
           }
-          const body = await createDisplayImage(Buffer.concat(chunks));
+          const body = await createDisplayImage(Buffer.concat(chunks), size);
           await storage.putObject({ key: cacheKey, body, contentType: "image/webp" });
         } finally {
           original.body.destroy();
         }
       });
-      pending.set(key, work);
+      pending.set(cacheKey, work);
       tail = work.catch(() => {});
-      void work.finally(() => pending.delete(key)).catch(() => {});
+      void work.finally(() => pending.delete(cacheKey)).catch(() => {});
     }
     try {
       await work;
@@ -73,7 +74,7 @@ export function createDisplayImageStore(storage: Storage) {
     } catch (error) {
       // HEIC/unsupported/corrupt originals still use the existing delivery path.
       if (failures.size >= 256) failures.delete(failures.keys().next().value!);
-      failures.set(key, Date.now() + (error instanceof UnsupportedDisplayImage ? 60 * 60_000 : 60_000));
+      failures.set(cacheKey, Date.now() + (error instanceof UnsupportedDisplayImage ? 60 * 60_000 : 60_000));
       return storage.getObject(key);
     }
   };

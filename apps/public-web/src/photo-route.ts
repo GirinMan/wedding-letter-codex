@@ -28,3 +28,16 @@ export function groupPhotosByHour(photos: readonly import('./guest-upload-galler
   }
   return [...groups.values()];
 }
+
+/** Consecutive matching captions form a group without changing chronological order. */
+export function groupPhotosByDetails(photos: readonly import('./guest-upload-gallery').GuestUploadPhoto[]) {
+  const groups: Array<{key: string; name: string; note: string; photos: import('./guest-upload-gallery').GuestUploadPhoto[]}> = [];
+  for (const photo of photos) {
+    const name = photo.uploaderName?.trim() ?? '';
+    const note = photo.note?.trim() ?? '';
+    const previous = groups.at(-1);
+    if (previous && previous.name === name && previous.note === note) previous.photos.push(photo);
+    else groups.push({key: photo.id, name, note, photos: [photo]});
+  }
+  return groups;
+}

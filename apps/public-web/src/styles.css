@@ -3034,3 +3034,10 @@ textarea:focus-visible {
 .guest-photo-upload__results [data-state="success"] small { font-weight: 700; }
 .guest-photo-upload__results [data-state="error"] small { color: #a32626; }
 .guest-photo-upload input[type="file"] { max-width: 100%; }
+
+/* Captions stay compact beneath each hourly heading, including long guest notes. */
+.photo-album__detail + .photo-album__detail { margin-top: 14px; }
+.photo-album__caption { border-top: 1px solid var(--line); padding: 10px 0 8px; overflow-wrap: anywhere; }
+.photo-album__caption h3 { margin: 0; font-size: .8rem; font-weight: 600; }
+.photo-album__caption p { margin: 4px 0 0; font-size: .75rem; line-height: 1.65; white-space: pre-wrap; color: var(--muted); }
+.photo-album__tile img[aria-busy="true"] { background: var(--line); color: transparent; }

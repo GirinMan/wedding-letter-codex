@@ -33,3 +33,17 @@ test('preloader starts before scrolling, deduplicates, bounds concurrency, retri
   assert.equal(calls.filter(u=>u==='/1').length,1); assert.equal(peak,2);
   assert.deepEqual(await loader(['/bad']),['/bad']);
 });
+
+test('caption groups preserve time order, merge across page boundaries, and handle missing fields', () => {
+  const photo = (id: string, uploaderName?: string, note?: string) => ({id,url:`/${id}`,alt:id,uploaderName,note});
+  const groups = helpers.groupPhotosByDetails([
+    photo('1',' 민수 ','축하해요\n행복하세요'), photo('2','민수','축하해요\n행복하세요'),
+    photo('3','민수','다른 메모'), photo('4',undefined,'메모만'), photo('5'), photo('6'),
+    photo('7','민수','축하해요\n행복하세요'),
+  ]);
+  assert.deepEqual(groups.map(g=>g.photos.map(p=>p.id)), [['1','2'],['3'],['4'],['5','6'],['7']]);
+  assert.equal(groups[0].name,'민수');
+  assert.equal(groups[0].note,'축하해요\n행복하세요');
+  assert.equal(groups[2].name,'');
+  assert.equal(groups[3].note,'');
+});

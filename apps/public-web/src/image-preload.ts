@@ -4,6 +4,10 @@ export function displayImageUrl(url: string) {
   return `${url}${url.includes('?') ? '&' : '?'}size=display`;
 }
 
+export function thumbnailImageUrl(url: string) {
+  return `${url}${url.includes('?') ? '&' : '?'}size=thumbnail`;
+}
+
 export function mediaImageUrl(media: MediaReference, preview = false): string | null {
   if (!media.assetId) return null;
   return preview ? `/api/admin/media/${media.assetId}/content`
