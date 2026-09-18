@@ -1,5 +1,8 @@
 export type PhotoUploadState = 'pending' | 'uploading' | 'success' | 'error';
-export const MAX_PHOTO_SELECTION = 20;
+export const MAX_PHOTO_SELECTION = 100;
+export class PhotoUploadError extends Error {
+  constructor(message: string, public readonly stopBatch = false) { super(message); }
+}
 const types: Record<string,string> = {jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'};
 export function guestPhotoType(file: File) {
   return file.type || types[file.name.split('.').at(-1)?.toLowerCase() ?? ''] || '';
@@ -15,8 +18,10 @@ export async function sendPhotoBatch(
   entries: Array<{file: File; index: number}>, name: string, note: string,
   send: (form: FormData) => Promise<void>,
   update: (index: number, state: PhotoUploadState, message?: string) => void,
+  shouldContinue: () => boolean = () => true,
 ) {
   for (const {file,index} of entries) {
+    if (!shouldContinue()) break;
     const validation = validateGuestPhoto(file);
     if (validation) { update(index,'error',validation); continue; }
     update(index,'uploading');
@@ -24,6 +29,9 @@ export async function sendPhotoBatch(
     form.append('uploaderName',name); form.append('note',note);
     form.append('file',file.type ? file : new File([file],file.name,{type:guestPhotoType(file)}));
     try { await send(form); update(index,'success'); }
-    catch (error) {update(index,'error',error instanceof Error ? error.message : '전송하지 못했어요. 다시 시도해 주세요.');}
+    catch (error) {
+      update(index,'error',error instanceof Error ? error.message : '전송하지 못했어요. 다시 시도해 주세요.');
+      if (error instanceof PhotoUploadError && error.stopBatch) break;
+    }
   }
 }

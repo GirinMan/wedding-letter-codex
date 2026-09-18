@@ -33,3 +33,29 @@ test('retrying only failed entries does not resend already successful photos',as
   assert.deepEqual(calls,['a.jpg','b.jpg','b.jpg']);
   assert.deepEqual([...states.values()],['success','success']);
 });
+
+test('100 photos upload sequentially with one common memo',async()=>{
+  assert.equal(upload.MAX_PHOTO_SELECTION,100);
+  const entries=Array.from({length:100},(_,index)=>({index,file:new File(['x'],`${index}.jpg`,{type:'image/jpeg'})}));
+  let active=0,peak=0,count=0;
+  await upload.sendPhotoBatch(entries,'하객','이번 업로드 메모',async form=>{
+    active++;peak=Math.max(active,peak);assert.equal(form.get('note'),'이번 업로드 메모');
+    await new Promise(resolve=>setTimeout(resolve,1));count++;active--;
+  },()=>{});
+  assert.equal(count,100);assert.equal(peak,1);
+});
+
+test('systemic failure stops remaining requests and keeps unsent files pending',async()=>{
+  assert.equal(typeof upload.PhotoUploadError,'function');
+  const entries=Array.from({length:4},(_,index)=>({index,file:new File(['x'],`${index}.jpg`,{type:'image/jpeg'})}));
+  const calls:string[]=[];const states=new Map<number,string>();
+  await upload.sendPhotoBatch(entries,'','',async form=>{calls.push((form.get('file') as File).name);throw new upload.PhotoUploadError('요청 제한',true);},(i,state)=>states.set(i,state));
+  assert.deepEqual(calls,['0.jpg']);assert.equal(states.get(0),'error');assert.equal(states.has(1),false);
+});
+
+test('stop request finishes current photo and leaves subsequent files unsent',async()=>{
+  let stopped=false,calls=0;
+  const entries=Array.from({length:3},(_,index)=>({index,file:new File(['x'],`${index}.jpg`,{type:'image/jpeg'})}));
+  await upload.sendPhotoBatch(entries,'','',async()=>{calls++;stopped=true;},()=>{},()=>!stopped);
+  assert.equal(calls,1);
+});

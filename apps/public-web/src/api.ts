@@ -1,4 +1,5 @@
 import type { GuestbookEntry, InvitationResponse } from "./types";
+import { PhotoUploadError } from "./guest-photo-upload";
 import type { GuestUploadPhoto } from "./guest-upload-gallery";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -77,16 +78,17 @@ export async function uploadGuestPhoto(slug: string, form: FormData): Promise<vo
   const response = await fetch(`/api/public/invitations/${slug}/guest-uploads`, {
     method: "POST",
     body: form,
-  }).catch(() => { throw new Error("연결이 끊겼어요. 네트워크를 확인하고 다시 시도해 주세요."); });
+  }).catch(() => { throw new PhotoUploadError("연결이 끊겼어요. 네트워크를 확인하고 다시 시도해 주세요.", true); });
   if (!response.ok) {
     const retrySeconds = Number(response.headers.get("retry-after"));
-    throw new Error(response.status === 413 ? "사진 한 장은 15MB 이하여야 해요."
+    throw new PhotoUploadError(response.status === 413 ? "사진 한 장은 15MB 이하여야 해요."
       : response.status === 415 ? "지원하지 않는 사진 형식이에요."
       : response.status === 429 ? (Number.isFinite(retrySeconds) && retrySeconds > 0
         ? `업로드 요청이 많아요. 약 ${Math.ceil(retrySeconds / 60)}분 뒤 다시 시도해 주세요.`
         : "업로드 요청이 많아요. 잠시 후 다시 시도해 주세요.")
       : response.status === 403 ? "지금은 사진을 올릴 수 없어요. 업로드 시작 시각을 확인해 주세요."
-      : "사진을 전송하지 못했어요. 다시 시도해 주세요.");
+      : "사진을 전송하지 못했어요. 다시 시도해 주세요.",
+      response.status === 429 || response.status === 403 || response.status >= 500);
   }
 }
 
