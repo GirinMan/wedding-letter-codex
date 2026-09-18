@@ -2914,3 +2914,35 @@ textarea:focus-visible {
     transform: translateX(18px);
   }
 }
+
+/* The album reads the invitation's published design tokens. */
+.album-link { display: block; width: fit-content; margin: 24px auto 0; color: inherit; text-underline-offset: 5px; font-size: .85rem; }
+.photo-album { background: var(--paper); }
+.photo-album__main { max-width: 1060px; margin: auto; padding: 24px 24px 0; }
+.photo-album__nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 24px; border-bottom: 1px solid var(--line); font-size: .75rem; }
+.photo-album__nav a { color: inherit; padding: 12px 0; text-decoration: none; }
+.photo-album__nav span { letter-spacing: .14em; font-size: .6rem; }
+.photo-album__header { text-align: center; padding: 64px 0 44px; }
+.photo-album__header h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 400; margin: 18px 0; }
+.photo-album__header p { line-height: 1.8; }
+.photo-album__note, .photo-album__count { font-size: .78rem; color: var(--muted); }
+.photo-album__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.photo-album__tile { padding: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; text-align: left; min-width: 0; }
+.photo-album__tile img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.photo-album__tile > span:last-child { display: flex; justify-content: space-between; padding: 12px 3px 3px; font-size: .72rem; }
+.photo-album__unavailable { display: grid; place-content: center; min-height: 160px; padding: 14px; font-size: .75rem; line-height: 1.8; }
+.photo-album__empty { text-align: center; padding: 48px 20px 64px; border: 1px solid var(--line); background: var(--surface); }
+.photo-album__empty > span { font-size: 2rem; }
+.photo-album__empty h2 { font-size: 1.1rem; font-weight: 500; margin-top: 24px; }
+.photo-album__empty p { font-size: .85rem; line-height: 1.9; }
+.photo-album__status { text-align: center; padding: 20px; line-height: 1.8; }
+.photo-album__more { display: block; margin: 32px auto; }
+.photo-album__footer { padding: 56px 0 40px; text-align: center; font-size: .75rem; color: var(--muted); }
+.photo-album__viewer { width: min(900px, calc(100% - 32px)); }
+.photo-album__viewer img { display: block; width: 100%; max-height: 70vh; object-fit: contain; }
+@media (max-width: 600px) {
+  .photo-album__main { padding: 16px 16px 0; }
+  .photo-album__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .photo-album__tile { padding: 6px; }
+  .photo-album__header { padding: 44px 0 28px; }
+}

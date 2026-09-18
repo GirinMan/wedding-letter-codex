@@ -82,3 +82,11 @@ export async function uploadGuestPhoto(slug: string, form: FormData): Promise<vo
     throw new Error(`Upload failed: ${response.status}`);
   }
 }
+
+export function loadGuestUploadPage(slug: string, cursor?: string): Promise<{
+  photos: GuestUploadPhoto[];
+  nextCursor: string | null;
+}> {
+  const query = new URLSearchParams(cursor ? { cursor } : {});
+  return request(`/api/public/invitations/${slug}/guest-uploads?${query}`);
+}

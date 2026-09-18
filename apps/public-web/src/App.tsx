@@ -1796,6 +1796,7 @@ export function App() {
             >
               사진 올리기
             </button>
+            {!isPreview ? <a className="album-link" href={`/${slug}/photos`}>함께한 사진 보기 →</a> : null}
           </section>
         ) : null}
 

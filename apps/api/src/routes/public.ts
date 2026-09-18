@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getConfig } from "../config.js";
 import { getDatabase } from "../db.js";
 import { invitationContentSchema, invitationDesignSchema } from "../domain/invitation.js";
+import { guestUploadPageSchema } from "../domain/guest-upload.js";
 import { parseRsvpSubmission } from "../domain/rsvp.js";
 import { createPasswordVerifier, verifyPassword } from "../security/credentials.js";
 import { getObject, putObject } from "../storage.js";
@@ -113,6 +114,7 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
 
   app.get("/api/public/invitations/:slug/guest-uploads", async (request, reply) => {
     const { slug } = slugParams.parse(request.params);
+    const query = guestUploadPageSchema.parse(request.query);
     const invitation = await findPublishedInvitation(slug);
     if (!invitation) {
       return reply.code(404).send({ error: "invitation_not_found" });
@@ -129,11 +131,16 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       WHERE invitation_id = ${invitation.id}
         AND state = 'approved'
         AND deleted_at IS NULL
-      ORDER BY created_at DESC
-      LIMIT 30
+      AND (${query.cursor ?? null}::uuid IS NULL OR (created_at, id) < (
+          SELECT created_at, id FROM guest_uploads
+          WHERE id = ${query.cursor ?? null}::uuid AND invitation_id = ${invitation.id}
+        ))
+      ORDER BY created_at DESC, id DESC
+      LIMIT ${query.limit + 1}
     `;
     return {
-      photos: uploads.map((upload) => ({
+      nextCursor: uploads.length > query.limit ? uploads[query.limit - 1]!.id : null,
+      photos: uploads.slice(0, query.limit).map((upload) => ({
         id: upload.id,
         url: `/api/public/invitations/${slug}/guest-uploads/${upload.id}/content`,
         alt: upload.uploaderName ? `${upload.uploaderName}님이 공유한 사진` : upload.originalName,
