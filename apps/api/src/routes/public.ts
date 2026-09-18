@@ -9,6 +9,7 @@ import { guestUploadPageSchema } from "../domain/guest-upload.js";
 import { parseRsvpSubmission } from "../domain/rsvp.js";
 import { createPasswordVerifier, verifyPassword } from "../security/credentials.js";
 import { getObject, putObject } from "../storage.js";
+import { getDisplayObject, imageSizeQuery } from "../display-image.js";
 
 const slugParams = z.object({ slug: z.string().regex(/^[a-z0-9-]+$/) });
 const idParams = slugParams.extend({ entryId: z.string().uuid() });
@@ -125,8 +126,9 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       id: string;
       uploaderName: string;
       originalName: string;
+      createdAt: Date;
     }[]>`
-      SELECT id, uploader_name, original_name
+      SELECT id, uploader_name, original_name, created_at
       FROM guest_uploads
       WHERE invitation_id = ${invitation.id}
         AND state = 'approved'
@@ -142,6 +144,7 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       nextCursor: uploads.length > query.limit ? uploads[query.limit - 1]!.id : null,
       photos: uploads.slice(0, query.limit).map((upload) => ({
         id: upload.id,
+        createdAt: upload.createdAt.toISOString(),
         url: `/api/public/invitations/${slug}/guest-uploads/${upload.id}/content`,
         alt: upload.uploaderName ? `${upload.uploaderName}님이 공유한 사진` : upload.originalName,
       })),
@@ -168,7 +171,8 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
     if (!upload) {
       return reply.code(404).send({ error: "guest_upload_not_found" });
     }
-    const object = await getObject(upload.objectKey);
+    const { size } = imageSizeQuery.parse(request.query);
+    const object = await (size === "display" ? getDisplayObject : getObject)(upload.objectKey);
     reply.type(object.contentType);
     reply.header("Cache-Control", "public, max-age=300");
     if (object.contentLength !== undefined) {
@@ -388,7 +392,8 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
       return reply.code(404).send({ error: "media_not_found" });
     }
 
-    const object = await getObject(asset.objectKey);
+    const { size } = imageSizeQuery.parse(request.query);
+    const object = await (size === "display" ? getDisplayObject : getObject)(asset.objectKey);
     reply.header("Content-Type", object.contentType);
     reply.header("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
     reply.header("Content-Length", String(object.contentLength ?? asset.sizeBytes));
