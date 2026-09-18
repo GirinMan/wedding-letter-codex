@@ -2963,7 +2963,7 @@ textarea:focus-visible {
 .photo-album__guide .eyebrow { font-size: .67rem; letter-spacing: .05em; color: var(--muted); }
 .photo-album__guide h2 { font-size: 1.1rem; font-weight: 500; margin: 12px 0; }
 .photo-album__guide p:not(.eyebrow) { font-size: .8rem; line-height: 1.9; margin: 8px 0 0; }
-.photo-album__upload { flex-shrink: 0; display: flex; gap: 16px; align-items: center; justify-content: center; text-decoration: none; font-size: .78rem; }
+.photo-album__upload { width: auto; max-width: 100%; flex-shrink: 0; display: flex; gap: 16px; align-items: center; justify-content: center; text-decoration: none; font-size: .78rem; }
 .photo-album__empty { border: 0; background: transparent; padding-block: 36px 56px; }
 .photo-album__empty p { max-width: 350px; margin-inline: auto; }
 .photo-album__footer { border-top: 1px solid var(--line); margin-top: 40px; }
