@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { InvitationDesign } from "./types";
 
 const sicilianNoirDesign: InvitationDesign = {
@@ -49,4 +50,21 @@ export function resolveInvitationThemeDesign(
   if (design.themeId === "sicilian-noir") return structuredClone(sicilianNoirDesign);
   if (design.themeId === "photo-editorial") return structuredClone(photoEditorialDesign);
   return design;
+}
+
+export function invitationThemeStyle(design: InvitationDesign): CSSProperties {
+  return {
+    "--paper": design.colors.paper,
+    "--ink": design.colors.ink,
+    "--muted": design.colors.muted,
+    "--line": design.colors.line,
+    "--accent": design.colors.accent,
+    "--surface": design.colors.surface,
+    "--radius": `${design.radius}px`,
+    "--section-space": `${design.spacing.section}px`,
+    "--content-space": `${design.spacing.content}px`,
+    "--display-font": design.typography.display,
+    "--body-font": design.typography.body,
+    "--motion-duration": `${design.motion.durationMs}ms`,
+  } as CSSProperties;
 }

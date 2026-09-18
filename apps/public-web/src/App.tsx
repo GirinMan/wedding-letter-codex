@@ -33,6 +33,7 @@ import { createCalendarFile, downloadCalendarFile } from "./event-calendar";
 import { formatHeroDate } from "./hero-date";
 import { resolveInvitationFavicon } from "./favicon";
 import {
+  invitationThemeStyle,
   invitationThemeAttributes,
   resolveInvitationThemeDesign,
 } from "./invitation-theme";
@@ -1183,20 +1184,7 @@ export function App() {
   const channelTalkEnabled = !isPreview
     && content.sharing.channelTalk.enabled
     && Boolean(content.sharing.channelTalk.pluginKey.trim());
-  const style = {
-    "--paper": resolvedDesign.colors.paper,
-    "--ink": resolvedDesign.colors.ink,
-    "--muted": resolvedDesign.colors.muted,
-    "--line": resolvedDesign.colors.line,
-    "--accent": resolvedDesign.colors.accent,
-    "--surface": resolvedDesign.colors.surface,
-    "--radius": `${resolvedDesign.radius}px`,
-    "--section-space": `${resolvedDesign.spacing.section}px`,
-    "--content-space": `${resolvedDesign.spacing.content}px`,
-    "--display-font": resolvedDesign.typography.display,
-    "--body-font": resolvedDesign.typography.body,
-    "--motion-duration": `${resolvedDesign.motion.durationMs}ms`,
-  } as CSSProperties;
+  const style = invitationThemeStyle(resolvedDesign);
   const heroDate = formatHeroDate(content.event.startsAt, content.event.timezone);
   const partnersByKey = {
     partnerOne: content.couple.partnerOne,
