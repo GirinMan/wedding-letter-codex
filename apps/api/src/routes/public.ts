@@ -325,7 +325,8 @@ export async function registerPublicRoutes(app: FastifyInstance): Promise<void> 
   });
 
   app.post("/api/public/invitations/:slug/guest-uploads", {
-    config: { rateLimit: { max: 10, timeWindow: "1 hour" } },
+    // Multi-select sends one bounded request per photo; keep an hourly abuse limit.
+    config: { rateLimit: { max: 120, timeWindow: "1 hour" } },
   }, async (request, reply) => {
     const { slug } = slugParams.parse(request.params);
     const invitation = await findPublishedInvitation(slug);

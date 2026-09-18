@@ -78,6 +78,10 @@ export async function createApp(): Promise<FastifyInstance> {
       return reply.code(413).send({ error: "file_too_large" });
     }
 
+    if ((error as { statusCode?: number }).statusCode === 429) {
+      return reply.code(429).send({ error: "rate_limit_exceeded" });
+    }
+
     app.log.error(error);
     return reply.code(500).send({ error: "internal_error" });
   });
