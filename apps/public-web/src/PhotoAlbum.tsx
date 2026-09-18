@@ -1,9 +1,9 @@
+import { GuestPhotoUploadDialog } from "./components/GuestPhotoUploadDialog";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { loadGuestUploadPage, loadInvitation } from "./api";
 import { Media } from "./components/Media";
 import { displayImageUrl, preloadImages } from "./image-preload";
 import { albumUploadState, groupPhotosByHour } from "./photo-route";
-import { sectionAnchorId } from "./components/QuickMenu";
 import { Dialog } from "./components/Dialog";
 import type { GuestUploadPhoto } from "./guest-upload-gallery";
 import { invitationThemeStyle, resolveInvitationThemeDesign } from "./invitation-theme";
@@ -18,6 +18,7 @@ export function PhotoAlbum({ slug }: { slug: string }) {
   const [attempt, setAttempt] = useState(0);
   const [selected, setSelected] = useState<GuestUploadPhoto | null>(null);
   const busy = useRef(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -102,7 +103,7 @@ export function PhotoAlbum({ slug }: { slug: string }) {
               <p>사진은 촬영 시각이 아닌 업로드 시각을 기준으로 1시간씩 모아 보여드려요.</p>
             </details>
           </div>
-          {uploadState !== 'disabled' ? <a className="primary-button photo-album__upload" href={`/${slug}#${sectionAnchorId("guestUploads")}`}>{uploadState === 'open' ? '사진 올리러 가기' : '청첩장에서 업로드 안내 보기'} <span aria-hidden="true">↗</span></a> : null}
+          {uploadState !== 'disabled' ? <button type="button" className="primary-button photo-album__upload" disabled={uploadState !== 'open'} onClick={() => setUploadOpen(true)}>{uploadState === 'open' ? '사진 올리기' : '업로드 시작 전'} <span aria-hidden="true">＋</span></button> : null}
         </section> : null}
         <div role="status" aria-live="polite">
           {loading ? <p className="photo-album__status">사진을 불러오고 있어요…</p> : null}
@@ -122,6 +123,8 @@ export function PhotoAlbum({ slug }: { slug: string }) {
         {cursor ? <button className="primary-button photo-album__more" disabled={loading} onClick={() => void loadMore()}>사진 더 보기</button> : null}
         <footer className="photo-album__footer"><p>소중한 순간을 함께해 주셔서 감사합니다.</p><a href={`/${slug}`}>두 사람의 청첩장으로 돌아가기</a></footer>
       </main>
+      {content ? <GuestPhotoUploadDialog open={uploadOpen} onClose={() => setUploadOpen(false)} slug={slug}
+        enabled={uploadState !== 'disabled'} opensAt={content.guestUploads.opensAt} /> : null}
       <Dialog open={selected !== null} title="함께한 순간" onClose={() => setSelected(null)} className="photo-album__viewer">
         {selected ? <div onKeyDown={(event) => {
           if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {

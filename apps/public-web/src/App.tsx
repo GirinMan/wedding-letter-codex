@@ -1,3 +1,4 @@
+import { GuestPhotoUploadDialog } from "./components/GuestPhotoUploadDialog";
 import { displayImageUrl, mediaImageUrl, preloadImages } from "./image-preload";
 import {
   useEffect,
@@ -16,7 +17,6 @@ import {
   loadInvitation,
   loadInvitationPreview,
   submitRsvp,
-  uploadGuestPhoto,
 } from "./api";
 import {
   chooseAmbientGuestbookEntry,
@@ -229,27 +229,6 @@ function FamilyRelationshipLine({ content }: { content: InvitationContent }) {
         );
       })}
     </div>
-  );
-}
-
-function GuestUploadShowcase({
-  gallery,
-  preview,
-}: {
-  gallery: GuestUploadGallery;
-  preview: boolean;
-}) {
-  if (gallery.items.length === 0) return null;
-
-  return (
-    <section className="guest-upload-showcase" aria-label="축하 사진">
-      <p>{gallery.source === "guest" ? "함께 나눈 축하 사진" : "두 사람의 미리 보기"}</p>
-      <div className="guest-upload-showcase__grid">
-        {gallery.source === "guest"
-          ? gallery.items.map((photo) => <img key={photo.id} src={displayImageUrl(photo.url)} decoding="async" alt={photo.alt} />)
-          : gallery.items.map((item, index) => <Media key={`${item.assetId}-${index}`} media={item} preview={preview} />)}
-      </div>
-    </section>
   );
 }
 
@@ -1445,23 +1424,6 @@ export function App() {
     }
   };
 
-  const handleGuestUpload = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isPreview) {
-      setNotice("초안 미리보기에서는 사진을 업로드하지 않습니다.");
-      return;
-    }
-    const formElement = event.currentTarget;
-    const form = new FormData(formElement);
-    try {
-      await uploadGuestPhoto(slug, form);
-      setDialog(null);
-      setNotice("사진을 올렸습니다. 확인 후 신랑·신부에게 전달됩니다.");
-      formElement.reset();
-    } catch {
-      setNotice("사진을 올리지 못했습니다. 파일 형식과 크기를 확인해 주세요.");
-    }
-  };
 
   return (
     <div
@@ -2087,16 +2049,9 @@ export function App() {
         </form>
       </Dialog>
 
-      <Dialog open={dialog === "upload"} title="사진 올리기" onClose={() => setDialog(null)}>
-        <GuestUploadShowcase gallery={guestUploadGallery} preview={isPreview} />
-        <form className="form-stack" onSubmit={(event) => void handleGuestUpload(event)}>
-          <label>사진<input name="file" type="file" accept="image/jpeg,image/png,image/webp,image/heic" required /></label>
-          <label>이름<input name="uploaderName" maxLength={80} /></label>
-          <label>메모<textarea name="note" maxLength={300} rows={3} /></label>
-          <p className="form-help">JPG, PNG, WebP, HEIC · 최대 15MB</p>
-          <button className="primary-button" type="submit">업로드</button>
-        </form>
-      </Dialog>
+      <GuestPhotoUploadDialog open={dialog === "upload"} onClose={() => setDialog(null)} slug={slug}
+        enabled={content.guestUploads.enabled} opensAt={content.guestUploads.opensAt} preview={isPreview}
+        onComplete={(count) => setNotice(`${count}장을 올렸습니다. 확인 후 앨범에 공개됩니다.`)} />
 
       <div className={`toast ${notice ? "is-visible" : ""}`} role="status" aria-live="polite">
         {notice}

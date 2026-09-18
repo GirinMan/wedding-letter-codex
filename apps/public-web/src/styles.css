@@ -3023,3 +3023,14 @@ textarea:focus-visible {
 @media (min-width: 360px) and (max-width: 700px) {
   .photo-album__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+.guest-photo-upload .form-stack { gap: 14px; }
+.guest-photo-upload__results > p { margin: 0 0 8px; font-size: .8rem; }
+.guest-photo-upload__results progress { width: 100%; accent-color: var(--ink); }
+.guest-photo-upload__results ul { list-style: none; padding: 0; margin: 8px 0 0; max-height: 180px; overflow-y: auto; }
+.guest-photo-upload__results li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .78rem; }
+.guest-photo-upload__results li > span { overflow-wrap: anywhere; min-width: 0; flex: 1; }
+.guest-photo-upload__results small { max-width: 55%; line-height: 1.5; }
+.guest-photo-upload__results [data-state="success"] small { font-weight: 700; }
+.guest-photo-upload__results [data-state="error"] small { color: #a32626; }
+.guest-photo-upload input[type="file"] { max-width: 100%; }
