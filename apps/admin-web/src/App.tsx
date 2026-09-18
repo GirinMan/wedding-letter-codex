@@ -1260,7 +1260,7 @@ export function App() {
             ) : null}
 
             {view === "uploads" ? (
-              <Panel title={`방문객 사진 ${activeUploads.length}개`} description={`검토 대기 ${pendingUploads}개 · 승인 전에는 외부에 노출되지 않습니다.`}>
+              <Panel title={`방문객 사진 ${activeUploads.length}개`} description={`검토 대기 ${pendingUploads}개 · 새 사진은 자동 승인되어 공개됩니다. 거절하면 비공개로 전환됩니다.`}>
                 <div className="upload-toolbar">
                   <label>
                     <input

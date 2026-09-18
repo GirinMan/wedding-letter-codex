@@ -38,12 +38,12 @@ export function GuestPhotoUploadDialog({open,onClose,slug,enabled,opensAt,previe
         setEntries(current=>current.map((entry,i)=>i===index ? {...entry,state,message:error} : entry));
       },()=>!stopRequested.current);
       const completed = successful + sent;
-      setMessage(completed===entries.length ? `${completed}장을 모두 올렸어요. 확인 후 앨범에 공개됩니다.` : `${completed}장 업로드 완료. 전송을 멈췄거나 실패한 사진이 있어요. 아래 결과를 확인하고 남은 사진을 이어서 올려 주세요.`);
+      setMessage(completed===entries.length ? `${completed}장을 모두 올렸어요. 앨범에 바로 공개됩니다.` : `${completed}장 업로드 완료. 전송을 멈췄거나 실패한 사진이 있어요. 아래 결과를 확인하고 남은 사진을 이어서 올려 주세요.`);
       if(sent) onComplete?.(sent);
     } finally {running.current=false;setBusy(false);setStopping(false);}
   }
   return <Dialog open={open} title="사진 올리기" onClose={onClose} className="guest-photo-upload">
-    <p className="form-help">사진을 여러 장 선택해 한 번에 올려 주세요. 확인 후 공개 앨범에 표시됩니다.</p>
+    <p className="form-help">사진을 여러 장 선택해 한 번에 올려 주세요. 업로드한 사진은 앨범에 바로 공개됩니다.</p>
     <form className="form-stack" onSubmit={event=>void submit(event)}>
       <label>사진 선택 (최대 {MAX_PHOTO_SELECTION}장)
         <input type="file" multiple accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" disabled={busy} onChange={event=>{

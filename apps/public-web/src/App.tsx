@@ -890,6 +890,7 @@ export function App() {
   const [dialog, setDialog] = useState<DialogName>(null);
   const [rsvpWelcomeOpen, setRsvpWelcomeOpen] = useState(false);
   const [guestbook, setGuestbook] = useState<GuestbookEntry[]>([]);
+  const [guestUploadRefresh, setGuestUploadRefresh] = useState(0);
   const [guestUploadPhotos, setGuestUploadPhotos] = useState<GuestUploadPhoto[]>([]);
   const [guestbookDeleteTarget, setGuestbookDeleteTarget] = useState<GuestbookEntry | null>(null);
   const [ambientGuestbookEntry, setAmbientGuestbookEntry] = useState<GuestbookEntry | null>(null);
@@ -1039,7 +1040,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [content, isPreview, slug]);
+  }, [content, isPreview, slug, guestUploadRefresh]);
 
   useEffect(() => {
     if (dialog === "guestbook" && !isPreview) {
@@ -2051,7 +2052,7 @@ export function App() {
 
       <GuestPhotoUploadDialog open={dialog === "upload"} onClose={() => setDialog(null)} slug={slug}
         enabled={content.guestUploads.enabled} opensAt={content.guestUploads.opensAt} preview={isPreview}
-        onComplete={(count) => setNotice(`${count}장을 올렸습니다. 확인 후 앨범에 공개됩니다.`)} />
+        onComplete={(count) => { setNotice(`${count}장을 올렸습니다. 앨범에 바로 공개됩니다.`); setGuestUploadRefresh(value => value + 1); }} />
 
       <div className={`toast ${notice ? "is-visible" : ""}`} role="status" aria-live="polite">
         {notice}

@@ -99,7 +99,7 @@ export function PhotoAlbum({ slug }: { slug: string }) {
             <h2 id="album-guide-title">{uploadState === 'scheduled' ? `${opening}부터 사진을 올릴 수 있어요` : uploadState === 'open' ? '우리의 하루를 함께 기록해 주세요' : '함께한 순간을 모았어요'}</h2>
             <details className="photo-album__help"><summary>사진 업로드·공개 안내</summary>
               <p>{content.guestUploads.description}</p>
-              <p>올려 주신 사진은 확인 후 앨범에 공개됩니다. 앨범에 방문한 누구나 볼 수 있으니, 함께 찍힌 분들도 공개에 동의한 사진을 골라 주세요.</p>
+              <p>올려 주신 사진은 앨범에 바로 공개되며, 관리자가 추후 비공개로 변경할 수 있습니다. 앨범에 방문한 누구나 볼 수 있으니, 함께 찍힌 분들도 공개에 동의한 사진을 골라 주세요.</p>
               <p>사진은 촬영 시각이 아닌 업로드 시각을 기준으로 1시간씩 모아 보여드려요.</p>
             </details>
           </div>
@@ -108,7 +108,7 @@ export function PhotoAlbum({ slug }: { slug: string }) {
         <div role="status" aria-live="polite">
           {loading ? <p className="photo-album__status">사진을 불러오고 있어요…</p> : null}
           {error ? <div className="photo-album__status"><p>{error}</p>{!invitation ? <button className="primary-button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</button> : null}</div> : null}
-          {!loading && !error && photos.length === 0 ? <div className="photo-album__empty"><span aria-hidden="true">♡</span><h2>{uploadState === 'scheduled' ? '함께 채워 갈 앨범이에요' : '아직 공개된 사진이 없어요'}</h2><p>{uploadState === 'scheduled' ? '예식 날의 웃음과 축하를 이곳에 담아 둘게요.' : '사진을 이미 올리셨다면 잠시 기다려 주세요. 확인이 끝나면 이곳에서 볼 수 있어요.'}</p></div> : null}
+          {!loading && !error && photos.length === 0 ? <div className="photo-album__empty"><span aria-hidden="true">♡</span><h2>{uploadState === 'scheduled' ? '함께 채워 갈 앨범이에요' : '아직 공개된 사진이 없어요'}</h2><p>{uploadState === 'scheduled' ? '예식 날의 웃음과 축하를 이곳에 담아 둘게요.' : '첫 사진을 올려 함께한 순간을 나눠 주세요.'}</p></div> : null}
         </div>
         {photos.length > 0 ? <><p className="photo-album__count">불러온 사진 {photos.length}장 · 업로드 시간순 · {content?.event.timezone === 'Asia/Seoul' ? '한국 시간' : content?.event.timezone}</p>
           {groups.map(group => <section className="photo-album__hour" key={group.key} aria-label={group.label}>
@@ -124,7 +124,8 @@ export function PhotoAlbum({ slug }: { slug: string }) {
         <footer className="photo-album__footer"><p>소중한 순간을 함께해 주셔서 감사합니다.</p><a href={`/${slug}`}>두 사람의 청첩장으로 돌아가기</a></footer>
       </main>
       {content ? <GuestPhotoUploadDialog open={uploadOpen} onClose={() => setUploadOpen(false)} slug={slug}
-        enabled={uploadState !== 'disabled'} opensAt={content.guestUploads.opensAt} /> : null}
+        enabled={uploadState !== 'disabled'} opensAt={content.guestUploads.opensAt}
+        onComplete={() => setAttempt(value => value + 1)} /> : null}
       <Dialog open={selected !== null} title="함께한 순간" onClose={() => setSelected(null)} className="photo-album__viewer">
         {selected ? <div onKeyDown={(event) => {
           if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
