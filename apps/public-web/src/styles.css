@@ -2980,3 +2980,46 @@ textarea:focus-visible {
   .photo-album__guide { display: block; padding-block: 24px; }
   .photo-album__upload { margin-top: 20px; }
 }
+
+/* Keep the album focused on photos, with optional guidance. */
+.photo-album__nav { padding-bottom: 8px; }
+.photo-album__header { padding: 24px 0; gap: 24px; }
+.photo-album__cover { flex-basis: 140px; padding: 6px; }
+.photo-album__cover figcaption { display: none; }
+.photo-album__couple { margin-top: 8px; }
+.photo-album__header h1 { margin: 8px 0 12px; }
+.photo-album__intro time { margin-top: 10px; }
+.photo-album__guide { padding: 16px 0; margin-bottom: 20px; gap: 16px; align-items: flex-start; }
+.photo-album__guide-copy { flex: 1; min-width: 0; }
+.photo-album__guide h2 { font-size: .85rem; margin: 0 0 8px; line-height: 1.6; }
+.photo-album__help summary { cursor: pointer; font-size: .75rem; color: var(--muted); min-height: 28px; padding-block: 4px; }
+.photo-album__help p { white-space: pre-line; }
+.photo-album__hour { margin: 20px 0 28px; }
+.photo-album__hour h2 { font-size: .85rem; font-weight: 500; display: flex; align-items: center; gap: 12px; margin: 0 0 12px; }
+.photo-album__hour h2 span { color: var(--muted); font-size: .7rem; }
+.photo-album__grid { gap: 12px; }
+.photo-album__tile { padding: 5px; }
+.photo-album__tile > span:last-child { padding: 6px 2px 2px; font-size: .65rem; }
+@media (max-width: 700px) {
+  .photo-album__main { padding: 8px 12px 0; }
+  .photo-album__nav { padding-bottom: 4px; }
+  .photo-album__header { flex-direction: row; text-align: left; padding: 16px 0; gap: 14px; }
+  .photo-album__intro { min-width: 0; }
+  .photo-album__intro > .eyebrow, .photo-album__description { display: none; }
+  .photo-album__couple { font-family: var(--body-font); font-size: .75rem; margin: 0; }
+  .photo-album__header h1 { font-size: 1.5rem; margin: 6px 0; }
+  .photo-album__intro time { font-size: .65rem; margin-top: 6px; line-height: 1.6; }
+  .photo-album__cover { flex: 0 0 72px; width: 72px; padding: 4px; transform: rotate(2deg); }
+  .photo-album__guide { padding: 12px 0; margin-bottom: 14px; display: block; }
+  .photo-album__guide h2 { font-size: .78rem; margin-bottom: 2px; }
+  .photo-album__upload { min-height: 40px; margin-top: 8px; padding: 10px 12px; }
+  .photo-album__count { font-size: .7rem; margin: 10px 0; }
+  .photo-album__hour { margin: 16px 0 20px; }
+  .photo-album__hour h2 { font-size: .78rem; margin-bottom: 8px; }
+  .photo-album__grid { gap: 8px; }
+  .photo-album__empty { padding: 20px 12px; }
+  .photo-album__footer { margin-top: 20px; padding: 24px 0; }
+}
+@media (min-width: 360px) and (max-width: 700px) {
+  .photo-album__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

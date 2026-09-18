@@ -33,7 +33,7 @@ test("looping gallery uses two inaccessible clones and bounded neighbor preloadi
   assert.match(app, /\[items\.at\(-1\)!, \.\.\.items, items\[0\]!\]/);
   assert.match(app, /getCarouselPreloadIndices/);
   assert.match(app, /function preloadGalleryItems/);
-  assert.match(app, /await image\.decode\(\)/);
+  assert.match(await readSource("../src/image-preload.ts"), /await image\.decode\(\)/);
   assert.match(app, /aria-hidden=\{isClone \|\| undefined\}/);
   assert.match(app, /tabIndex=\{isClone \? -1 : 0\}/);
   assert.match(app, /inert=\{isClone \? true : undefined\}/);

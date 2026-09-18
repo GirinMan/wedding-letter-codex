@@ -1,3 +1,4 @@
+import { mediaImageUrl } from "../image-preload";
 import type { MediaReference } from "../types";
 
 export type RevealDirection = "from-left" | "from-right";
@@ -8,17 +9,17 @@ export function Media({
   preview = false,
   revealDirection,
   loading = "lazy",
+  onLoad,
 }: {
   media: MediaReference;
   className?: string;
   preview?: boolean;
   revealDirection?: RevealDirection;
   loading?: "eager" | "lazy";
+  onLoad?: () => void;
 }) {
   if (media.assetId) {
-    const contentPath = preview
-      ? `/api/admin/media/${media.assetId}/content`
-      : `/api/media/${media.assetId}/content`;
+    const contentPath = mediaImageUrl(media, preview)!;
     return (
       <img
         className={`media ${className}`}
@@ -26,6 +27,7 @@ export function Media({
         alt={media.alt}
         data-reveal={revealDirection}
         decoding="async"
+        onLoad={onLoad}
         loading={loading}
       />
     );

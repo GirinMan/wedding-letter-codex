@@ -1,3 +1,4 @@
+import { displayImageUrl, mediaImageUrl, preloadImages } from "./image-preload";
 import {
   useEffect,
   useMemo,
@@ -245,7 +246,7 @@ function GuestUploadShowcase({
       <p>{gallery.source === "guest" ? "함께 나눈 축하 사진" : "두 사람의 미리 보기"}</p>
       <div className="guest-upload-showcase__grid">
         {gallery.source === "guest"
-          ? gallery.items.map((photo) => <img key={photo.id} src={photo.url} alt={photo.alt} />)
+          ? gallery.items.map((photo) => <img key={photo.id} src={displayImageUrl(photo.url)} decoding="async" alt={photo.alt} />)
           : gallery.items.map((item, index) => <Media key={`${item.assetId}-${index}`} media={item} preview={preview} />)}
       </div>
     </section>
@@ -260,7 +261,7 @@ function GuestUploadPolaroid({
   preview: boolean;
 }) {
   const cards = gallery.source === "guest"
-    ? gallery.items.slice(0, 3).map((photo) => <span key={photo.id}><img src={photo.url} alt={photo.alt} /></span>)
+    ? gallery.items.slice(0, 3).map((photo) => <span key={photo.id}><img src={displayImageUrl(photo.url)} decoding="async" alt={photo.alt} /></span>)
     : gallery.items.slice(0, 3).map((item, index) => <span key={`${item.assetId}-${index}`}><Media media={item} preview={preview} /></span>);
   return (
     <div className="polaroid-stack" aria-label="축하 사진">
@@ -402,40 +403,17 @@ function GalleryCarousel({
 }
 
 const decodedGallerySources = new Set<string>();
-const galleryDecodePromises = new Map<string, Promise<void>>();
-
 function galleryMediaPath(item: MediaReference, preview: boolean) {
-  if (!item.assetId) return null;
-  return preview
-    ? `/api/admin/media/${item.assetId}/content`
-    : `/api/media/${item.assetId}/content`;
+  return mediaImageUrl(item, preview);
 }
 
 async function preloadGalleryItems(items: MediaReference[], preview: boolean) {
-  return Promise.all(items.flatMap((item) => {
+  const sources = await preloadImages(items.flatMap(item => {
     const source = galleryMediaPath(item, preview);
-    if (!source) return [];
-    if (decodedGallerySources.has(source)) return [Promise.resolve(source)];
-    const existing = galleryDecodePromises.get(source);
-    if (existing) return [existing.then(() => source)];
-
-    const pending = new Promise<void>((resolve) => {
-      const image = new Image();
-      image.src = source;
-      void (async () => {
-        try {
-          await image.decode();
-        } catch {
-          // The visible image keeps its own error and retry behavior.
-        }
-        decodedGallerySources.add(source);
-        galleryDecodePromises.delete(source);
-        resolve();
-      })();
-    });
-    galleryDecodePromises.set(source, pending);
-    return [pending.then(() => source)];
+    return source ? [source] : [];
   }));
+  sources.forEach(source => decodedGallerySources.add(source));
+  return sources;
 }
 
 function GalleryPhotoButton({
@@ -455,9 +433,10 @@ function GalleryPhotoButton({
   isClone?: boolean;
   onOpen: () => void;
 }) {
+  const [loaded, setLoaded] = useState(false);
   return (
     <button
-      className={`gallery-photo-button ${decoded ? "is-decoded" : ""}`}
+      className={`gallery-photo-button ${decoded || loaded ? "is-decoded" : ""}`}
       type="button"
       aria-label={`${item.alt || "웨딩 사진"} 크게 보기`}
       aria-hidden={isClone || undefined}
@@ -465,7 +444,7 @@ function GalleryPhotoButton({
       onClick={onOpen}
       tabIndex={isClone ? -1 : 0}
     >
-      <Media media={item} preview={preview} loading={loading} />
+      <Media media={item} preview={preview} loading={loading} onLoad={() => setLoaded(true)} />
       <span className="gallery-photo-button__zoom" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <circle cx="10.5" cy="10.5" r="5.5" />
@@ -982,6 +961,10 @@ export function App() {
       : loadInvitation(slug);
     void invitationRequest
       .then((result) => {
+        void preloadGalleryItems([
+          ...result.content.gallery.items,
+          ...result.content.guestUploads.fallbackItems,
+        ], isPreview);
         setContent(result.content);
         setDesign(result.design);
         setRevision(result.revision);
@@ -1067,7 +1050,10 @@ export function App() {
     if (!content || isPreview || !content.guestUploads.enabled) return;
     let cancelled = false;
     void loadGuestUploadPhotos(slug).then((photos) => {
-      if (!cancelled) setGuestUploadPhotos(photos);
+      if (!cancelled) {
+        void preloadImages(photos.map(photo => displayImageUrl(photo.url)));
+        setGuestUploadPhotos(photos);
+      }
     }).catch(() => {
       if (!cancelled) setGuestUploadPhotos([]);
     });

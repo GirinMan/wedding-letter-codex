@@ -4,6 +4,7 @@ export type GuestUploadPhoto = {
   id: string;
   url: string;
   alt: string;
+  createdAt?: string;
 };
 
 export type GuestUploadGallery =
